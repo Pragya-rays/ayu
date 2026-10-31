@@ -37,6 +37,11 @@ export const config = {
     ttsUrl: "wss://api.vachana.ai/api/v1/tts",
     ttsRestUrl: "https://api.vachana.ai/api/v1/tts/inference",
   },
+  gemini: {
+    apiKey: env.GEMINI_API_KEY ?? "",
+    model: env.GEMINI_MODEL ?? "gemini-3.1-flash-lite",
+    timeoutMs: num(env.GEMINI_TIMEOUT_MS, 2500),
+  },
   prisma: {
     model: env.PRISMA_MODEL ?? "prisma-v3.0",
     format: env.PRISMA_FORMAT ?? "codemix",

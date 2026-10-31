@@ -208,6 +208,12 @@ body:has(.sos) { background: var(--sos-bg); }
   text-decoration: none;
 }
 
+.answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.button.sos-answer { min-height: 64px; padding: 0 6px; background: var(--sos-text); color: var(--sos-bg); font-size: 18px; }
+.protocol-title { margin: 0; font-size: 16px; opacity: 0.85; }
+.severity { padding: 0 8px; border-radius: 6px; background: var(--sos-alert); color: #0a0a09; font-weight: 600; }
+.severity[data-severity="AMBER"] { background: #ffb86b; }
+
 .button.sos-cancel { background: transparent; color: var(--sos-text); border: 1px solid rgba(247, 247, 242, 0.4); box-shadow: none; }
 
 .sos-disclaimer { margin: 0; font-size: 13px; opacity: 0.7; text-align: center; }

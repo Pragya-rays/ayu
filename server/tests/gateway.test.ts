@@ -1,10 +1,12 @@
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import WebSocket from "ws";
+import { NoLLM } from "../src/adapters/llm.js";
 import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import { buildApp, type AppDeps } from "../src/app.js";
 import { CaseStore } from "../src/cases/store.js";
 import { SOS_OPENING } from "../src/dialogue/lines.js";
+import { loadProtocols } from "../src/protocols/index.js";
 import type { ClientMessage, ServerMessage } from "../src/types/voice.js";
 import { waitFor } from "./helpers.js";
 
@@ -14,6 +16,8 @@ let app: Awaited<ReturnType<typeof buildApp>>;
 const testDeps = (overrides: Partial<AppDeps> = {}): AppDeps => ({
   stt: new MockPrisma(),
   tts: new MockTimbre(),
+  llm: new NoLLM(),
+  protocols: loadProtocols(),
   cases: new CaseStore(),
   voiceMode: "mock",
   voiceLab: true,
@@ -55,7 +59,7 @@ describe("voice gateway", () => {
   it("reports health without exposing secrets", async () => {
     app = await buildApp(testDeps());
     const response = await app.inject({ url: "/api/health" });
-    expect(response.json()).toEqual({ ok: true, voiceMode: "mock", voiceLab: true });
+    expect(response.json()).toEqual({ ok: true, voiceMode: "mock", voiceLab: true, llm: "rules" });
   });
 
   it("runs mic audio to transcript to spoken echo", async () => {
@@ -117,7 +121,8 @@ describe("voice gateway", () => {
     await voice.until("transcript.final");
     await waitFor(() => sos.metrics.turns === 1);
 
-    expect(voice.messages.filter((message) => message.type === "tts.start")).toHaveLength(1);
+    const spokenTexts = voice.messages.flatMap((message) => (message.type === "tts.start" ? [message.text] : []));
+    expect(spokenTexts).not.toContain("anything");
     expect(sos.metrics.activationToFirstLineMs).toBe(321);
     expect(cases.eventsFor(sos.id).map((event) => event.type)).toEqual(
       expect.arrayContaining(["sos_tap", "dispatch_requested", "ayu_utterance", "user_utterance"]),

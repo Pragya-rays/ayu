@@ -1,13 +1,18 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "ws";
 import type { STTAdapter, SttSession, TTSAdapter, TtsHandle } from "../adapters/types.js";
+import type { LLMAdapter } from "../adapters/llm.js";
 import type { CaseStore } from "../cases/store.js";
-import { SOS_OPENING } from "../dialogue/lines.js";
+import { SosMachine } from "../dialogue/sosMachine.js";
+import type { Protocol } from "../protocols/index.js";
+import type { ProtocolId } from "../types/triage.js";
 import type { ClientMessage, Lang, ServerMessage } from "../types/voice.js";
 
 export interface VoiceGatewayDeps {
   stt: STTAdapter;
   tts: TTSAdapter;
+  llm: LLMAdapter;
+  protocols: Map<ProtocolId, Protocol>;
   cases: CaseStore;
   voiceMode: "real" | "mock";
   voiceLab: boolean;
@@ -16,6 +21,7 @@ export interface VoiceGatewayDeps {
 
 const CLOSE_POLICY = 1008;
 const CLOSE_TRY_LATER = 1013;
+const PLAYBACK_MARGIN_MS = 150;
 
 export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDeps) {
   let activeSessions = 0;
@@ -45,10 +51,20 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
     let ttsCounter = 0;
     let lang: Lang = sosCase?.lang ?? "hinglish";
     let echo = false;
+    let machine: SosMachine | null = null;
+    let finishLine: (() => void) | null = null;
+    let lineTimer: NodeJS.Timeout | undefined;
+
+    const releaseLine = () => {
+      clearTimeout(lineTimer);
+      finishLine?.();
+      finishLine = null;
+    };
 
     const stopSpeaking = () => {
       tts?.cancel();
       tts = null;
+      releaseLine();
     };
 
     const speak = (text: string, speakLang: Lang, cacheable = false) => {
@@ -56,24 +72,52 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       const ttsId = ++ttsCounter;
       const startedAt = performance.now();
       let firstAudioMs: number | null = null;
+      let audioBytes = 0;
       send({ type: "tts.start", ttsId, sampleRate: deps.tts.sampleRate, text });
       if (sosCase) deps.cases.addEvent(sosCase.id, "ayu_utterance", { text });
+      const finished = new Promise<void>((resolve) => {
+        finishLine = resolve;
+      });
       const handle = deps.tts.synthesize({ text, lang: speakLang, cacheable }, {
         onAudio(data) {
           firstAudioMs ??= Math.round(performance.now() - startedAt);
+          audioBytes += Buffer.byteLength(data, "base64");
           send({ type: "tts.audio", ttsId, data });
         },
         onEnd() {
           if (tts === handle) tts = null;
           send({ type: "tts.end", ttsId, firstAudioMs });
+          // Audio streams faster than it plays, so hold the next line until this one has been heard.
+          const durationMs = (audioBytes / 2 / deps.tts.sampleRate) * 1000;
+          const remainingMs = durationMs - (performance.now() - startedAt) + PLAYBACK_MARGIN_MS;
+          lineTimer = setTimeout(releaseLine, Math.max(0, remainingMs));
         },
         onError({ code, message }) {
           if (tts === handle) tts = null;
           send({ type: "tts.end", ttsId, firstAudioMs });
           send({ type: "error", code, message, fatal: false });
+          releaseLine();
         },
       });
       tts = handle;
+      return finished;
+    };
+
+    const startMachine = (id: string) => {
+      machine = new SosMachine(id, lang, {
+        cases: deps.cases,
+        llm: deps.llm,
+        protocols: deps.protocols,
+        io: {
+          say: (text, { lang: lineLang, cacheable }) => speak(text, lineLang, cacheable),
+          interrupt() {
+            stopSpeaking();
+            send({ type: "tts.stop" });
+          },
+          publish: (state) => send({ type: "sos.state", ...state }),
+        },
+      });
+      void machine.begin();
     };
 
     const openStt = () => {
@@ -84,8 +128,12 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
         onTranscript({ text, latencyMs, detectedLang }) {
           send({ type: "transcript.final", text, latencyMs, detectedLang });
           if (!text.trim()) return;
-          if (sosCase) deps.cases.recordTurn(sosCase.id, text);
-          else if (echo) speak(text, lang);
+          if (sosCase) {
+            deps.cases.recordTurn(sosCase.id, text);
+            void machine?.onUtterance(text);
+          } else if (echo) {
+            void speak(text, lang);
+          }
         },
         onError: ({ code, message, fatal }) => send({ type: "error", code, message, fatal }),
         onClose: () => {
@@ -103,7 +151,10 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
             echo = Boolean(message.echo);
           }
           openStt();
-          if (sosCase) speak(SOS_OPENING[lang], lang, true);
+          if (sosCase) startMachine(sosCase.id);
+          break;
+        case "triage_answer":
+          if (["yes", "no", "unsure"].includes(message.answer)) void machine?.onAnswer(message.answer);
           break;
         case "commit":
           stt?.commit();
@@ -111,7 +162,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
         case "say": {
           if (!deps.voiceLab || sosCase) return;
           const text = message.text.trim().slice(0, deps.limits.maxTtsChars);
-          if (text) speak(text, message.lang ?? lang);
+          if (text) void speak(text, message.lang ?? lang);
           break;
         }
         case "stop_speaking":
@@ -148,6 +199,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       activeSessions--;
       clearTimeout(sessionTimer);
       unsubscribe();
+      machine?.stop();
       stopSpeaking();
       stt?.close();
     });

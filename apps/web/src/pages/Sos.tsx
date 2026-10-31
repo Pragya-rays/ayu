@@ -135,6 +135,8 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   }
 
   const lastYou = [...voice.lines].reverse().find((line) => line.who === "you");
+  const lastAyu = [...voice.lines].reverse().find((line) => line.who === "ayu");
+  const { sosState } = voice;
   const gpsLabel = gps === "ok" ? t("sosLocationOk") : gps === "failed" ? t("sosLocationFailed") : t("sosLocationWaiting");
 
   return (
@@ -144,13 +146,20 @@ export function Sos({ lang, t, audio, onExit }: Props) {
         <span>{t("sosAmbulanceRequested")}</span>
         <span className="simulated">{t("simulated")}</span>
         {voice.voiceMode === "mock" && <span className="simulated">MOCK</span>}
+        {sosState?.severity && <span className="severity" data-severity={sosState.severity}>{sosState.severity}</span>}
       </p>
 
       <div className="sos-center">
         {stage === "failed" ? (
           <p className="instruction" role="alert">{t("sosConnectionLost")}</p>
         ) : (
-          <p className="instruction" aria-live="assertive">{t("sosOpening")}</p>
+          <p className="instruction" aria-live="assertive">{lastAyu?.text ?? t("sosOpening")}</p>
+        )}
+        {stage === "active" && sosState?.protocolTitle && (
+          <p className="protocol-title">
+            {sosState.protocolTitle}
+            {sosState.placeholder && <span className="simulated"> · {t("sosPendingReview")}</span>}
+          </p>
         )}
         {gps === "failed" && <p className="sos-note">{t("sosNoGps")}</p>}
         {voice.error?.code === "mic_denied" && <p className="sos-note" role="alert">{t("sosMicDenied")}</p>}
@@ -163,6 +172,13 @@ export function Sos({ lang, t, audio, onExit }: Props) {
       </div>
 
       <div className="actions">
+        {stage === "active" && sosState?.question && (
+          <div className="answers" role="group">
+            <button className="button sos-answer" onClick={() => voice.answer("yes")}>{t("yes")}</button>
+            <button className="button sos-answer" onClick={() => voice.answer("no")}>{t("no")}</button>
+            <button className="button sos-answer" onClick={() => voice.answer("unsure")}>{t("notSure")}</button>
+          </div>
+        )}
         <a className="button sos-call" href="tel:112">{t("call112")}</a>
         <button className="button sos-cancel small" onClick={exit}>{t("sosCancel")}</button>
         <p className="sos-disclaimer">{t("disclaimer")}</p>

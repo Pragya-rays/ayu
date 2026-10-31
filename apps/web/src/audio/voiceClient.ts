@@ -1,3 +1,4 @@
+import type { TriageAnswer } from "../../../../server/src/types/triage";
 import type { ClientMessage, Lang, ServerMessage } from "../../../../server/src/types/voice";
 import { Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
 
@@ -93,6 +94,10 @@ export class VoiceClient {
     this.send({ type: "commit" });
   }
 
+  answer(answer: TriageAnswer) {
+    this.send({ type: "triage_answer", answer });
+  }
+
   stop() {
     this.socket?.close();
     this.releaseAudio();
@@ -134,6 +139,10 @@ export class VoiceClient {
       case "speech.start":
         if (this.options.bargeIn && this.player.isPlaying) this.interrupt();
         break;
+      case "tts.stop":
+        this.activeTtsId = 0;
+        this.player.stop();
+        return;
       case "tts.start":
         this.player.stop();
         this.player.reset();

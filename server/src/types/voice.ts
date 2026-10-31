@@ -1,7 +1,20 @@
 // Shared contract between the PWA and the voice gateway. Change only after telling the other person.
+import type { Severity } from "./case.js";
+import type { TriageAnswer, TriageQuestion } from "./triage.js";
+
 export type Lang = "hi" | "hinglish" | "en";
 
+export interface SosState {
+  stage: "opening" | "triage" | "protocol";
+  question: TriageQuestion | null;
+  severity: Severity | null;
+  protocolTitle: string | null;
+  /** True until a protocol's wording has passed medical review. */
+  placeholder: boolean;
+}
+
 export type ClientMessage =
+  | { type: "triage_answer"; answer: TriageAnswer }
   | { type: "start"; lang: Lang; echo?: boolean }
   | { type: "commit" }
   | { type: "say"; text: string; lang?: Lang }
@@ -17,4 +30,6 @@ export type ServerMessage =
   | { type: "tts.start"; ttsId: number; sampleRate: number; text: string }
   | { type: "tts.audio"; ttsId: number; data: string }
   | { type: "tts.end"; ttsId: number; firstAudioMs: number | null }
+  | { type: "tts.stop" }
+  | ({ type: "sos.state" } & SosState)
   | { type: "error"; code: string; message: string; fatal: boolean };

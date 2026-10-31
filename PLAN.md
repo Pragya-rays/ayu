@@ -11,11 +11,11 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | Phase 2, SOS Skeleton + Live Dashboard |
-| **Phase state** | Built and tested locally, on mocks and real Gnani. **Not deployed yet; waiting for team testing** |
+| **Current phase** | Phase 3, SOS Brain. Phase 2 accepted by the team with open items R16 and R17 |
+| **Phase state** | Built and tested locally on real Gnani and Gemini. **Not deployed; https://ayu-4801.onrender.com still runs Phase 2** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Deploy to Render with a fresh Gnani key, then team runs the Phase 2 checklist in section 7 |
-| **Blocked on** | Medical reviewer's qualification (D9), award and posting decisions (D3, D4) |
+| **Next action** | Team adds `GEMINI_API_KEY` on Render and approves the push, then tests Phase 3 on a phone |
+| **Blocked on** | Team approval to push, medical reviewer's qualification (D9), award and posting decisions (D3, D4), noisy clips before Phase 4 |
 
 ### If you are an AI agent resuming this project
 1. Read this section, then sections 3, 4, 10 and 11, then the current phase in section 7.
@@ -175,22 +175,42 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Failure paths: GPS denied, mic denied, server lost | Tested in Chrome |
 | Cancel SOS after activation, closes voice session | Tested |
 | Public-link guards: Voice Check off in production, voice only for active cases, SOS rate limit, active-case cap | Tested |
-| `render.yaml` | Written. **Never deployed** |
+| `render.yaml`, Render deployment | Tested (live) at https://ayu-4801.onrender.com with desktop Chrome: 12/12 checks |
 | Barge-in during SOS, triage, answers to speech | Not in this phase. Ayu listens and logs what it hears but does not respond yet |
 
 **Exit criteria (team to complete):**
 - [x] Push to a **public** GitHub repo (team decision 10-31)
-- [ ] Replace the Gnani key
-- [ ] Deploy on Render, set `GNANI_API_KEY` and `DASHBOARD_SECRET`
-- [ ] SOS on a real phone appears on a laptop dashboard over HTTPS, with real GPS
-- [ ] Hear the opening line in each language; confirm the transcript line shows your speech
-- [ ] Try cancel; confirm location accuracy looks believable
-- [ ] Test on a real Android and a real iPhone (carried over from Phase 1)
+- [x] Replace the Gnani key (10-31, smoke test 5/5 on the new key)
+- [x] Deploy on Render, set `GNANI_API_KEY` and `DASHBOARD_SECRET` (10-31: https://ayu-4801.onrender.com)
+- [x] SOS on a real phone appears on a laptop dashboard over HTTPS, with real GPS (iPhone XR Safari, ±7 m)
+- [x] Hear the opening line; transcript shows your speech (Hinglish on iPhone; Hindi and English lines not separately checked)
+- [x] Try cancel; reaches the dashboard
+- [ ] Carried forward: confirm the dashboard map pin matches the real location (R16)
+- [ ] Carried forward: test on a real Android phone
 **Tester warning:** the Call 112 button opens the real dialer. Do not press Call on the phone during testing.
 
-### Phase 3 — SOS Brain (Nov 2 – 3)
-**Goal:** the right fixed protocol for the right situation. Gemini adapter with schema-validated extraction and fallback, table-driven triage rules, protocol JSON schema + validator + engine, 5 protocols as clearly marked **placeholders** until reviewed, two-question triage including one-word answers, Yes / No / Not sure buttons, end-to-end for 3 emergencies.
-**Exit:** E1, E2, E3 scripts pick the correct protocol; invalid LLM output falls back to rules; LLM can never lower severity.
+### Phase 3 — SOS Brain (Nov 2 – 3) · **IN REVIEW**
+**Goal:** the right fixed protocol for the right situation.
+
+| Item | Status |
+|---|---|
+| Gemini adapter, strict schema validation, fallback to rules | Tested (live) |
+| Rule-based reading of Hindi/Hinglish answers and facts, works without the LLM | Tested |
+| Table-driven triage rules | Tested. **Needs medical review** |
+| 7 protocol files, validator, startup fails on bad or missing files | Tested. **All are placeholders with no first-aid text** |
+| SOS conversation: opening, two questions, protocol, Call 112 line on RED | Tested (live) in Chrome using buttons |
+| Yes / No / Not sure buttons, silence prompt, retry then move on | Tested |
+| Protocol switch when a caller reports a change | Tested in unit tests |
+| Severity on phone, triage and protocol on dashboard | Tested (live) |
+| Answering by real voice on a phone | **Not tested** |
+| Deployment of Phase 3 | **Not deployed**; needs `GEMINI_API_KEY` on Render and a push |
+
+**Exit criteria (team to complete):**
+- [ ] Add `GEMINI_API_KEY` on Render, then push
+- [ ] Run SOS on the phone answering by voice ("nahi", "haan") and by buttons
+- [ ] Say a full sentence (try a choking or chest pain case) and check the protocol on the dashboard
+- [ ] Confirm the map pin (R16) and try Android (R17)
+- [ ] Decide who reviews the rules and protocols (D9)
 
 ### Phase 4 — SOS Live Loop (Nov 3 – 4)
 **Goal:** the voice stays useful until help arrives. Location read-back, landmark/floor/gate fallback, verified/updated flags; dispatch accept, ETA, status, 60-second no-ack "call 112"; status + filler + re-check loop under the priority rules; barge-in; silent Prisma reconnect before the 15-minute cap; failure paths (STT empty, LLM timeout, TTS failure, GPS denied).
@@ -237,6 +257,10 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 | `server/src/adapters/` | `prisma.ts`, `timbre.ts`, `mocks.ts`, `types.ts` (STTAdapter, TTSAdapter), `index.ts` picks real or mock |
 | `server/src/voice/gateway.ts` | Per-session bridge between browser, Prisma and Timbre. A session is an SOS case, or Voice Check when the lab is on |
 | `server/src/cases/store.ts` | In-memory cases, event timeline, change notifications |
+| `server/src/dialogue/` | `sosMachine.ts` (SOS conversation), `triageRules.ts` (severity and protocol), `ruleExtract.ts` (Hindi/Hinglish rules), `lines.ts` |
+| `server/src/protocols/` | One JSON per protocol; `index.ts` validates at startup. `server/scripts/make-protocols.mjs` wrote the placeholders and never overwrites |
+| `server/src/adapters/llm.ts`, `prompts/extraction.ts` | Gemini extraction and the validator |
+| `server/scripts/` | Also `triage-scenarios.ts` (`npm run eval:triage -w server`, add `-- --rules` for rules only) and `gemini-check.ts` (compare models) |
 | `server/src/routes/` | `sos.ts` (start, location, cancel), `dashboard.ts` (login, cases, SSE stream), `rateLimit.ts` |
 | `server/src/dialogue/lines.ts` | Fixed spoken lines, shared with the web app |
 | `server/src/adapters/cachedTts.ts` | In-memory cache for fixed Timbre lines |
@@ -255,7 +279,7 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 Browser mic, downsample to 16 kHz, 1024-byte frames, `/ws/voice/:id`, Prisma stream. `transcript` goes to the browser and, in Voice Check, to Timbre WebSocket (raw 24 kHz PCM), base64 chunks back to the browser, gapless Web Audio playback. Each `tts.*` message carries `ttsId` so stale audio is dropped after an interrupt. Per-utterance Timbre socket: simple and cancellable, but pays a handshake each time. Measure it; fixed lines will be pre-generated in Phase 7 anyway.
 
 ### Environment variables
-Listed with comments in `.env.example`: `GNANI_API_KEY`, `VOICE_MODE`, `PRISMA_MODEL`, `PRISMA_FORMAT`, `PRISMA_KEYTERMS`, `PRISMA_MIN_SILENCE_MS`, `TIMBRE_MODEL`, `TIMBRE_VOICE_HI`, `TIMBRE_VOICE_HINGLISH`, `TIMBRE_VOICE_EN`, `TIMBRE_SPEED`, `VOICE_MAX_SESSIONS`, `VOICE_SESSION_MAX_SECONDS`, `VOICE_LAB`, `DASHBOARD_SECRET`, `PORT`. Optional `LOG_LEVEL`. `DASHBOARD_SECRET` is required when `NODE_ENV=production`; development default is `ayu-dev`. Later: `GEMINI_API_KEY`, `AUTO_ACK_SECONDS`, `PUBLIC_BASE_URL`.
+Listed with comments in `.env.example`: `GNANI_API_KEY`, `VOICE_MODE`, `PRISMA_MODEL`, `PRISMA_FORMAT`, `PRISMA_KEYTERMS`, `PRISMA_MIN_SILENCE_MS`, `TIMBRE_MODEL`, `TIMBRE_VOICE_HI`, `TIMBRE_VOICE_HINGLISH`, `TIMBRE_VOICE_EN`, `TIMBRE_SPEED`, `VOICE_MAX_SESSIONS`, `VOICE_SESSION_MAX_SECONDS`, `VOICE_LAB`, `DASHBOARD_SECRET`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `PORT`. Optional `LOG_LEVEL`, `GEMINI_TIMEOUT_MS`. `DASHBOARD_SECRET` is required when `NODE_ENV=production`; development default is `ayu-dev`. Without a Gemini key Ayu runs on rules alone. Later: `AUTO_ACK_SECONDS`, `PUBLIC_BASE_URL`.
 
 ### Dependencies (all within the Dev Guide stack)
 Server: `fastify`, `@fastify/websocket`, `@fastify/static`, `ws`. Web: `react`, `react-dom`. Dev: `typescript`, `tsx`, `vitest`, `vite`, `@vitejs/plugin-react`, type packages. Google Fonts per the guide. Node 22+ (built on v24.17).
@@ -284,6 +308,14 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I13 | 10-31 | Added `metrics.activationToFirstLineMs` to the shared Case type | `tapToFirstInstructionMs` is reserved for the first protocol step (Phase 3). This one excludes the deliberate 3-second countdown |
 | I14 | 10-31 | SOS opening line is cached in memory and generated at server start, ahead of Phase 7 pre-generation | Fast first line and saves credits. Spends one request per language per server start |
 | I15 | 10-31 | Dashboard password uses an HttpOnly cookie | Browser SSE cannot send custom headers |
+| I17 | 10-31 | Gemini model `gemini-3.1-flash-lite` | Measured on 7 scripted lines: 6/7, median 853 ms. `3.5-flash-lite` also 6/7 but slower (1001 ms). `2.5-flash` and `2.5-flash-lite` failed every call; cause not investigated |
+| I18 | 10-31 | **Added beyond the guide's draft, for medical review:** unresponsive with unknown breathing, or not breathing with unknown response, rate RED with `general` | The guide's code would rate these AMBER. Unknown must never read as good news |
+| I19 | 10-31 | Added a seventh protocol, `general` | The guide's rules return it but its list omits it |
+| I20 | 10-31 | Protocol selection is not a separate LLM call. Extraction's emergency type feeds the rules | Fewer calls, less latency, and the LLM stays further from the decision |
+| I21 | 10-31 | Answer buttons go over the voice socket, not `POST /api/sos/:id/triage` | Same connection, and the machine lives in that session. Offline fallback is Phase 7 |
+| I22 | 10-31 | A reply counts as yes/no only if short (4 words or fewer) or on the topic asked | Fixes E3: "बोल नहीं पा रहा" was read as "not responding" and chose the wrong protocol |
+| I23 | 10-31 | Only the opening and first question are generated at server start; other lines cache on first use | Limits Timbre requests per restart, since Render's free plan restarts often |
+| I24 | 10-31 | GREEN (false alarm) not built; Cancel SOS covers it | Keeps Phase 3 small. The Summary's "offer Normal mode" needs Phase 5 |
 | I16 | 10-31 | Repo is public. `CLAUDE.md` and `.claude/` are git-ignored, and commits carry no AI co-author line | Team instruction. Never commit keys, recordings or personal data |
 
 ---
@@ -299,7 +331,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | D5 | Add Playwright as a dev dependency for repeatable browser tests? | Optional. Worth it if the UI gets complex | Phase 2 |
 | D6 | DB for the case store | **Decided 10-31:** in memory (I10). Revisit only if demo history must survive restarts | Done |
 | D12 | Render's free plan takes about a minute to wake after 15 idle minutes, which a judge may hit. Paid plan for demo week, or keep it awake some other way? | Decide before submission; check Render pricing then. No paid choice without team approval | Phase 9 |
-| D7 | Gemini model and key owner | Choose at Phase 3 start; Gnani's Evon is not on the API | Before Phase 3 |
+| D7 | Gemini model and key | **Decided 10-31:** `gemini-3.1-flash-lite` (I17), free-tier key in `.env`. Google's rate-limit page does not state whether free-tier data is used for training, so only scripted test calls may pass through it | Done |
 | D8 | Reverse geocoding provider | Nominatim for demo scale, cached, never blocking dispatch | Before Phase 4 |
 | D9 | Who reviews the medical content? | **Answered 10-31:** a team member volunteered. **Open:** their medical qualification. The Summary (section 9.8) requires a qualified doctor or medical person, and "Reviewed by" must be truthful. If not qualified, an outside reviewer is still needed | **Now** |
 | D10 | Produce a 60-second cut for Demo Day Drop as well as the 2-3 minute plan? | Yes; one recording session can yield both | Phase 9 |
@@ -323,7 +355,13 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R10 | Public link can spend credits. Voice Check is now off in production, voice needs an active case, and SOS is rate limited, but anyone with the link can still start a real-voice SOS case | Low-Medium | Share the link only with testers until submission; watch credits |
 | R13 | No reconnect after a lost connection in SOS: the phone shows "Call 112" but the session stays dead | Medium | Phase 4 |
 | R14 | Dashboard cases disappear on server restart or Render sleep | Low-Medium | Accepted for now (I10); see D12 |
-| R15 | Gnani key appeared in an AI session | Low | Replace it before deployment |
+| R15 | Gnani key appeared in an AI session | Closed | Replaced 10-31 |
+| R16 | Dashboard map pin not confirmed against the real location. One team report said location was wrong, without detail | Medium | Check before Phase 4 location read-back, which depends on it |
+| R17 | Android and Hindi/English SOS lines not tested on real devices | Medium | Check during Phase 3 testing |
+| R18 | **SOS gives no real first aid yet.** Every protocol is a "pending medical review" line. Triage rules are unreviewed too | **High** | Needs a qualified reviewer (D9). No AI may write this content |
+| R19 | Mic is off while Ayu speaks, so a caller talking over the opening or a question is not heard | Medium | Barge-in in Phase 4. Buttons work meanwhile |
+| R20 | First instruction takes about 3.7 s after a tap on buttons locally, mostly because both questions are spoken first. Voice answers will add more | Medium | Measure on phones; judges will see this number |
+| R21 | Real voice answers untested; ASR errors and noise may produce wrong yes/no readings | **High** | Phase 3 phone test, noisy clips, Phase 8 |
 | R11 | Hindi and Hinglish copy is unreviewed draft | Low | Phase 7 |
 | R12 | The original docs are not updated with section 4 and 5 findings | Low | PLAN.md overrides; update docs after team agrees D3 |
 
@@ -349,7 +387,24 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - Two-browser Chrome run, phone-sized context plus desktop dashboard, simulated GPS and fake mic: **17/17 in mock mode, 17/17 with real Gnani**. Covers dashboard login, Talk disabled in production, countdown cancel, case reaching the dashboard, GPS and accuracy, SIMULATED labels, Call 112 link, audio streamed, cancel, GPS denied, server killed mid-SOS, mic denied, locked API.
 - Real run: 747 ms from countdown end to first audio (cached line, localhost, not a phone network).
 - Only console error in the real run: the expected refused connection after the server was killed on purpose.
-- **Not tested:** Prisma transcribing real speech during SOS (the test tone is not speech, so 0 transcripts is expected), real phones, real GPS, wake lock, Render deployment.
+- **Not tested:** Prisma transcribing real speech during SOS (the test tone is not speech, so 0 transcripts is expected), real phones, real GPS, wake lock.
+
+**2026-10-31, Phase 2 (deployed on Render, desktop Chrome, simulated GPS and mic)**
+- 12/12: real voice mode, voice lab off, cases and stream locked, `/dashboard` loads, Talk disabled, secure voice socket, opening audio, Prisma connected, mic frames sent, location shown, no voice errors, cancel returns home. No console errors.
+- New key smoke test locally: 5/5.
+
+**2026-10-31, Phase 2 (team test, real iPhone XR + Lenovo, deployed site)**
+- Opening line heard, spoken Hinglish sentence transcribed correctly on the phone, cancel reached the dashboard.
+- Location check was first reported as "no". Follow-up: phone showed `Location ✓`, and the dashboard showed coordinates at ±7 m with cases arriving correctly. The map pin itself was not confirmed, so the original "no" is unexplained (R16).
+- First line on the real phone network: 1162 ms and 1956 ms from countdown end to first audio.
+- Team accepted Phase 2 and chose to move on.
+
+**2026-10-31, Phase 3 (local production build, real Gnani and Gemini)**
+- `npm run typecheck`, `npm run build`: pass. `npm test`: 101 of 101 (server 95, web 6).
+- E1-E5 as text through the real SOS machine: **5/5 with Gemini, 5/5 rules only**. First run was 4/5: E3 chose the collapse protocol instead of choking. Fixed (I22). No real speech or ASR involved.
+- Two-browser Chrome run with buttons, three paths (CPR, collapse, AMBER general): 13/13, no page errors. First line 321-721 ms; first instruction 3.6-3.8 s.
+- Only spoken lines were fixed ones; a unit test confirms LLM text cannot be spoken.
+- **Not tested:** answering by real voice, phones, noise, this build on Render.
 
 ---
 
@@ -358,3 +413,4 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - **2026-10-31** Created PLAN.md. Read live Gnani docs and challenge page; recorded differences. Built Phase 1 foundation on mocks. Copied source docs to `docs/`.
 - **2026-10-31** First live Gnani runs. Fixed the Prisma streaming language header. Smoke test 5/5. R1 largely cleared.
 - **2026-10-31** Team confirmed real voice works and approved Phase 2. Built SOS flow, case store, live dashboard, public-link guards and `render.yaml`.
+- **2026-10-31** Deployed Phase 2 to Render; iPhone XR test passed apart from the map pin (R16). Built Phase 3: Gemini extraction, triage rules, protocol engine with placeholders, SOS conversation, answer buttons.

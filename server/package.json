@@ -10,7 +10,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/gnani-smoke.ts",
-    "spike": "tsx scripts/gnani-spike.ts"
+    "spike": "tsx scripts/gnani-spike.ts",
+    "gemini:check": "tsx scripts/gemini-check.ts",
+    "eval:triage": "tsx scripts/triage-scenarios.ts"
   },
   "dependencies": {
     "@fastify/static": "^10.1.8",

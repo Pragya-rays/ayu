@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Case, CaseEvent } from "../types/case.js";
+import type { Case, CaseEvent, Severity } from "../types/case.js";
 import type { Lang } from "../types/voice.js";
 
 type LocationInput = { lat: number; lng: number; accuracyM: number };
@@ -75,6 +75,31 @@ export class CaseStore {
   recordFirstLine(id: string, activationToFirstLineMs: number) {
     return this.mutate(id, (item) => {
       item.metrics.activationToFirstLineMs ??= activationToFirstLineMs;
+    });
+  }
+
+  updateTriage(id: string, triage: Partial<Case["triage"]>) {
+    return this.mutate(id, (item) => {
+      item.triage = { ...item.triage, ...triage };
+    });
+  }
+
+  setAssessment(id: string, severity: Severity, protocolId: string) {
+    return this.mutate(id, (item) => {
+      if (item.severity !== severity) {
+        this.addEvent(id, "severity_changed", { from: item.severity, to: severity });
+        item.severity = severity;
+      }
+      if (item.protocolId !== protocolId) {
+        this.addEvent(id, "protocol_selected", { protocolId });
+        item.protocolId = protocolId;
+      }
+    });
+  }
+
+  recordFirstInstruction(id: string) {
+    return this.mutate(id, (item) => {
+      item.metrics.tapToFirstInstructionMs ??= Date.now() - Date.parse(item.createdAt);
     });
   }
 

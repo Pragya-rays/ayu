@@ -10,6 +10,8 @@ function timeSince(iso: string, now: number) {
   return minutes ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
 }
 
+const yesNo = (value: boolean | undefined) => (value === undefined ? t.dashUnknown : value ? t.yes : t.no);
+
 function CaseRow({ item, now }: { item: Case; now: number }) {
   const { location } = item;
   return (
@@ -29,9 +31,15 @@ function CaseRow({ item, now }: { item: Case; now: number }) {
       ) : (
         <p className="case-warning">{t.dashNoLocation}</p>
       )}
+      <p>
+        {t.dashResponding}: <strong>{yesNo(item.triage.responsive)}</strong> · {t.dashBreathing}: <strong>{yesNo(item.triage.breathingNormally)}</strong>
+        {item.triage.emergencyType && <> · {t.dashType}: <strong>{item.triage.emergencyType}</strong></>}
+      </p>
+      {item.protocolId && <p>{t.dashProtocol}: <strong>{item.protocolId}</strong></p>}
       <p className="mono">
         {item.lang} · {t.dashTurns}: {item.metrics.turns}
         {item.metrics.activationToFirstLineMs !== undefined && ` · ${t.dashFirstLine}: ${item.metrics.activationToFirstLineMs} ms`}
+        {item.metrics.tapToFirstInstructionMs !== undefined && ` · ${t.dashFirstInstruction}: ${(item.metrics.tapToFirstInstructionMs / 1000).toFixed(1)} s`}
       </p>
     </li>
   );

@@ -1,0 +1,30 @@
+{
+  "id": "stroke",
+  "title": {
+    "en": "Stroke signs",
+    "hi": "स्ट्रोक के लक्षण",
+    "hinglish": "Stroke ke lakshan"
+  },
+  "severity": "RED",
+  "status": "placeholder",
+  "triggers": [
+    "emergencyType=stroke_signs"
+  ],
+  "sources": [],
+  "reviewedBy": "TODO",
+  "reviewedAt": "TODO",
+  "steps": [
+    {
+      "id": "s1",
+      "text": {
+        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
+        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
+        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+      },
+      "pauseAfterMs": 1500,
+      "interruptible": false
+    }
+  ],
+  "doNot": [],
+  "callEmergencyLine": true
+}

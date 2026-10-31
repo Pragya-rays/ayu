@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";
 import Fastify from "fastify";
+import { NoLLM } from "./adapters/llm.js";
 import { registerDashboardRoutes } from "./routes/dashboard.js";
 import { registerSosRoutes } from "./routes/sos.js";
 import { registerVoiceGateway, type VoiceGatewayDeps } from "./voice/gateway.js";
@@ -19,7 +20,8 @@ export async function buildApp(deps: AppDeps) {
   });
   await app.register(fastifyWebsocket, { options: { maxPayload: 64 * 1024 } });
 
-  app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab }));
+  const llm = deps.llm instanceof NoLLM ? "rules" : "gemini";
+  app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab, llm }));
   registerVoiceGateway(app, deps);
   registerSosRoutes(app, deps.cases);
   registerDashboardRoutes(app, deps.cases, { secret: deps.dashboardSecret, secureCookies: deps.production });

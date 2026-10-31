@@ -1,10 +1,12 @@
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CachedTts } from "../src/adapters/cachedTts.js";
+import { NoLLM } from "../src/adapters/llm.js";
 import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import type { TTSAdapter, TtsEvents } from "../src/adapters/types.js";
 import { buildApp } from "../src/app.js";
 import { CaseStore } from "../src/cases/store.js";
+import { loadProtocols } from "../src/protocols/index.js";
 import { waitFor } from "./helpers.js";
 
 const position = { lat: 26.85, lng: 80.99, accuracyM: 25 };
@@ -24,6 +26,8 @@ beforeEach(async () => {
   app = await buildApp({
     stt: new MockPrisma(),
     tts: new MockTimbre(),
+    llm: new NoLLM(),
+    protocols: loadProtocols(),
     cases,
     voiceMode: "mock",
     voiceLab: false,

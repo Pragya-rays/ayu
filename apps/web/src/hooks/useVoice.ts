@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Lang, ServerMessage } from "../../../../server/src/types/voice";
+import type { TriageAnswer } from "../../../../server/src/types/triage";
+import type { Lang, ServerMessage, SosState } from "../../../../server/src/types/voice";
 import { VoiceClient } from "../audio/voiceClient";
 
 export type VoiceStatus = "idle" | "connecting" | "listening" | "hearing" | "processing" | "speaking";
@@ -23,6 +24,7 @@ export function useVoice(lang: Lang) {
   const [voiceMode, setVoiceMode] = useState<"real" | "mock" | null>(null);
   const [error, setError] = useState<VoiceError | null>(null);
   const [latency, setLatency] = useState<{ sttMs?: number; ttsMs?: number }>({});
+  const [sosState, setSosState] = useState<SosState | null>(null);
   const client = useRef<VoiceClient | null>(null);
   const lineId = useRef(0);
 
@@ -55,6 +57,9 @@ export function useVoice(lang: Lang) {
       case "tts.end":
         setStatus((current) => (current === "speaking" ? "listening" : current));
         setLatency((current) => ({ ...current, ttsMs: message.firstAudioMs ?? undefined }));
+        break;
+      case "sos.state":
+        setSosState(message);
         break;
       case "error":
         setError({ code: message.code, message: message.message, fatal: message.fatal });
@@ -96,8 +101,9 @@ export function useVoice(lang: Lang) {
   }, []);
 
   const say = useCallback((text: string) => client.current?.say(text), []);
+  const answer = useCallback((value: TriageAnswer) => client.current?.answer(value), []);
 
   useEffect(() => () => client.current?.stop(), []);
 
-  return { status, lines, level, voiceMode, error, latency, start, stop, say };
+  return { status, lines, level, voiceMode, error, latency, sosState, start, stop, say, answer };
 }
