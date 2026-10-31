@@ -1,6 +1,9 @@
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CachedTts } from "../src/adapters/cachedTts.js";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { audioFileName, CachedTts } from "../src/adapters/cachedTts.js";
 import { NoLLM } from "../src/adapters/llm.js";
 import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import type { TTSAdapter, TtsEvents } from "../src/adapters/types.js";
@@ -145,6 +148,41 @@ describe("CachedTts", () => {
     await waitFor(listener.ended);
     expect(listener.audio).toEqual(["AAA="]);
     expect(backend.synthesize).toHaveBeenCalledTimes(1);
+  });
+
+  describe("pre-generated audio", () => {
+    const voice = { model: "m", speed: 1, sampleRate: 24000, voices: { hi: "a", hinglish: "b", en: "c" } };
+    const folder = () => {
+      const dir = mkdtempSync(join(tmpdir(), "ayu-audio-"));
+      writeFileSync(join(dir, "manifest.json"), JSON.stringify(voice));
+      writeFileSync(join(dir, audioFileName("hi", "line")), Buffer.alloc(20000, 1));
+      return dir;
+    };
+
+    it("plays stored lines with no Timbre request, intact across chunks", async () => {
+      const backend = inner();
+      const tts = new CachedTts(backend);
+      expect(tts.loadPregenerated(voice, folder())).toBe(1);
+      const listener = capture();
+      tts.synthesize({ text: "line", lang: "hi", cacheable: true }, listener.events);
+      await waitFor(listener.ended);
+      expect(backend.synthesize).not.toHaveBeenCalled();
+      const bytes = listener.audio.reduce((sum, chunk) => sum + Buffer.from(chunk, "base64").length, 0);
+      expect(bytes).toBe(20000);
+    });
+
+    it("ignores stored audio made with a different voice", () => {
+      const tts = new CachedTts(inner());
+      expect(tts.loadPregenerated({ ...voice, voices: { ...voice.voices, hi: "other" } }, folder())).toBe(0);
+    });
+
+    it("falls back to Timbre for a line with no file, or with no audio folder", () => {
+      const backend = inner();
+      const tts = new CachedTts(backend);
+      expect(tts.loadPregenerated(voice, join(tmpdir(), "ayu-missing-folder"))).toBe(0);
+      tts.synthesize({ text: "new line", lang: "hi", cacheable: true }, capture().events);
+      expect(backend.synthesize).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("does not cache dynamic text or failed lines", async () => {

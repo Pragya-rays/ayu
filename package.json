@@ -12,6 +12,7 @@
     "start": "npm run start -w server",
     "test": "npm run test -w server && npm run test -w apps/web",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w apps/web",
+    "gen:audio": "npm run gen:audio -w server",
     "gnani:smoke": "npm run smoke -w server",
     "gnani:spike": "npm run spike -w server"
   }

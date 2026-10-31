@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang } from "../../../../server/src/types/voice";
+import { fetchLocalLine, playLocalLine } from "../audio/voiceClient";
 import { useVoice } from "../hooks/useVoice";
 import type { StringKey } from "../i18n/strings";
 
@@ -56,9 +57,17 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   const positionSent = useRef(false);
   const voiceStarted = useRef(false);
   const exiting = useRef(false);
+  const openingAudio = useRef<ArrayBuffer | null>(null);
   const { start: startVoice, stop: stopVoice } = voice;
 
   useWakeLock(stage === "active");
+
+  // The countdown is time to fetch the opening, so it can play the moment the countdown ends.
+  useEffect(() => {
+    void fetchLocalLine(`/audio/opening-${lang}.pcm`).then((pcm) => {
+      openingAudio.current = pcm;
+    });
+  }, [lang]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -82,6 +91,10 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   const activate = useCallback(async () => {
     const activatedAt = performance.now();
     setStage("active");
+    const pcm = openingAudio.current;
+    const localOpening = pcm
+      ? { finished: playLocalLine(audio, pcm), startedAfterMs: performance.now() - activatedAt }
+      : undefined;
     try {
       positionSent.current = position.current !== null;
       const { caseId: id } = await post("/api/sos/start", { lang, consent: true, ...position.current });
@@ -90,7 +103,7 @@ export function Sos({ lang, t, audio, onExit }: Props) {
         positionSent.current = true;
         void post(`/api/sos/${id}/location`, position.current).catch(() => undefined);
       }
-      await startVoice(audio, { echo: false, bargeIn: false, session: { caseId: id, activatedAt } });
+      await startVoice(audio, { echo: false, bargeIn: false, session: { caseId: id, activatedAt, localOpening } });
     } catch {
       setStage("failed");
     }

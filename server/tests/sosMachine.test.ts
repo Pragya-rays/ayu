@@ -69,6 +69,13 @@ describe("SosMachine", () => {
     expect(sos.metrics.tapToFirstInstructionMs).toBeDefined();
   });
 
+  it("skips the opening when the phone already played it, and still logs it", async () => {
+    const { machine, spoken, cases, sos } = setup();
+    await machine.begin(true);
+    expect(spoken).toEqual([ASK_RESPONSIVE[LANG]]);
+    expect(cases.eventsFor(sos.id).map((event) => event.payload.text)).toContain(SOS_OPENING[LANG]);
+  });
+
   it("works entirely from buttons, with no speech", async () => {
     const { machine, sos } = setup();
     await machine.begin();

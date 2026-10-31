@@ -103,7 +103,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       return finished;
     };
 
-    const startMachine = (id: string) => {
+    const startMachine = (id: string, openingPlayed: boolean) => {
       machine = new SosMachine(id, lang, {
         cases: deps.cases,
         llm: deps.llm,
@@ -117,7 +117,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
           publish: (state) => send({ type: "sos.state", ...state }),
         },
       });
-      void machine.begin();
+      void machine.begin(openingPlayed);
     };
 
     const openStt = () => {
@@ -151,7 +151,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
             echo = Boolean(message.echo);
           }
           openStt();
-          if (sosCase) startMachine(sosCase.id);
+          if (sosCase) startMachine(sosCase.id, Boolean(message.openingPlayed));
           break;
         case "triage_answer":
           if (["yes", "no", "unsure"].includes(message.answer)) void machine?.onAnswer(message.answer);

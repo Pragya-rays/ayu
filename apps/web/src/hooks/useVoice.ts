@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TriageAnswer } from "../../../../server/src/types/triage";
 import type { Lang, ServerMessage, SosState } from "../../../../server/src/types/voice";
-import { VoiceClient } from "../audio/voiceClient";
+import { VoiceClient, type VoiceSession } from "../audio/voiceClient";
 
 export type VoiceStatus = "idle" | "connecting" | "listening" | "hearing" | "processing" | "speaking";
 
@@ -69,7 +69,7 @@ export function useVoice(lang: Lang) {
 
   const start = useCallback(async (
     context: AudioContext,
-    options: { echo: boolean; bargeIn: boolean; session?: { caseId: string; activatedAt: number } },
+    options: { echo: boolean; bargeIn: boolean; session?: VoiceSession },
   ) => {
     setError(null);
     setStatus("connecting");

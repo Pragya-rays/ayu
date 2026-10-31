@@ -15,7 +15,7 @@ export interface SosState {
 
 export type ClientMessage =
   | { type: "triage_answer"; answer: TriageAnswer }
-  | { type: "start"; lang: Lang; echo?: boolean }
+  | { type: "start"; lang: Lang; echo?: boolean; openingPlayed?: boolean }
   | { type: "commit" }
   | { type: "say"; text: string; lang?: Lang }
   | { type: "stop_speaking" }

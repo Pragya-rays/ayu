@@ -44,6 +44,13 @@ class PcmPlayer {
   }
 }
 
+export interface VoiceSession {
+  caseId: string;
+  activatedAt: number;
+  /** Set when the opening already played from the phone's copy, so the server continues after it. */
+  localOpening?: { startedAfterMs: number; finished: Promise<void> };
+}
+
 export interface VoiceClientOptions {
   lang: Lang;
   echo: boolean;
@@ -68,12 +75,19 @@ export class VoiceClient {
   }
 
   /** Opens the session first, so Ayu can still speak if the microphone is refused. */
-  async start(session?: { caseId: string; activatedAt: number }) {
-    this.activatedAt = session?.activatedAt ?? null;
+  async start(session?: VoiceSession) {
+    this.activatedAt = session?.localOpening ? null : session?.activatedAt ?? null;
     const socket = new WebSocket(this.socketUrl(session?.caseId ?? crypto.randomUUID()));
     this.socket = socket;
 
-    socket.onopen = () => this.send({ type: "start", lang: this.options.lang, echo: this.options.echo });
+    socket.onopen = async () => {
+      const opening = session?.localOpening;
+      if (opening) {
+        this.send({ type: "first_audio", ms: opening.startedAfterMs });
+        await opening.finished;
+      }
+      this.send({ type: "start", lang: this.options.lang, echo: this.options.echo, openingPlayed: Boolean(opening) });
+    };
     socket.onmessage = (event) => this.handleMessage(JSON.parse(event.data) as ServerMessage);
     socket.onclose = () => {
       this.releaseAudio();
@@ -171,6 +185,35 @@ export class VoiceClient {
     this.stream = null;
     if (this.context.state !== "closed") void this.context.close().catch(() => undefined);
   }
+}
+
+const LOCAL_AUDIO_RATE = 24000;
+
+/** Downloads a pre-generated line ahead of time. Failure is fine: the server then speaks it instead. */
+export async function fetchLocalLine(url: string): Promise<ArrayBuffer | null> {
+  try {
+    const response = await fetch(url);
+    // A missing file comes back as the app's HTML page, which must never be played as audio.
+    const isHtml = response.headers.get("content-type")?.includes("text/html");
+    return response.ok && !isHtml ? await response.arrayBuffer() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Plays a downloaded line and resolves when it ends. */
+export function playLocalLine(context: AudioContext, pcm: ArrayBuffer) {
+  const samples = new Int16Array(pcm, 0, Math.floor(pcm.byteLength / 2));
+  const buffer = context.createBuffer(1, samples.length, LOCAL_AUDIO_RATE);
+  buffer.copyToChannel(Float32Array.from(samples, (sample) => sample / 0x8000), 0);
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.connect(context.destination);
+  const finished = new Promise<void>((resolve) => {
+    source.onended = () => resolve();
+  });
+  source.start();
+  return finished;
 }
 
 /** Call synchronously from a tap handler. */

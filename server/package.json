@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/gnani-smoke.ts",
     "spike": "tsx scripts/gnani-spike.ts",
+    "gen:audio": "tsx scripts/gen-audio.ts",
     "gemini:check": "tsx scripts/gemini-check.ts",
     "eval:triage": "tsx scripts/triage-scenarios.ts"
   },

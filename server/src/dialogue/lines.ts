@@ -37,3 +37,5 @@ export const CALL_112: Record<Lang, string> = {
   hi: "कृपया अभी 112 पर भी कॉल करें।",
   hinglish: "Kripya abhi 112 par bhi call karein.",
 };
+
+export const FIXED_LINES = [SOS_OPENING, ASK_RESPONSIVE, ASK_BREATHING, SAY_AGAIN, ARE_YOU_THERE, CALL_112];

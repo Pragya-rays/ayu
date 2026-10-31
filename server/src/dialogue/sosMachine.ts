@@ -45,9 +45,11 @@ export class SosMachine {
     private readonly deps: { cases: CaseStore; llm: LLMAdapter; protocols: Map<ProtocolId, Protocol>; io: SosIo },
   ) {}
 
-  begin() {
+  /** `openingPlayed` means the phone already played the opening from its local copy. */
+  begin(openingPlayed = false) {
     return this.run(async () => {
-      await this.speak(SOS_OPENING[this.lang]);
+      if (openingPlayed) this.deps.cases.addEvent(this.caseId, "ayu_utterance", { text: SOS_OPENING[this.lang], local: true });
+      else await this.speak(SOS_OPENING[this.lang]);
       await this.askNext();
     });
   }
