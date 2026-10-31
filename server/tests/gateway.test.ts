@@ -8,8 +8,11 @@ import { buildApp, type AppDeps } from "../src/app.js";
 import { AddressLookup } from "../src/cases/addresses.js";
 import { CaseStore } from "../src/cases/store.js";
 import { ASK_BREATHING, SOS_OPENING } from "../src/dialogue/lines.js";
+import { NORMAL_GREETING } from "../src/dialogue/normalContent.js";
 import { DispatchSimulator } from "../src/dispatch/simulator.js";
+import { loadHomeCare } from "../src/homecare/index.js";
 import { loadProtocols } from "../src/protocols/index.js";
+import { NormalSessions } from "../src/routes/normal.js";
 import type { ClientMessage, ServerMessage } from "../src/types/voice.js";
 import { waitFor } from "./helpers.js";
 
@@ -21,6 +24,8 @@ const testDeps = ({ cases = new CaseStore(), ...overrides }: Partial<AppDeps> = 
   tts: new MockTimbre(),
   llm: new NoLLM(),
   protocols: loadProtocols(),
+  homeCare: loadHomeCare(),
+  normalSessions: new NormalSessions(),
   cases,
   addresses: new AddressLookup(cases, new NoGeocoder()),
   dispatch: new DispatchSimulator(cases, { ackTimeoutMs: 60000, autoAckSeconds: 0, simMinuteMs: 60000, minEtaMinutes: 6, maxEtaMinutes: 14 }),
@@ -186,6 +191,28 @@ describe("voice gateway", () => {
     second.send({ type: "start", lang: "en" });
     await waitFor(() => second.messages.some((message) => message.type === "sos.state" && message.question === "breathing"), 5000);
     expect(second.messages.find((message) => message.type === "tts.start")).toMatchObject({ text: ASK_BREATHING.en });
+  });
+
+  it("runs Normal mode only with a real session id, using typed input", async () => {
+    const normalSessions = new NormalSessions();
+    const sessionId = normalSessions.create()!;
+    const voice = await connect({ normalSessions, voiceLab: false }, sessionId);
+    await voice.until("session.ready");
+    voice.send({ type: "start", lang: "en" });
+    await voice.until("tts.start");
+    expect(voice.messages.find((message) => message.type === "tts.start")).toMatchObject({ text: NORMAL_GREETING.en });
+    voice.send({ type: "normal_text", text: "seene mein dard hai" });
+    await waitFor(() => voice.messages.some((message) => message.type === "normal.state" && message.offerSos), 5000);
+    voice.send({ type: "say", text: "anything" });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(voice.messages.some((message) => message.type === "tts.start" && message.text === "anything")).toBe(false);
+
+    voice.socket.close();
+    await waitFor(() => voice.socket.readyState === voice.socket.CLOSED);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const stranger = client(voice.socket.url.replace(sessionId, "made-up-id"));
+    await stranger.until("error");
+    expect(stranger.messages[0]).toMatchObject({ code: "not_allowed" });
   });
 
   it("rejects sessions over the limit and frees the slot on close", async () => {

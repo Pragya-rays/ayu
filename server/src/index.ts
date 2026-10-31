@@ -6,9 +6,12 @@ import { AddressLookup } from "./cases/addresses.js";
 import { CaseStore } from "./cases/store.js";
 import { config } from "./config.js";
 import { DispatchSimulator } from "./dispatch/simulator.js";
+import { loadHomeCare } from "./homecare/index.js";
 import { loadProtocols } from "./protocols/index.js";
+import { NormalSessions } from "./routes/normal.js";
 
 const protocols = loadProtocols();
+const homeCare = loadHomeCare();
 const { stt, tts } = createVoiceAdapters();
 const preloaded = config.voiceMode === "real" ? tts.loadPregenerated(config.timbre) : 0;
 const llm = config.gemini.apiKey ? new GeminiAdapter(config.gemini) : new NoLLM();
@@ -19,6 +22,8 @@ const app = await buildApp({
   tts,
   llm,
   protocols,
+  homeCare,
+  normalSessions: new NormalSessions(),
   cases,
   addresses: new AddressLookup(cases, geocoder),
   dispatch: new DispatchSimulator(cases, config.dispatch),

@@ -3,6 +3,7 @@ import type { Lang } from "../../../server/src/types/voice";
 import { unlockAudio } from "./audio/voiceClient";
 import { strings, type StringKey } from "./i18n/strings";
 import { Dashboard } from "./pages/Dashboard";
+import { Normal } from "./pages/Normal";
 import { Sos } from "./pages/Sos";
 import { VoiceCheck } from "./pages/VoiceCheck";
 
@@ -43,8 +44,8 @@ function LanguageToggle({ lang, onChange, label }: { lang: Lang; onChange(lang: 
 function PhoneApp() {
   const [lang, setLang] = useState<Lang>((readStored("ayu.lang") as Lang | null) ?? "hinglish");
   const [consented, setConsented] = useState(readStored("ayu.consentAt") !== null);
-  const [screen, setScreen] = useState<"home" | "voice">("home");
   const [sosAudio, setSosAudio] = useState<AudioContext | null>(null);
+  const [talkAudio, setTalkAudio] = useState<AudioContext | null>(null);
   const [voiceLab, setVoiceLab] = useState(false);
   const t = (key: StringKey) => strings[lang][key];
 
@@ -86,7 +87,21 @@ function PhoneApp() {
   }
 
   if (sosAudio) return <Sos lang={lang} t={t} audio={sosAudio} onExit={() => setSosAudio(null)} />;
-  if (screen === "voice") return <VoiceCheck lang={lang} t={t} onBack={() => setScreen("home")} />;
+  if (talkAudio) {
+    return (
+      <Normal
+        lang={lang}
+        t={t}
+        audio={talkAudio}
+        onBack={() => setTalkAudio(null)}
+        onSwitchToSos={() => {
+          setTalkAudio(null);
+          setSosAudio(unlockAudio());
+        }}
+      />
+    );
+  }
+  if (voiceLab && location.pathname === "/voice-check") return <VoiceCheck lang={lang} t={t} onBack={() => location.assign("/")} />;
 
   return (
     <div className="paper">
@@ -100,8 +115,7 @@ function PhoneApp() {
           <p>{t("subline")}</p>
         </div>
         <div className="actions">
-          <button className="button ink" disabled={!voiceLab} onClick={() => setScreen("voice")}>{t("talk")}</button>
-          {!voiceLab && <p className="mono">{t("talkPending")}</p>}
+          <button className="button ink" onClick={() => setTalkAudio(unlockAudio())}>{t("talk")}</button>
           <button className="button sos" onClick={() => setSosAudio(unlockAudio())}>{t("sos")}</button>
           <p className="mono">{t("disclaimer")}</p>
         </div>

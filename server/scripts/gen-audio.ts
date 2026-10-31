@@ -6,6 +6,8 @@ import { AUDIO_DIR, audioFileName } from "../src/adapters/cachedTts.js";
 import { TimbreAdapter } from "../src/adapters/timbre.js";
 import { config } from "../src/config.js";
 import { FIXED_LINES, SOS_OPENING } from "../src/dialogue/lines.js";
+import { NORMAL_FIXED_LINES } from "../src/dialogue/normalContent.js";
+import { loadHomeCare } from "../src/homecare/index.js";
 import { loadProtocols } from "../src/protocols/index.js";
 import type { Lang } from "../src/types/voice.js";
 
@@ -14,7 +16,9 @@ if (!apiKey) throw new Error("Set GNANI_API_KEY in .env first");
 
 const LANGS: Lang[] = ["en", "hi", "hinglish"];
 const stepLines = [...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text));
-const lines = LANGS.flatMap((lang) => [...new Set([...FIXED_LINES, ...stepLines].map((line) => line[lang]))].map((text) => ({ lang, text })));
+const cardLines = [...loadHomeCare().values()].flatMap((card) => card.steps);
+const allLines = [...FIXED_LINES, ...NORMAL_FIXED_LINES, ...stepLines, ...cardLines];
+const lines = LANGS.flatMap((lang) => [...new Set(allLines.map((line) => line[lang]))].map((text) => ({ lang, text })));
 
 const adapter = new TimbreAdapter({ url: config.gnani.ttsUrl, apiKey, ...config.timbre });
 const webAudioDir = resolve(import.meta.dirname, "../../apps/web/public/audio");

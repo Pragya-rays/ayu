@@ -6,6 +6,7 @@ import Fastify from "fastify";
 import { NoLLM } from "./adapters/llm.js";
 import type { DispatchSimulator } from "./dispatch/simulator.js";
 import { registerDashboardRoutes } from "./routes/dashboard.js";
+import { registerNormalRoutes } from "./routes/normal.js";
 import { registerSosRoutes } from "./routes/sos.js";
 import { registerVoiceGateway, type VoiceGatewayDeps } from "./voice/gateway.js";
 
@@ -26,6 +27,7 @@ export async function buildApp(deps: AppDeps) {
   app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab, llm }));
   registerVoiceGateway(app, deps);
   registerSosRoutes(app, deps);
+  registerNormalRoutes(app, deps.normalSessions);
   registerDashboardRoutes(app, deps.cases, deps.dispatch, { secret: deps.dashboardSecret, secureCookies: deps.production });
 
   const webDist = resolve(import.meta.dirname, "../../apps/web/dist");

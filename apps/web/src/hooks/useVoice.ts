@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TriageAnswer } from "../../../../server/src/types/triage";
-import type { Lang, ServerMessage, SosState } from "../../../../server/src/types/voice";
+import type { NormalState } from "../../../../server/src/types/normal";
+import type { ClientMessage, Lang, ServerMessage, SosState } from "../../../../server/src/types/voice";
 import { VoiceClient, type VoiceSession } from "../audio/voiceClient";
 
 export type VoiceStatus = "idle" | "connecting" | "listening" | "hearing" | "processing" | "speaking";
@@ -26,6 +27,7 @@ export function useVoice(lang: Lang) {
   const [latency, setLatency] = useState<{ sttMs?: number; ttsMs?: number }>({});
   const [sosState, setSosState] = useState<SosState | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
+  const [normalState, setNormalState] = useState<NormalState | null>(null);
   const client = useRef<VoiceClient | null>(null);
   const lineId = useRef(0);
 
@@ -61,6 +63,9 @@ export function useVoice(lang: Lang) {
         break;
       case "sos.state":
         setSosState(message);
+        break;
+      case "normal.state":
+        setNormalState(message);
         break;
       case "error":
         setError({ code: message.code, message: message.message, fatal: message.fatal });
@@ -104,8 +109,9 @@ export function useVoice(lang: Lang) {
 
   const say = useCallback((text: string) => client.current?.say(text), []);
   const answer = useCallback((value: TriageAnswer) => client.current?.answer(value), []);
+  const control = useCallback((message: ClientMessage) => client.current?.control(message), []);
 
   useEffect(() => () => client.current?.stop(), []);
 
-  return { status, lines, level, voiceMode, error, latency, sosState, reconnecting, start, stop, say, answer };
+  return { status, lines, level, voiceMode, error, latency, sosState, normalState, reconnecting, start, stop, say, answer, control };
 }

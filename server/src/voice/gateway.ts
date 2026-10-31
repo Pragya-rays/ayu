@@ -1,19 +1,25 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "ws";
-import type { LLMAdapter } from "../adapters/llm.js";
+import type { LLMAdapter, NormalClassifier } from "../adapters/llm.js";
 import type { STTAdapter, SttSession, TTSAdapter, TtsHandle } from "../adapters/types.js";
 import type { AddressLookup } from "../cases/addresses.js";
 import type { CaseStore } from "../cases/store.js";
+import type { IssueId } from "../dialogue/normalContent.js";
+import { NormalMachine } from "../dialogue/normalMachine.js";
 import { SosMachine, type SosIo } from "../dialogue/sosMachine.js";
+import type { HomeCareCard } from "../homecare/index.js";
 import type { Protocol } from "../protocols/index.js";
+import type { NormalSessions } from "../routes/normal.js";
 import type { ProtocolId } from "../types/triage.js";
 import type { ClientMessage, Lang, ServerMessage } from "../types/voice.js";
 
 export interface VoiceGatewayDeps {
   stt: STTAdapter;
   tts: TTSAdapter;
-  llm: LLMAdapter;
+  llm: LLMAdapter & NormalClassifier;
   protocols: Map<ProtocolId, Protocol>;
+  homeCare: Map<IssueId, HomeCareCard>;
+  normalSessions: NormalSessions;
   cases: CaseStore;
   addresses: AddressLookup;
   voiceMode: "real" | "mock";
@@ -59,7 +65,8 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
 
     const { sessionId } = request.params;
     const sosCase = deps.cases.get(sessionId);
-    if ((!sosCase && !deps.voiceLab) || sosCase?.closedAt) {
+    const isNormal = deps.normalSessions.has(sessionId);
+    if ((!sosCase && !isNormal && !deps.voiceLab) || sosCase?.closedAt) {
       send({ type: "error", code: "not_allowed", message: "No active case for this session", fatal: true });
       socket.close(CLOSE_POLICY);
       return;
@@ -77,6 +84,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
     let ttsCounter = 0;
     let lang: Lang = sosCase?.lang ?? "hinglish";
     let echo = false;
+    let normal: NormalMachine | null = null;
     let finishLine: (() => void) | null = null;
     let lineTimer: NodeJS.Timeout | undefined;
     let rotateTimer: NodeJS.Timeout | undefined;
@@ -170,6 +178,8 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
           if (sosCase) {
             deps.cases.recordTurn(sosCase.id, text);
             void machine?.onUtterance(text);
+          } else if (normal) {
+            void normal.onInput(text);
           } else if (echo) {
             void speak(text, lang);
           }
@@ -202,7 +212,24 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
             echo = Boolean(message.echo);
           }
           openStt();
-          if (sosCase) startMachine(sosCase.id, Boolean(message.openingPlayed));
+          if (sosCase) {
+            startMachine(sosCase.id, Boolean(message.openingPlayed));
+          } else if (isNormal) {
+            normal = new NormalMachine(lang, { classifier: deps.llm, cards: deps.homeCare }, {
+              say: (text, { lang: lineLang, cacheable, interruptible }) => speak(text, lineLang, { cacheable, interruptible }),
+              publish: (state) => send({ type: "normal.state", ...state }),
+            });
+            void normal.begin();
+          }
+          break;
+        case "normal_text":
+          if (normal && typeof message.text === "string" && message.text.trim()) void normal.onInput(message.text.trim().slice(0, 500));
+          break;
+        case "normal_yes_no":
+          if (message.answer === "yes" || message.answer === "no") void normal?.onYesNo(message.answer);
+          break;
+        case "normal_decline_sos":
+          void normal?.declineSos();
           break;
         case "triage_answer":
           if (sosCase && ["yes", "no", "unsure"].includes(message.answer)) void machines.get(sosCase.id)?.onAnswer(message.answer);
@@ -254,6 +281,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       clearTimeout(rotateTimer);
       unsubscribe();
       if (sosCase) machines.get(sosCase.id)?.detach();
+      normal?.stop();
       stopSpeaking();
       stt?.close();
     });

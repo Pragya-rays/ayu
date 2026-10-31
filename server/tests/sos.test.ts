@@ -12,7 +12,9 @@ import { buildApp } from "../src/app.js";
 import { AddressLookup } from "../src/cases/addresses.js";
 import { CaseStore } from "../src/cases/store.js";
 import { DispatchSimulator } from "../src/dispatch/simulator.js";
+import { loadHomeCare } from "../src/homecare/index.js";
 import { loadProtocols } from "../src/protocols/index.js";
+import { NormalSessions } from "../src/routes/normal.js";
 import { waitFor } from "./helpers.js";
 
 const position = { lat: 26.85, lng: 80.99, accuracyM: 25 };
@@ -34,6 +36,8 @@ beforeEach(async () => {
     tts: new MockTimbre(),
     llm: new NoLLM(),
     protocols: loadProtocols(),
+    homeCare: loadHomeCare(),
+    normalSessions: new NormalSessions(),
     cases,
     addresses: new AddressLookup(cases, new NoGeocoder()),
     dispatch: new DispatchSimulator(cases, { ackTimeoutMs: 60000, autoAckSeconds: 0, simMinuteMs: 60000, minEtaMinutes: 8, maxEtaMinutes: 8 }),
@@ -126,6 +130,16 @@ describe("dashboard access", () => {
     expect(received).toContain("event: case");
     controller.abort();
     await reading;
+  });
+});
+
+describe("Normal mode sessions", () => {
+  it("needs consent, and rate limits one address", async () => {
+    expect((await post("/api/normal/session", { lang: "hi", consent: false })).statusCode).toBe(400);
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) statuses.push((await post("/api/normal/session", { lang: "hi", consent: true })).statusCode);
+    expect(statuses.at(9)).toBe(201);
+    expect(statuses.at(10)).toBe(429);
   });
 });
 

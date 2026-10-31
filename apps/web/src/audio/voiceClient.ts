@@ -58,6 +58,8 @@ export interface VoiceSession {
   localOpening?: { startedAfterMs: number; finished: Promise<void> };
   /** Microphone requested earlier. Starting it on iOS reconfigures audio and can cut off playback. */
   mic?: Promise<MediaStream>;
+  /** False where a lost connection should simply end the session. */
+  reconnect?: boolean;
 }
 
 export function requestMic() {
@@ -114,6 +116,10 @@ export class VoiceClient {
     this.send({ type: "triage_answer", answer });
   }
 
+  control(message: ClientMessage) {
+    this.send(message);
+  }
+
   stop() {
     this.closing = true;
     this.socket?.close();
@@ -138,7 +144,7 @@ export class VoiceClient {
     socket.onmessage = (event) => this.handleMessage(JSON.parse(event.data) as ServerMessage);
     socket.onclose = (event) => {
       const final = event.code === CLOSE_POLICY || event.code === CLOSE_CASE_ENDED;
-      if (this.closing || final || !session || this.reconnects >= MAX_RECONNECTS) {
+      if (this.closing || final || !session || session.reconnect === false || this.reconnects >= MAX_RECONNECTS) {
         this.releaseAudio();
         this.options.onClosed();
         return;
