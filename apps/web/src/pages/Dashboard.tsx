@@ -1,0 +1,118 @@
+import { useEffect, useState, type FormEvent } from "react";
+import type { Case } from "../../../../server/src/types/case";
+import { strings } from "../i18n/strings";
+
+const t = strings.en;
+
+function timeSince(iso: string, now: number) {
+  const seconds = Math.max(0, Math.floor((now - Date.parse(iso)) / 1000));
+  const minutes = Math.floor(seconds / 60);
+  return minutes ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
+}
+
+function CaseRow({ item, now }: { item: Case; now: number }) {
+  const { location } = item;
+  return (
+    <li className="case-row" data-closed={Boolean(item.closedAt)}>
+      <div className="case-head">
+        <span className="chip" data-severity={item.severity ?? "none"}>{item.severity ?? t.dashTriagePending}</span>
+        <span className="mono">{timeSince(item.createdAt, now)}</span>
+        <span className="mono">{item.dispatch.status.toUpperCase()}</span>
+      </div>
+      {location ? (
+        <p>
+          <a href={`https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}#map=17/${location.lat}/${location.lng}`} target="_blank" rel="noreferrer">
+            {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+          </a>
+          <span className="mono"> · ±{Math.round(location.accuracyM)} m</span>
+        </p>
+      ) : (
+        <p className="case-warning">{t.dashNoLocation}</p>
+      )}
+      <p className="mono">
+        {item.lang} · {t.dashTurns}: {item.metrics.turns}
+        {item.metrics.activationToFirstLineMs !== undefined && ` · ${t.dashFirstLine}: ${item.metrics.activationToFirstLineMs} ms`}
+      </p>
+    </li>
+  );
+}
+
+export function Dashboard() {
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [secret, setSecret] = useState("");
+  const [loginError, setLoginError] = useState(false);
+  const [cases, setCases] = useState<Case[]>([]);
+  const [connected, setConnected] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    fetch("/api/cases").then((response) => setAuthed(response.ok), () => setAuthed(false));
+  }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    const source = new EventSource("/api/cases/stream");
+    source.onopen = () => setConnected(true);
+    source.onerror = () => setConnected(false);
+    source.addEventListener("snapshot", (event) => setCases(JSON.parse(event.data) as Case[]));
+    source.addEventListener("case", (event) => {
+      const updated = JSON.parse(event.data) as Case;
+      setCases((current) => [updated, ...current.filter((item) => item.id !== updated.id)]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    });
+    const clock = setInterval(() => setNow(Date.now()), 1000);
+    return () => {
+      source.close();
+      clearInterval(clock);
+    };
+  }, [authed]);
+
+  const login = async (event: FormEvent) => {
+    event.preventDefault();
+    const response = await fetch("/api/dashboard/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret }),
+    }).catch(() => null);
+    setLoginError(!response?.ok);
+    if (response?.ok) setAuthed(true);
+  };
+
+  if (authed === null) return null;
+
+  if (!authed) {
+    return (
+      <main className="dashboard login">
+        <h1>{t.dashTitle}</h1>
+        <form className="field" onSubmit={login}>
+          <input
+            type="password"
+            aria-label={t.dashPassword}
+            placeholder={t.dashPassword}
+            value={secret}
+            onChange={(event) => setSecret(event.target.value)}
+          />
+          <button className="button ink small">{t.dashSignIn}</button>
+        </form>
+        {loginError && <p className="error" role="alert">{t.dashWrongPassword}</p>}
+      </main>
+    );
+  }
+
+  return (
+    <main className="dashboard">
+      <header className="dash-head">
+        <h1>{t.dashTitle}</h1>
+        <span className="badge">{t.simulated}</span>
+        <span className="mono">{connected ? t.dashLive : t.dashReconnecting}</span>
+      </header>
+      {cases.length === 0 ? (
+        <p className="mono">{t.dashEmpty}</p>
+      ) : (
+        <ul className="case-list">
+          {cases.map((item) => <CaseRow key={item.id} item={item} now={now} />)}
+        </ul>
+      )}
+    </main>
+  );
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Ayu",
+  "short_name": "Ayu",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0B6B4F",
+  "background_color": "#FBFBF8",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

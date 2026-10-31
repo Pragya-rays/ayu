@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+CLAUDE.md
+.claude/
+*.log
+.DS_Store
+
+# Recordings and generated results stay local (no personal data in git)
+eval/audio/*
+!eval/audio/.gitkeep
+eval/results/smoke-*
+eval/results/spike-*
