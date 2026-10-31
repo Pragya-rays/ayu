@@ -1,22 +1,38 @@
 import type { LLMAdapter } from "../adapters/llm.js";
+import type { AddressResult } from "../adapters/geocode.js";
 import type { CaseStore } from "../cases/store.js";
 import type { Protocol } from "../protocols/index.js";
-import type { Severity } from "../types/case.js";
-import type { ProtocolId, TriageAnswer, TriageFacts, TriageQuestion } from "../types/triage.js";
+import type { Case, Severity } from "../types/case.js";
+import type { Extraction, ProtocolId, SosQuestion, TriageAnswer, TriageFacts, TriageQuestion } from "../types/triage.js";
 import type { Lang, SosState } from "../types/voice.js";
-import { ARE_YOU_THERE, ASK_BREATHING, ASK_RESPONSIVE, CALL_112, SAY_AGAIN, SOS_OPENING } from "./lines.js";
-import { extractFacts, parseAnswer } from "./ruleExtract.js";
+import {
+  ALMOST_THERE, ARE_YOU_THERE, ARRIVED, ASK_ADDRESS, ASK_BREATHING, ASK_LANDMARK, ASK_RESPONSIVE, CALL_112, dispatched,
+  etaUpdate, LOCATION_UPDATED, locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL, SAY_AGAIN,
+  SOS_OPENING,
+} from "./lines.js";
+import { extractFacts, parseAnswer, parseLocationAnswer } from "./ruleExtract.js";
 import { higherSeverity, triage, type TriageResult } from "./triageRules.js";
 
 const SILENCE_PROMPT_MS = 8000;
+const RECHECK_MS = 45000;
 const MAX_ATTEMPTS = 2;
+const POOR_ACCURACY_M = 100;
+const ETA_SPOKEN_AT = 5;
+const ALMOST_THERE_AT = 2;
 const RANK: Record<Severity, number> = { GREEN: 0, AMBER: 1, RED: 2 };
 
 export interface SosIo {
   /** Resolves when the line has finished playing, or was interrupted. */
-  say(text: string, options: { lang: Lang; cacheable: boolean }): Promise<void>;
+  say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean }): Promise<void>;
   interrupt(): void;
   publish(state: SosState): void;
+}
+
+export interface SosDeps {
+  cases: CaseStore;
+  llm: LLMAdapter;
+  protocols: Map<ProtocolId, Protocol>;
+  addressFor(caseId: string): Promise<AddressResult | null>;
 }
 
 const definedOnly = (facts: TriageFacts): TriageFacts =>
@@ -25,25 +41,36 @@ const definedOnly = (facts: TriageFacts): TriageFacts =>
 /**
  * Voice track of the SOS state machine (Dev Guide 5.1). Rules decide; the LLM only fills gaps
  * and can raise severity. All spoken text comes from fixed lines or protocol files.
+ * Status updates wait for protocol steps and questions, so nothing cuts across an instruction.
  */
 export class SosMachine {
   private stage: SosState["stage"] = "opening";
-  private question: TriageQuestion | null = null;
+  private question: SosQuestion | null = null;
   private attempts = 0;
   private stopped = false;
+  private io: SosIo | null;
   private ruleFacts: TriageFacts = {};
   private llmFacts: TriageFacts = {};
   private readonly skipped = new Set<TriageQuestion>();
   private readonly heard: string[] = [];
   private silenceTimer: NodeJS.Timeout | undefined;
+  private recheckTimer: NodeJS.Timeout | undefined;
   private queue: Promise<void> = Promise.resolve();
   private current: TriageResult | null = null;
+  private heldUpdates: { text: string; cacheable: boolean }[] = [];
+  private lastDispatchStatus: Case["dispatch"]["status"] = "requested";
+  private lastSpokenEta = Number.POSITIVE_INFINITY;
+  private lastSpokenRed = false;
+  private preAckSpoken = false;
 
   constructor(
     private readonly caseId: string,
     private readonly lang: Lang,
-    private readonly deps: { cases: CaseStore; llm: LLMAdapter; protocols: Map<ProtocolId, Protocol>; io: SosIo },
-  ) {}
+    private readonly deps: SosDeps,
+    io: SosIo,
+  ) {
+    this.io = io;
+  }
 
   /** `openingPlayed` means the phone already played the opening from its local copy. */
   begin(openingPlayed = false) {
@@ -51,6 +78,23 @@ export class SosMachine {
       if (openingPlayed) this.deps.cases.addEvent(this.caseId, "ayu_utterance", { text: SOS_OPENING[this.lang], local: true });
       else await this.speak(SOS_OPENING[this.lang]);
       await this.askNext();
+    });
+  }
+
+  /** The connection dropped. Timers keep state but nothing is spoken until the phone returns. */
+  detach() {
+    this.io = null;
+    this.clearSilenceTimer();
+    clearTimeout(this.recheckTimer);
+  }
+
+  /** The phone reconnected: restore the screen and pick up whatever was in progress. */
+  attach(io: SosIo) {
+    this.io = io;
+    this.publish();
+    return this.run(async () => {
+      if (this.question) await this.ask(this.question);
+      else if (this.stage === "waiting") await this.enterWaiting();
     });
   }
 
@@ -62,44 +106,69 @@ export class SosMachine {
     const extraction = this.deps.llm.extract(this.heard.slice(-3)).catch(() => null);
 
     return this.run(async () => {
-      if (this.stage === "triage" && this.question) {
-        const asked = this.question;
-        const answer = parseAnswer(asked, text);
-        if (answer) {
-          void extraction.then((result) => this.afterExtraction(result));
-          await this.acceptAnswer(asked, answer, "voice");
-          return;
-        }
-        this.clearSilenceTimer();
-        this.mergeExtraction(await extraction);
-        if (this.isKnown(asked)) {
-          this.question = null;
-          this.attempts = 0;
-          await this.askNext();
-        } else {
-          await this.retry(asked, SAY_AGAIN[this.lang]);
-        }
+      const asked = this.question;
+      // A worsening patient outranks any question: "he stopped breathing" is never an address.
+      if (this.current && this.protocolShouldChange()) {
+        this.clearQuestion();
+        await this.reassess();
+        if (asked) await this.ask(asked);
         return;
       }
+      if (asked === "location" || asked === "landmark") return this.handlePlaceReply(asked, text, extraction);
+      if (asked === "recheck") return this.handleRecheckReply(text, extraction);
+      if (asked && this.stage === "triage") return this.handleTriageReply(asked, text, extraction);
       void extraction.then((result) => this.afterExtraction(result));
-      if (this.stage === "protocol") await this.reassess();
+      if (this.stage === "waiting" || this.stage === "protocol") await this.reassess();
+    });
+  }
+
+  /** Prisma returned nothing usable for a pending question. */
+  onEmptyTranscript() {
+    return this.run(async () => {
+      if (this.question) await this.retry(this.question, SAY_AGAIN[this.lang]);
     });
   }
 
   /** Yes / No / Not sure buttons. Cuts off any line in progress so a tap never waits. */
   onAnswer(answer: TriageAnswer) {
     const asked = this.question;
-    if (!asked) return Promise.resolve();
+    if (!asked || asked === "landmark") return Promise.resolve();
     this.clearSilenceTimer();
-    this.deps.io.interrupt();
+    this.io?.interrupt();
     return this.run(async () => {
-      if (this.question === asked) await this.acceptAnswer(asked, answer, "button");
+      if (this.question !== asked) return;
+      if (asked === "location") await this.acceptLocation(answer);
+      else if (asked === "recheck") await this.acceptRecheck(answer);
+      else await this.acceptAnswer(asked as TriageQuestion, answer, "button");
     });
+  }
+
+  /** Dispatch or location changed elsewhere. Updates the screen, then queues anything worth saying. */
+  onCaseChanged(updated: Case) {
+    this.publish();
+    const { status, etaMinutes } = updated.dispatch;
+    const statusChanged = status !== this.lastDispatchStatus;
+    this.lastDispatchStatus = status;
+
+    let line: { text: string; cacheable: boolean } | null = null;
+    if (statusChanged && status === "unacknowledged") line = { text: NO_ACK[this.lang], cacheable: true };
+    else if (statusChanged && status === "accepted") line = { text: dispatched(this.lang, etaMinutes ?? 0), cacheable: false };
+    else if (statusChanged && status === "arrived") return this.handleArrival();
+    else if (etaMinutes !== undefined && etaMinutes < this.lastSpokenEta) {
+      if (etaMinutes <= ALMOST_THERE_AT && this.lastSpokenEta > ALMOST_THERE_AT) line = { text: ALMOST_THERE[this.lang], cacheable: true };
+      else if (etaMinutes <= ETA_SPOKEN_AT && this.lastSpokenEta > ETA_SPOKEN_AT) line = { text: etaUpdate(this.lang, etaMinutes), cacheable: false };
+    }
+    if (line) this.lastSpokenEta = etaMinutes ?? this.lastSpokenEta;
+    if (!line) return Promise.resolve();
+
+    this.heldUpdates.push(line);
+    return this.run(() => this.sayHeldUpdates());
   }
 
   stop() {
     this.stopped = true;
     this.clearSilenceTimer();
+    clearTimeout(this.recheckTimer);
   }
 
   private run(step: () => Promise<void>) {
@@ -109,8 +178,21 @@ export class SosMachine {
     return this.queue;
   }
 
-  private async speak(text: string) {
-    if (!this.stopped) await this.deps.io.say(text, { lang: this.lang, cacheable: true });
+  private async speak(text: string, options: { cacheable?: boolean; interruptible?: boolean } = {}) {
+    if (this.stopped || !this.io) return;
+    await this.io.say(text, { lang: this.lang, cacheable: options.cacheable ?? true, interruptible: options.interruptible ?? true });
+  }
+
+  /**
+   * Priority rule: protocol steps, then status, then re-checks. So a status line waits for
+   * triage and read-back but not for a routine re-check, and it stays queued while disconnected.
+   */
+  private async sayHeldUpdates() {
+    const blocked = () => !this.io || this.stage !== "waiting" || (this.question !== null && this.question !== "recheck");
+    while (this.heldUpdates.length && !blocked()) {
+      const { text, cacheable } = this.heldUpdates.shift()!;
+      await this.speak(text, { cacheable });
+    }
   }
 
   private known(question: TriageQuestion) {
@@ -128,19 +210,36 @@ export class SosMachine {
     else await this.decide();
   }
 
-  private async ask(question: TriageQuestion) {
-    this.stage = "triage";
+  private lineFor(question: SosQuestion): { text: string; cacheable: boolean } {
+    switch (question) {
+      case "responsive":
+        return { text: ASK_RESPONSIVE[this.lang], cacheable: true };
+      case "breathing":
+        return { text: ASK_BREATHING[this.lang], cacheable: true };
+      case "recheck":
+        return { text: this.known("breathing") === false ? RECHECK_STARTED[this.lang] : RECHECK_STILL[this.lang], cacheable: true };
+      case "landmark":
+        return { text: ASK_LANDMARK[this.lang], cacheable: true };
+      case "location": {
+        const area = this.deps.cases.get(this.caseId)?.location?.addressText ?? "";
+        return { text: locationConfirm(this.lang, area), cacheable: false };
+      }
+    }
+  }
+
+  private async ask(question: SosQuestion, line = this.lineFor(question)) {
+    if (question === "responsive" || question === "breathing") this.stage = "triage";
     this.question = question;
     this.publish();
-    await this.speak(question === "responsive" ? ASK_RESPONSIVE[this.lang] : ASK_BREATHING[this.lang]);
+    await this.speak(line.text, { cacheable: line.cacheable });
     if (this.question === question) this.armSilenceTimer(question);
   }
 
-  private armSilenceTimer(question: TriageQuestion) {
+  private armSilenceTimer(question: SosQuestion) {
     this.clearSilenceTimer();
     this.silenceTimer = setTimeout(() => {
       void this.run(async () => {
-        if (this.question === question) await this.retry(question, ARE_YOU_THERE[this.lang]);
+        if (this.question === question && this.io) await this.retry(question, ARE_YOU_THERE[this.lang]);
       });
     }, SILENCE_PROMPT_MS);
   }
@@ -149,21 +248,49 @@ export class SosMachine {
     clearTimeout(this.silenceTimer);
   }
 
-  /** Never hang on an unclear reply: after two tries, carry on and treat the answer as unknown. */
-  private async retry(question: TriageQuestion, line: string) {
+  /** Never hang on an unclear reply: after two tries, carry on without the answer. */
+  private async retry(question: SosQuestion, line: string) {
     this.attempts++;
-    if (this.attempts >= MAX_ATTEMPTS) {
-      await this.acceptAnswer(question, "unsure", "timeout");
-      return;
-    }
+    if (this.attempts >= MAX_ATTEMPTS) return this.giveUp(question);
     await this.speak(line);
     if (this.question === question) this.armSilenceTimer(question);
   }
 
-  private async acceptAnswer(question: TriageQuestion, answer: TriageAnswer, source: string) {
+  private async giveUp(question: SosQuestion) {
+    if (question === "location") await this.acceptLocation("unsure");
+    else if (question === "recheck") await this.acceptRecheck("unsure");
+    else if (question === "landmark") {
+      this.clearQuestion();
+      await this.enterWaiting();
+    } else await this.acceptAnswer(question, "unsure", "timeout");
+  }
+
+  private clearQuestion() {
     this.clearSilenceTimer();
     this.question = null;
     this.attempts = 0;
+  }
+
+  private async handleTriageReply(asked: SosQuestion, text: string, extraction: Promise<Extraction | null>) {
+    const triageQuestion = asked as TriageQuestion;
+    const answer = parseAnswer(triageQuestion, text);
+    if (answer) {
+      void extraction.then((result) => this.afterExtraction(result));
+      await this.acceptAnswer(triageQuestion, answer, "voice");
+      return;
+    }
+    this.clearSilenceTimer();
+    this.mergeExtraction(await extraction);
+    if (this.isKnown(triageQuestion)) {
+      this.clearQuestion();
+      await this.askNext();
+    } else {
+      await this.retry(triageQuestion, SAY_AGAIN[this.lang]);
+    }
+  }
+
+  private async acceptAnswer(question: TriageQuestion, answer: TriageAnswer, source: string) {
+    this.clearQuestion();
     if (answer === "unsure") {
       this.skipped.add(question);
     } else {
@@ -184,7 +311,9 @@ export class SosMachine {
   }
 
   private async decide() {
+    const first = this.current === null;
     await this.deliver(this.assess());
+    if (first) await this.confirmLocation();
   }
 
   private async deliver(result: TriageResult) {
@@ -202,26 +331,135 @@ export class SosMachine {
     for (const [index, step] of protocol.steps.entries()) {
       if (index === 0 && first) cases.recordFirstInstruction(this.caseId);
       cases.addEvent(this.caseId, "instruction_spoken", { protocolId: protocol.id, stepId: step.id });
-      await this.speak(step.text[this.lang]);
+      await this.speak(step.text[this.lang], { interruptible: step.interruptible });
     }
-    if (severity === "RED" && protocol.callEmergencyLine) await this.speak(CALL_112[this.lang]);
+    if (severity === "RED" && protocol.callEmergencyLine && !this.lastSpokenRed) {
+      this.lastSpokenRed = true;
+      await this.speak(CALL_112[this.lang]);
+    }
+  }
+
+  /** Location read-back. Poor GPS or a weak address always goes to a spoken landmark instead. */
+  private async confirmLocation() {
+    const { cases, addressFor } = this.deps;
+    const address = await addressFor(this.caseId);
+    const location = cases.get(this.caseId)?.location;
+    if (this.stopped) return;
+
+    if (!location || !address) {
+      await this.ask("landmark", { text: ASK_ADDRESS[this.lang], cacheable: true });
+      return;
+    }
+    if (address.weak || (location.accuracyM ?? 0) > POOR_ACCURACY_M) {
+      await this.ask("landmark", { text: locationNear(this.lang, address.text), cacheable: false });
+      return;
+    }
+    cases.setLocationConfirming(this.caseId);
+    await this.ask("location");
+  }
+
+  private async handlePlaceReply(asked: SosQuestion, text: string, extraction: Promise<Extraction | null>) {
+    if (asked === "location") {
+      const answer = parseLocationAnswer(text);
+      if (answer) return this.acceptLocation(answer);
+    }
+    this.clearSilenceTimer();
+    const result = await extraction;
+    this.mergeExtraction(result);
+    this.clearQuestion();
+    const { landmark, floor, text: place } = result?.location ?? { landmark: null, floor: null, text: null };
+    this.deps.cases.updateSpokenLocation(this.caseId, {
+      spokenText: place ?? text,
+      landmark: landmark ?? undefined,
+      floor: floor ?? undefined,
+    });
+    await this.speak(LOCATION_UPDATED[this.lang]);
+    await this.enterWaiting();
+  }
+
+  private async acceptLocation(answer: TriageAnswer) {
+    this.clearQuestion();
+    if (answer === "yes") {
+      this.deps.cases.confirmLocation(this.caseId);
+      await this.enterWaiting();
+    } else {
+      await this.ask("landmark");
+    }
+  }
+
+  private async enterWaiting() {
+    this.stage = "waiting";
+    this.question = null;
+    this.publish();
+    if (!this.preAckSpoken && this.lastDispatchStatus === "requested") {
+      this.preAckSpoken = true;
+      await this.speak(PRE_ACK[this.lang]);
+    }
+    await this.sayHeldUpdates();
+    this.armRecheck();
+  }
+
+  private armRecheck() {
+    clearTimeout(this.recheckTimer);
+    this.recheckTimer = setTimeout(() => {
+      void this.run(async () => {
+        if (this.stage === "waiting" && !this.question && this.io) await this.ask("recheck");
+      });
+    }, RECHECK_MS);
+  }
+
+  private async handleRecheckReply(text: string, extraction: Promise<Extraction | null>) {
+    void extraction.then((result) => this.afterExtraction(result));
+    const answer = parseAnswer("breathing", text);
+    if (answer) await this.acceptRecheck(answer);
+    else await this.retry("recheck", SAY_AGAIN[this.lang]);
+  }
+
+  private async acceptRecheck(answer: TriageAnswer) {
+    this.clearQuestion();
+    this.deps.cases.addEvent(this.caseId, "recheck", { answer });
+    if (answer !== "unsure") {
+      this.ruleFacts = { ...this.ruleFacts, breathingNormally: answer === "yes" };
+      this.saveFacts();
+      await this.reassess();
+    }
+    if (this.stage === "protocol") this.stage = "waiting";
+    this.publish();
+    await this.sayHeldUpdates();
+    this.armRecheck();
+  }
+
+  private handleArrival() {
+    this.heldUpdates = [];
+    this.clearQuestion();
+    clearTimeout(this.recheckTimer);
+    this.stage = "arrived";
+    this.publish();
+    this.io?.interrupt();
+    return this.run(() => this.speak(ARRIVED[this.lang]));
+  }
+
+  private protocolShouldChange() {
+    if (!this.current) return false;
+    const next = this.assess();
+    return RANK[next.severity] >= RANK[this.current.severity] && next.protocolId !== this.current.protocolId;
   }
 
   /** A new fact can move the case to a different protocol. Severity still never drops. */
   private async reassess() {
-    if (!this.current) return;
-    const next = this.assess();
-    const outranks = RANK[next.severity] >= RANK[this.current.severity];
-    if (outranks && next.protocolId !== this.current.protocolId) await this.deliver(next);
+    if (!this.protocolShouldChange()) return;
+    const inWaiting = this.stage === "waiting";
+    await this.deliver(this.assess());
+    if (inWaiting) this.stage = "waiting";
   }
 
-  private afterExtraction(result: Awaited<ReturnType<LLMAdapter["extract"]>>) {
+  private afterExtraction(result: Extraction | null) {
     this.mergeExtraction(result);
     this.saveFacts();
     return this.run(() => this.reassess());
   }
 
-  private mergeExtraction(result: Awaited<ReturnType<LLMAdapter["extract"]>>) {
+  private mergeExtraction(result: Extraction | null) {
     if (!result) return;
     const emergencyType = result.emergencyType === "unknown" || result.emergencyType === "other" ? null : result.emergencyType;
     this.llmFacts = {
@@ -246,12 +484,17 @@ export class SosMachine {
 
   private publish() {
     const protocol = this.current ? this.deps.protocols.get(this.current.protocolId) : undefined;
-    this.deps.io.publish({
+    const item = this.deps.cases.get(this.caseId);
+    this.io?.publish({
       stage: this.stage,
       question: this.question,
       severity: this.current?.severity ?? null,
       protocolTitle: protocol?.title[this.lang] ?? null,
       placeholder: protocol?.status === "placeholder",
+      dispatchStatus: item?.dispatch.status ?? "requested",
+      etaMinutes: item?.dispatch.etaMinutes ?? null,
+      ambulanceId: item?.dispatch.ambulanceId ?? null,
+      locationStatus: item?.location?.status ?? null,
     });
   }
 }

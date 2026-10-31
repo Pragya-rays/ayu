@@ -1,24 +1,29 @@
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import WebSocket from "ws";
+import { NoGeocoder } from "../src/adapters/geocode.js";
 import { NoLLM } from "../src/adapters/llm.js";
 import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import { buildApp, type AppDeps } from "../src/app.js";
+import { AddressLookup } from "../src/cases/addresses.js";
 import { CaseStore } from "../src/cases/store.js";
-import { SOS_OPENING } from "../src/dialogue/lines.js";
+import { ASK_BREATHING, SOS_OPENING } from "../src/dialogue/lines.js";
+import { DispatchSimulator } from "../src/dispatch/simulator.js";
 import { loadProtocols } from "../src/protocols/index.js";
 import type { ClientMessage, ServerMessage } from "../src/types/voice.js";
 import { waitFor } from "./helpers.js";
 
-const limits = { maxSessions: 1, sessionMaxSeconds: 60, maxTtsChars: 20 };
+const limits = { maxSessions: 1, sessionMaxSeconds: 60, sosSessionMaxSeconds: 60, maxTtsChars: 20, sttRotateSeconds: 840 };
 let app: Awaited<ReturnType<typeof buildApp>>;
 
-const testDeps = (overrides: Partial<AppDeps> = {}): AppDeps => ({
+const testDeps = ({ cases = new CaseStore(), ...overrides }: Partial<AppDeps> = {}): AppDeps => ({
   stt: new MockPrisma(),
   tts: new MockTimbre(),
   llm: new NoLLM(),
   protocols: loadProtocols(),
-  cases: new CaseStore(),
+  cases,
+  addresses: new AddressLookup(cases, new NoGeocoder()),
+  dispatch: new DispatchSimulator(cases, { ackTimeoutMs: 60000, autoAckSeconds: 0, simMinuteMs: 60000, minEtaMinutes: 6, maxEtaMinutes: 14 }),
   voiceMode: "mock",
   voiceLab: true,
   limits,
@@ -140,6 +145,47 @@ describe("voice gateway", () => {
     const again = client(voice.socket.url);
     await again.until("error");
     expect(again.messages[0]).toMatchObject({ code: "not_allowed" });
+  });
+
+  it("reopens Prisma during SOS if it drops, and keeps the session alive", async () => {
+    const opened: { close(): void }[] = [];
+    const stt: AppDeps["stt"] = {
+      open(_options, events) {
+        const session = { sendAudio() {}, commit() {}, close: () => events.onClose() };
+        opened.push(session);
+        setTimeout(() => events.onReady(), 0);
+        return session;
+      },
+    };
+    const cases = new CaseStore();
+    const sos = cases.create({ lang: "en" });
+    const voice = await connect({ cases, stt }, sos.id);
+    await voice.until("session.ready");
+    voice.send({ type: "start", lang: "en" });
+    await waitFor(() => opened.length === 1);
+    opened[0]!.close();
+    await waitFor(() => opened.length === 2, 3000);
+    expect(voice.socket.readyState).toBe(voice.socket.OPEN);
+  });
+
+  it("carries the same conversation over to a reconnected socket", async () => {
+    const cases = new CaseStore();
+    const sos = cases.create({ lang: "en" });
+    const first = await connect({ cases }, sos.id);
+    await first.until("session.ready");
+    first.send({ type: "start", lang: "en" });
+    await waitFor(() => first.messages.some((message) => message.type === "sos.state" && message.question === "responsive"), 5000);
+    first.send({ type: "triage_answer", answer: "no" });
+    await waitFor(() => sos.triage.responsive === false);
+    first.socket.close();
+    await waitFor(() => first.socket.readyState === first.socket.CLOSED);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    const second = client(first.socket.url);
+    await second.until("session.ready");
+    second.send({ type: "start", lang: "en" });
+    await waitFor(() => second.messages.some((message) => message.type === "sos.state" && message.question === "breathing"), 5000);
+    expect(second.messages.find((message) => message.type === "tts.start")).toMatchObject({ text: ASK_BREATHING.en });
   });
 
   it("rejects sessions over the limit and frees the slot on close", async () => {

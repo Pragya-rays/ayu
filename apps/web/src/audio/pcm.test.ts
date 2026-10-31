@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
+import { BargeGate, Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
 
 describe("Downsampler", () => {
   it("produces the right sample count across chunk boundaries", () => {
@@ -34,6 +34,27 @@ describe("FrameBuffer", () => {
     buffer.push(new Int16Array(1000));
     expect(frames).toHaveLength(2);
     expect(frames[0]).toHaveLength(512);
+  });
+});
+
+describe("BargeGate", () => {
+  const loud = () => new Int16Array(512).fill(8000);
+  const quiet = () => new Int16Array(512).fill(200);
+
+  it("triggers only on sustained loud frames and returns them", () => {
+    const gate = new BargeGate(0.06, 3);
+    expect(gate.push(loud())).toBeNull();
+    expect(gate.push(loud())).toBeNull();
+    expect(gate.push(loud())).toHaveLength(3);
+  });
+
+  it("ignores quiet echo and short bursts", () => {
+    const gate = new BargeGate(0.06, 3);
+    expect(gate.push(quiet())).toBeNull();
+    gate.push(loud());
+    gate.push(loud());
+    gate.push(quiet());
+    expect(gate.push(loud())).toBeNull();
   });
 });
 

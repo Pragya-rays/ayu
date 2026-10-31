@@ -61,6 +61,17 @@ export const config = {
   limits: {
     maxSessions: num(env.VOICE_MAX_SESSIONS, 3),
     sessionMaxSeconds: num(env.VOICE_SESSION_MAX_SECONDS, 600),
+    sosSessionMaxSeconds: num(env.SOS_SESSION_MAX_SECONDS, 1800),
     maxTtsChars: 500,
+    sttRotateSeconds: 14 * 60,
   },
+  dispatch: {
+    ackTimeoutMs: num(env.ACK_TIMEOUT_SECONDS, 60) * 1000,
+    autoAckSeconds: num(env.AUTO_ACK_SECONDS, 0),
+    simMinuteMs: num(env.SIM_MINUTE_SECONDS, 15) * 1000,
+    minEtaMinutes: 6,
+    maxEtaMinutes: 14,
+  },
+  // Nominatim's policy requires it can be switched off without a software update.
+  geocoder: (env.GEOCODER ?? "nominatim") as "nominatim" | "off",
 };

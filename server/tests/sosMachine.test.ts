@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LLMAdapter } from "../src/adapters/llm.js";
 import { CaseStore } from "../src/cases/store.js";
-import { ARE_YOU_THERE, ASK_BREATHING, ASK_RESPONSIVE, CALL_112, SAY_AGAIN, SOS_OPENING } from "../src/dialogue/lines.js";
+import { ARE_YOU_THERE, ASK_BREATHING, ASK_RESPONSIVE, CALL_112, FIXED_LINES, SAY_AGAIN, SOS_OPENING } from "../src/dialogue/lines.js";
 import { SosMachine } from "../src/dialogue/sosMachine.js";
 import { loadProtocols } from "../src/protocols/index.js";
 import type { Extraction } from "../src/types/triage.js";
@@ -30,17 +30,12 @@ function setup(llmResult: Extraction | null = null) {
   const spoken: string[] = [];
   const states: SosState[] = [];
   const llm: LLMAdapter = { extract: vi.fn(async () => llmResult) };
-  const machine = new SosMachine(sos.id, LANG, {
-    cases,
-    llm,
-    protocols,
-    io: {
-      async say(text) {
-        spoken.push(text);
-      },
-      interrupt() {},
-      publish: (state) => states.push(state),
+  const machine = new SosMachine(sos.id, LANG, { cases, llm, protocols, addressFor: async () => null }, {
+    async say(text) {
+      spoken.push(text);
     },
+    interrupt() {},
+    publish: (state) => states.push(state),
   });
   return { cases, sos, spoken, states, machine, llm };
 }
@@ -65,7 +60,8 @@ describe("SosMachine", () => {
     await machine.onUtterance("nahi");
     expect(sos).toMatchObject({ severity: "RED", protocolId: "cpr" });
     expect(spoken).toContain(protocolLine("cpr"));
-    expect(spoken.at(-1)).toBe(CALL_112[LANG]);
+    expect(spoken.indexOf(protocolLine("cpr"))).toBeLessThan(spoken.indexOf(CALL_112[LANG]));
+    expect(spoken).toContain(CALL_112[LANG]);
     expect(sos.metrics.tapToFirstInstructionMs).toBeDefined();
   });
 
@@ -169,7 +165,7 @@ describe("SosMachine", () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(spoken.join(" ")).not.toMatch(/aspirin|legs/i);
     const allowed = new Set([
-      SOS_OPENING[LANG], ASK_RESPONSIVE[LANG], ASK_BREATHING[LANG], CALL_112[LANG],
+      ...FIXED_LINES.map((line) => line[LANG]),
       ...[...protocols.values()].flatMap((protocol) => protocol.steps.map((step) => step.text[LANG])),
     ]);
     for (const line of spoken) expect(allowed.has(line)).toBe(true);
@@ -192,7 +188,7 @@ describe("SosMachine", () => {
     await machine.onAnswer("yes");
     await machine.onAnswer("yes");
     expect(spoken).not.toContain(CALL_112[LANG]);
-    expect(states.at(-1)).toMatchObject({ stage: "protocol", severity: "AMBER", placeholder: true });
+    expect(states.find((state) => state.stage === "protocol")).toMatchObject({ severity: "AMBER", placeholder: true });
   });
 
   it("stops speaking once stopped", async () => {

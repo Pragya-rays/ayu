@@ -25,6 +25,7 @@ export function useVoice(lang: Lang) {
   const [error, setError] = useState<VoiceError | null>(null);
   const [latency, setLatency] = useState<{ sttMs?: number; ttsMs?: number }>({});
   const [sosState, setSosState] = useState<SosState | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
   const client = useRef<VoiceClient | null>(null);
   const lineId = useRef(0);
 
@@ -79,6 +80,7 @@ export function useVoice(lang: Lang) {
       bargeIn: options.bargeIn,
       onMessage,
       onInputLevel: setLevel,
+      onReconnecting: setReconnecting,
       onClosed: () => {
         setStatus("idle");
         setLevel(0);
@@ -105,5 +107,5 @@ export function useVoice(lang: Lang) {
 
   useEffect(() => () => client.current?.stop(), []);
 
-  return { status, lines, level, voiceMode, error, latency, sosState, start, stop, say, answer };
+  return { status, lines, level, voiceMode, error, latency, sosState, reconnecting, start, stop, say, answer };
 }

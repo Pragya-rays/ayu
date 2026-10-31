@@ -23,17 +23,12 @@ for (const scenario of SCENARIOS) {
   const cases = new CaseStore();
   const sos = cases.create({ lang: "hi" });
   const spoken: string[] = [];
-  const machine = new SosMachine(sos.id, "hi", {
-    cases,
-    llm,
-    protocols,
-    io: {
-      async say(text) {
-        spoken.push(text);
-      },
-      interrupt() {},
-      publish() {},
+  const machine = new SosMachine(sos.id, "hi", { cases, llm, protocols, addressFor: async () => null }, {
+    async say(text) {
+      spoken.push(text);
     },
+    interrupt() {},
+    publish() {},
   });
   await machine.begin();
   for (const line of scenario.lines) await machine.onUtterance(line);

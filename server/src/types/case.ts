@@ -11,10 +11,13 @@ export interface Case {
   severity: Severity | null;
   protocolId: string | null;
   location: {
-    lat: number;
-    lng: number;
-    accuracyM: number;
+    /** Null when the caller gave a place by voice and no GPS fix exists. */
+    lat: number | null;
+    lng: number | null;
+    accuracyM: number | null;
     addressText?: string;
+    addressWeak?: boolean;
+    spokenText?: string;
     landmark?: string;
     floor?: string;
     gate?: string;

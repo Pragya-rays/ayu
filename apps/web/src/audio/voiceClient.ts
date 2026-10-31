@@ -1,10 +1,17 @@
 import type { TriageAnswer } from "../../../../server/src/types/triage";
 import type { ClientMessage, Lang, ServerMessage } from "../../../../server/src/types/voice";
-import { Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
+import { BargeGate, Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
 
 const TARGET_RATE = 16000;
 const FRAME_SAMPLES = 512; // 1024 bytes, the frame size Prisma requires
 const ECHO_TAIL_MS = 250;
+const MAX_RECONNECTS = 5;
+const CLOSE_POLICY = 1008;
+const CLOSE_CASE_ENDED = 4001;
+// Sustained loud speech over about 160 ms. Ayu's own voice through the speaker, after echo
+// cancellation, should stay below this; tune on real phones.
+const BARGE_RMS = 0.06;
+const BARGE_FRAMES = 5;
 
 /** Queues streamed speech gaplessly and can stop it instantly for barge-in. */
 class PcmPlayer {
@@ -62,10 +69,11 @@ export function requestMic() {
 export interface VoiceClientOptions {
   lang: Lang;
   echo: boolean;
-  /** When true the mic stays live during playback so the user can interrupt; needs headphones for now. */
+  /** When true the caller can talk over Ayu, except during protocol steps marked uninterruptible. */
   bargeIn: boolean;
   onMessage(message: ServerMessage): void;
   onInputLevel(level: number): void;
+  onReconnecting(active: boolean): void;
   onClosed(): void;
 }
 
@@ -73,9 +81,13 @@ export class VoiceClient {
   private socket: WebSocket | null = null;
   private stream: MediaStream | null = null;
   private player: PcmPlayer;
+  private gate = new BargeGate(BARGE_RMS, BARGE_FRAMES);
   private activeTtsId = 0;
+  private lineInterruptible = true;
   private ttsRate = 24000;
   private activatedAt: number | null = null;
+  private closing = false;
+  private reconnects = 0;
 
   /** `context` must be created and resumed inside a tap handler so iOS allows audio playback. */
   constructor(private readonly context: AudioContext, private readonly options: VoiceClientOptions) {
@@ -85,25 +97,9 @@ export class VoiceClient {
   /** Opens the session first, so Ayu can still speak if the microphone is refused. */
   async start(session?: VoiceSession) {
     this.activatedAt = session?.localOpening ? null : session?.activatedAt ?? null;
-    const socket = new WebSocket(this.socketUrl(session?.caseId ?? crypto.randomUUID()));
-    this.socket = socket;
-
-    socket.onopen = async () => {
-      const opening = session?.localOpening;
-      if (opening) {
-        this.send({ type: "first_audio", ms: opening.startedAfterMs });
-        await opening.finished;
-      }
-      this.send({ type: "start", lang: this.options.lang, echo: this.options.echo, openingPlayed: Boolean(opening) });
-    };
-    socket.onmessage = (event) => this.handleMessage(JSON.parse(event.data) as ServerMessage);
-    socket.onclose = () => {
-      this.releaseAudio();
-      this.options.onClosed();
-    };
-
+    this.connect(session);
     this.stream = await (session?.mic ?? requestMic());
-    await this.startCapture(socket, this.stream);
+    await this.startCapture(this.stream);
   }
 
   say(text: string) {
@@ -119,8 +115,41 @@ export class VoiceClient {
   }
 
   stop() {
+    this.closing = true;
     this.socket?.close();
     this.releaseAudio();
+  }
+
+  private connect(session?: VoiceSession) {
+    const socket = new WebSocket(this.socketUrl(session?.caseId ?? crypto.randomUUID()));
+    this.socket = socket;
+
+    socket.onopen = async () => {
+      this.reconnects = 0;
+      this.options.onReconnecting(false);
+      const opening = session?.localOpening;
+      if (opening) {
+        this.send({ type: "first_audio", ms: opening.startedAfterMs });
+        await opening.finished;
+      }
+      this.send({ type: "start", lang: this.options.lang, echo: this.options.echo, openingPlayed: Boolean(opening) });
+      if (session) session.localOpening = undefined;
+    };
+    socket.onmessage = (event) => this.handleMessage(JSON.parse(event.data) as ServerMessage);
+    socket.onclose = (event) => {
+      const final = event.code === CLOSE_POLICY || event.code === CLOSE_CASE_ENDED;
+      if (this.closing || final || !session || this.reconnects >= MAX_RECONNECTS) {
+        this.releaseAudio();
+        this.options.onClosed();
+        return;
+      }
+      // An emergency call must survive a network blip, so retry before giving up.
+      this.reconnects++;
+      this.options.onReconnecting(true);
+      setTimeout(() => {
+        if (!this.closing) this.connect(session);
+      }, this.reconnects * 1000);
+    };
   }
 
   private socketUrl(sessionId: string) {
@@ -128,17 +157,30 @@ export class VoiceClient {
     return `${protocol}://${location.host}/ws/voice/${sessionId}`;
   }
 
-  private async startCapture(socket: WebSocket, stream: MediaStream) {
+  private sendFrame(frame: Int16Array) {
+    if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(frame.buffer as ArrayBuffer);
+  }
+
+  private onMicFrame(frame: Int16Array) {
+    if (!this.player.isPlaying) {
+      this.gate.reset();
+      this.sendFrame(frame);
+      return;
+    }
+    if (!this.options.bargeIn || !this.lineInterruptible) return;
+    const held = this.gate.push(frame);
+    if (!held) return;
+    this.interrupt();
+    held.forEach((item) => this.sendFrame(item));
+  }
+
+  private async startCapture(stream: MediaStream) {
     const { context } = this;
     await context.audioWorklet.addModule("/pcm-worklet.js");
     const source = context.createMediaStreamSource(stream);
     const worklet = new AudioWorkletNode(context, "pcm-capture");
     const downsampler = new Downsampler(context.sampleRate, TARGET_RATE);
-    const frames = new FrameBuffer(FRAME_SAMPLES, (frame) => {
-      if (socket.readyState !== WebSocket.OPEN) return;
-      if (!this.options.bargeIn && this.player.isPlaying) return;
-      socket.send(frame.buffer as ArrayBuffer);
-    });
+    const frames = new FrameBuffer(FRAME_SAMPLES, (frame) => this.onMicFrame(frame));
     worklet.port.onmessage = (event: MessageEvent<Float32Array>) => {
       const samples = downsampler.process(event.data);
       frames.push(floatToInt16(samples));
@@ -156,9 +198,6 @@ export class VoiceClient {
 
   private handleMessage(message: ServerMessage) {
     switch (message.type) {
-      case "speech.start":
-        if (this.options.bargeIn && this.player.isPlaying) this.interrupt();
-        break;
       case "tts.stop":
         this.activeTtsId = 0;
         this.player.stop();
@@ -168,6 +207,7 @@ export class VoiceClient {
         this.player.reset();
         this.activeTtsId = message.ttsId;
         this.ttsRate = message.sampleRate;
+        this.lineInterruptible = message.interruptible;
         break;
       case "tts.audio":
         if (message.ttsId !== this.activeTtsId) return;

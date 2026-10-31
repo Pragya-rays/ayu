@@ -33,4 +33,6 @@ export interface TriageFacts {
 }
 
 export type TriageQuestion = "responsive" | "breathing";
+/** "landmark" expects free speech, so it shows no answer buttons. */
+export type SosQuestion = TriageQuestion | "location" | "landmark" | "recheck";
 export type TriageAnswer = "yes" | "no" | "unsure";

@@ -4,11 +4,14 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { audioFileName, CachedTts } from "../src/adapters/cachedTts.js";
+import { NoGeocoder } from "../src/adapters/geocode.js";
 import { NoLLM } from "../src/adapters/llm.js";
 import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import type { TTSAdapter, TtsEvents } from "../src/adapters/types.js";
 import { buildApp } from "../src/app.js";
+import { AddressLookup } from "../src/cases/addresses.js";
 import { CaseStore } from "../src/cases/store.js";
+import { DispatchSimulator } from "../src/dispatch/simulator.js";
 import { loadProtocols } from "../src/protocols/index.js";
 import { waitFor } from "./helpers.js";
 
@@ -32,9 +35,11 @@ beforeEach(async () => {
     llm: new NoLLM(),
     protocols: loadProtocols(),
     cases,
+    addresses: new AddressLookup(cases, new NoGeocoder()),
+    dispatch: new DispatchSimulator(cases, { ackTimeoutMs: 60000, autoAckSeconds: 0, simMinuteMs: 60000, minEtaMinutes: 8, maxEtaMinutes: 8 }),
     voiceMode: "mock",
     voiceLab: false,
-    limits: { maxSessions: 2, sessionMaxSeconds: 60, maxTtsChars: 20 },
+    limits: { maxSessions: 2, sessionMaxSeconds: 60, sosSessionMaxSeconds: 60, maxTtsChars: 20, sttRotateSeconds: 840 },
     dashboardSecret: "secret",
     production: false,
   });
@@ -121,6 +126,20 @@ describe("dashboard access", () => {
     expect(received).toContain("event: case");
     controller.abort();
     await reading;
+  });
+});
+
+describe("dispatch actions", () => {
+  it("needs the dashboard password, then accepts and updates status", async () => {
+    const { caseId } = (await post("/api/sos/start", { lang: "en", consent: true })).json();
+    expect((await post(`/api/cases/${caseId}/accept`, {})).statusCode).toBe(401);
+    const cookie = await login();
+    expect((await post(`/api/cases/${caseId}/accept`, { ambulanceId: "SIM-1" }, cookie)).json().dispatch).toMatchObject({
+      status: "accepted", ambulanceId: "SIM-1", etaMinutes: 8, simulated: true,
+    });
+    expect((await post(`/api/cases/${caseId}/status`, { status: "en_route" }, cookie)).json().dispatch.status).toBe("en_route");
+    expect((await post(`/api/cases/${caseId}/status`, { status: "bogus" }, cookie)).statusCode).toBe(400);
+    expect((await post("/api/cases/missing/accept", {}, cookie)).statusCode).toBe(404);
   });
 });
 

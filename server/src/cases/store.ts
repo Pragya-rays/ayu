@@ -78,6 +78,66 @@ export class CaseStore {
     });
   }
 
+  setAddress(id: string, addressText: string, addressWeak: boolean) {
+    return this.mutate(id, (item) => {
+      if (item.location) item.location = { ...item.location, addressText, addressWeak };
+    });
+  }
+
+  confirmLocation(id: string) {
+    return this.mutate(id, (item) => {
+      if (item.location) item.location.status = "verified";
+      this.addEvent(id, "location_confirmed", {});
+    });
+  }
+
+  setLocationConfirming(id: string) {
+    return this.mutate(id, (item) => {
+      if (item.location) item.location.status = "confirming";
+    });
+  }
+
+  /** A place given by voice. Marks the case so the driver sees the location changed. */
+  updateSpokenLocation(id: string, details: { spokenText?: string; landmark?: string; floor?: string; gate?: string }) {
+    return this.mutate(id, (item) => {
+      const known = item.location ?? { lat: null, lng: null, accuracyM: null, status: "updated" as const };
+      item.location = { ...known, ...details, status: "updated" };
+      this.addEvent(id, "location_updated", { ...details });
+    });
+  }
+
+  markUnacknowledged(id: string) {
+    return this.mutate(id, (item) => {
+      if (item.closedAt || item.dispatch.status !== "requested") return;
+      item.dispatch.status = "unacknowledged";
+      this.addEvent(id, "status_update", { status: "unacknowledged" });
+    });
+  }
+
+  acceptDispatch(id: string, ambulanceId: string, etaMinutes: number) {
+    return this.mutate(id, (item) => {
+      item.dispatch = { ...item.dispatch, status: "accepted", ambulanceId, etaMinutes, acceptedAt: new Date().toISOString() };
+      this.addEvent(id, "dispatch_accepted", { ambulanceId, etaMinutes, simulated: true });
+    });
+  }
+
+  setDispatchStatus(id: string, status: "en_route" | "arrived") {
+    return this.mutate(id, (item) => {
+      item.dispatch.status = status;
+      if (status === "arrived") {
+        item.dispatch.etaMinutes = 0;
+        item.dispatch.arrivedAt = new Date().toISOString();
+      }
+      this.addEvent(id, "status_update", { status, simulated: true });
+    });
+  }
+
+  setEta(id: string, etaMinutes: number) {
+    return this.mutate(id, (item) => {
+      item.dispatch.etaMinutes = etaMinutes;
+    });
+  }
+
   updateTriage(id: string, triage: Partial<Case["triage"]>) {
     return this.mutate(id, (item) => {
       item.triage = { ...item.triage, ...triage };
@@ -106,9 +166,10 @@ export class CaseStore {
   cancel(id: string) {
     return this.mutate(id, (item) => {
       if (item.closedAt) return;
-      item.dispatch.status = "cancelled";
+      const arrived = item.dispatch.status === "arrived";
+      if (!arrived) item.dispatch.status = "cancelled";
       item.closedAt = new Date().toISOString();
-      this.addEvent(id, "closed", { reason: "cancelled_by_caller" });
+      this.addEvent(id, "closed", { reason: arrived ? "handed_over" : "cancelled_by_caller" });
     });
   }
 

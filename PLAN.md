@@ -11,11 +11,11 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | Phase 3, SOS Brain. Phase 2 accepted by the team with open items R16 and R17 |
-| **Phase state** | Deployed at https://ayu-4801.onrender.com with Gnani and Gemini active. **Waiting for team testing by voice on a phone** |
+| **Current phase** | Phase 4, SOS Live Loop. Phase 3 validated on iPhone XR in quiet conditions |
+| **Phase state** | Built and tested locally on real services. **Not deployed; https://ayu-4801.onrender.com still runs Phase 3** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of the iPhone audio fix (R22), then confirms on the phone |
-| **Blocked on** | Team approval to push, medical reviewer's qualification (D9), award and posting decisions (D3, D4), noisy clips before Phase 4 |
+| **Next action** | Team approves the push, then tests Phase 4 on the iPhone. Noisy clips run alongside that testing |
+| **Blocked on** | Team approval to push, medical reviewer's qualification (D9), award and posting decisions (D3, D4) |
 
 ### If you are an AI agent resuming this project
 1. Read this section, then sections 3, 4, 10 and 11, then the current phase in section 7.
@@ -156,7 +156,7 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 - [x] Add `GNANI_API_KEY` to `.env`, run `npm run gnani:smoke`, record results in section 6
 - [ ] Remove the key from `.env.example`, and replace the key before Phase 2 deployment (it was exposed in an AI session)
 - [x] Voice Check in real voice mode on laptop: speak Hinglish, see the transcript, hear Timbre repeat it (10-31, quiet room)
-- [ ] Deferred by the team 10-31, **must happen before Phase 4**: record 3 noisy clips into `eval/audio`, run `npm run gnani:spike`, choose the Prisma config
+- [ ] Deferred by the team 10-31, **now due during Phase 4 testing**, since it decides how strict read-back must be: record 3 noisy clips into `eval/audio`, run `npm run gnani:spike`, choose the Prisma config
 - [ ] Moved to Phase 2, once Render gives us HTTPS: try on a real Android and a real iPhone
 - [ ] Review Home and consent look, and Hindi/Hinglish wording
 
@@ -203,20 +203,43 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Protocol switch when a caller reports a change | Tested in unit tests |
 | Severity on phone, triage and protocol on dashboard | Tested (live) |
 | Answering by real voice on a phone | Validated by the team on iPhone XR in a quiet setting: CPR, choking and button paths correct, answers heard first time. Noise untested |
-| Pre-generated audio (all 21 fixed lines) | Deployed 10-31 (`7b5b439`). Live run in desktop Chrome: 8/8, server lines started in 0-1 ms. **Not yet confirmed on iPhone** |
+| Pre-generated audio (all 21 fixed lines) | Deployed 10-31 (`b5e0eb4`, `5706235`). Validated by the team on iPhone XR |
 | Deployment of Phase 3 | Deployed 10-31 at https://ayu-4801.onrender.com |
 
 **Exit criteria (team to complete):**
 - [x] Add `GEMINI_API_KEY` on Render, then push (10-31; `/api/health` reports `llm: gemini`)
 - [x] Run SOS on the phone answering by voice ("nahi", "haan") and by buttons (10-31, iPhone XR)
 - [x] Say a full sentence (choking) and check the protocol on the dashboard (10-31)
-- [ ] Team reported the voice comes a bit late. Pre-generated audio built; confirm on the phone once deployed
+- [x] Team reported the voice comes a bit late. Pre-generated audio deployed; team retest on iPhone: clear, normal volume, nothing wrong (dashboard timing numbers not reported)
 - [ ] Confirm the map pin (R16) and try Android (R17)
 - [ ] Decide who reviews the rules and protocols (D9)
 
-### Phase 4 — SOS Live Loop (Nov 3 – 4)
-**Goal:** the voice stays useful until help arrives. Location read-back, landmark/floor/gate fallback, verified/updated flags; dispatch accept, ETA, status, 60-second no-ack "call 112"; status + filler + re-check loop under the priority rules; barge-in; silent Prisma reconnect before the 15-minute cap; failure paths (STT empty, LLM timeout, TTS failure, GPS denied).
-**Exit:** a full simulated emergency runs from tap to arrival, including the no-ack path.
+### Phase 4 — SOS Live Loop (Nov 3 – 4) · **IN REVIEW**
+**Goal:** the voice stays useful until help arrives.
+
+| Item | Status |
+|---|---|
+| Area name via Nominatim (rounded coordinates, cached, 1 request per second, off switch, attribution) | Tested (live) with one simulated location. **Not tested from a real phone** |
+| Spoken read-back after the first protocol; yes verifies, no asks for landmark, floor or gate | Tested in Chrome with buttons. **Spoken correction not tested with real voice** |
+| Poor GPS, weak address or no GPS goes straight to asking for a place | Tested in unit tests |
+| `watchPosition`: sends a better fix when accuracy improves | Built. **Not tested on a real phone** |
+| Simulated dispatch: accept, ETA, en route, arrived, 60-second no-ack with Call 112 | Tested (live) in Chrome |
+| Status priority: never over a protocol step or triage; ahead of a re-check | Tested in unit tests |
+| Re-check every 45 s; switches protocol if breathing changes; severity never drops | Tested in unit tests. **Not tried by voice** |
+| A worsening patient outranks any pending question | Tested in unit tests |
+| Handover screen and Close; case stays ARRIVED | Tested in Chrome |
+| Barge-in with a loudness gate; protocol steps stay uninterruptible | Tested in Chrome with a simulated signal. **Threshold untested on a real phone speaker** |
+| Reconnect after a network drop, same conversation; long drop ends in Call 112 | Tested in Chrome with a forced drop |
+| Prisma reopened if it drops, and rotated at 14 minutes | Reopen tested with a fake; **the real 15-minute cap has not been hit** |
+| Filler steps (Summary 7.4) | **Held back on purpose:** need medical review (R18) |
+
+**Exit criteria (team to complete):**
+- [ ] Approve the push
+- [ ] On the iPhone, hear the area read back, and say whether it is right (closes R16)
+- [ ] Say a landmark by voice and see it on the dashboard
+- [ ] Accept, follow the ETA and arrive from the dashboard
+- [ ] Talk over Ayu; confirm it stops for you but does not stop itself from speaker echo
+- [ ] Record the noisy clips and run the spike
 
 ### Phase 5 — Normal Mode (Nov 4)
 **Goal:** safe everyday conversation. One question at a time, reviewed home-care library, cautious wording, red-flag detection with Switch to SOS, summary card.
@@ -263,6 +286,8 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 | `server/src/protocols/` | One JSON per protocol; `index.ts` validates at startup. `server/scripts/make-protocols.mjs` wrote the placeholders and never overwrites |
 | `server/src/adapters/llm.ts`, `prompts/extraction.ts` | Gemini extraction and the validator |
 | `server/scripts/` | Also `triage-scenarios.ts` (`npm run eval:triage -w server`, add `-- --rules` for rules only) and `gemini-check.ts` (compare models) |
+| `server/src/dispatch/simulator.ts` | Simulated accept, ETA, status and no-ack timer. Contacts nothing real |
+| `server/src/adapters/geocode.ts`, `cases/addresses.ts` | Nominatim lookup and per-case address |
 | `server/src/routes/` | `sos.ts` (start, location, cancel), `dashboard.ts` (login, cases, SSE stream), `rateLimit.ts` |
 | `server/src/dialogue/lines.ts` | Fixed spoken lines, shared with the web app |
 | `server/src/adapters/cachedTts.ts` | In-memory cache for fixed Timbre lines |
@@ -281,7 +306,7 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 Browser mic, downsample to 16 kHz, 1024-byte frames, `/ws/voice/:id`, Prisma stream. `transcript` goes to the browser and, in Voice Check, to Timbre WebSocket (raw 24 kHz PCM), base64 chunks back to the browser, gapless Web Audio playback. Each `tts.*` message carries `ttsId` so stale audio is dropped after an interrupt. Per-utterance Timbre socket: simple and cancellable, but pays a handshake each time. Measure it; fixed lines will be pre-generated in Phase 7 anyway.
 
 ### Environment variables
-Listed with comments in `.env.example`: `GNANI_API_KEY`, `VOICE_MODE`, `PRISMA_MODEL`, `PRISMA_FORMAT`, `PRISMA_KEYTERMS`, `PRISMA_MIN_SILENCE_MS`, `TIMBRE_MODEL`, `TIMBRE_VOICE_HI`, `TIMBRE_VOICE_HINGLISH`, `TIMBRE_VOICE_EN`, `TIMBRE_SPEED`, `VOICE_MAX_SESSIONS`, `VOICE_SESSION_MAX_SECONDS`, `VOICE_LAB`, `DASHBOARD_SECRET`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `PORT`. Optional `LOG_LEVEL`, `GEMINI_TIMEOUT_MS`. `DASHBOARD_SECRET` is required when `NODE_ENV=production`; development default is `ayu-dev`. Without a Gemini key Ayu runs on rules alone. Later: `AUTO_ACK_SECONDS`, `PUBLIC_BASE_URL`.
+Listed with comments in `.env.example`: `GNANI_API_KEY`, `VOICE_MODE`, `PRISMA_MODEL`, `PRISMA_FORMAT`, `PRISMA_KEYTERMS`, `PRISMA_MIN_SILENCE_MS`, `TIMBRE_MODEL`, `TIMBRE_VOICE_HI`, `TIMBRE_VOICE_HINGLISH`, `TIMBRE_VOICE_EN`, `TIMBRE_SPEED`, `VOICE_MAX_SESSIONS`, `VOICE_SESSION_MAX_SECONDS`, `VOICE_LAB`, `DASHBOARD_SECRET`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `ACK_TIMEOUT_SECONDS`, `AUTO_ACK_SECONDS`, `SIM_MINUTE_SECONDS`, `GEOCODER`, `SOS_SESSION_MAX_SECONDS`, `PORT`. Optional `LOG_LEVEL`, `GEMINI_TIMEOUT_MS`. `DASHBOARD_SECRET` is required when `NODE_ENV=production`; development default is `ayu-dev`. Without a Gemini key Ayu runs on rules alone. Later: `PUBLIC_BASE_URL`.
 
 ### Dependencies (all within the Dev Guide stack)
 Server: `fastify`, `@fastify/websocket`, `@fastify/static`, `ws`. Web: `react`, `react-dom`. Dev: `typescript`, `tsx`, `vitest`, `vite`, `@vitejs/plugin-react`, type packages. Google Fonts per the guide. Node 22+ (built on v24.17).
@@ -310,6 +335,11 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I13 | 10-31 | Added `metrics.activationToFirstLineMs` to the shared Case type | `tapToFirstInstructionMs` is reserved for the first protocol step (Phase 3). This one excludes the deliberate 3-second countdown |
 | I14 | 10-31 | SOS opening line is cached in memory and generated at server start, ahead of Phase 7 pre-generation | Fast first line and saves credits. Spends one request per language per server start |
 | I15 | 10-31 | Dashboard password uses an HttpOnly cookie | Browser SSE cannot send custom headers |
+| I26 | 10-31 | Read-back runs after the first protocol and the Call 112 line, not during triage | Instructions come first. Dispatch already left at the start, so nothing waits on this |
+| I27 | 10-31 | One SOS machine per case, kept when the socket drops | So a reconnect resumes rather than restarts the conversation |
+| I28 | 10-31 | Answer buttons also serve location and re-check questions. No separate location card | Same control a caller already knows; the screen stays simple |
+| I29 | 10-31 | Simulated minute defaults to 15 real seconds (`SIM_MINUTE_SECONDS`) | A demo should not wait out a 14-minute ETA. Everything stays labelled simulated |
+| I30 | 10-31 | Coordinates rounded to about 110 m before leaving for Nominatim | Its policy bans personal data, and an area name needs no more precision |
 | I25 | 10-31 | Moved pre-generated audio forward from Phase 7. `npm run gen:audio` stores all fixed lines in `server/src/audio`, checked against a voice manifest. The phone downloads the opening during the countdown and plays it locally | Team reported late voice. **Rerun `gen:audio` after any change to fixed lines, protocol text or voice settings**; a changed line falls back to live Timbre, a changed voice ignores all stored audio |
 | I17 | 10-31 | Gemini model `gemini-3.1-flash-lite` | Measured on 7 scripted lines: 6/7, median 853 ms. `3.5-flash-lite` also 6/7 but slower (1001 ms). `2.5-flash` and `2.5-flash-lite` failed every call; cause not investigated |
 | I18 | 10-31 | **Added beyond the guide's draft, for medical review:** unresponsive with unknown breathing, or not breathing with unknown response, rate RED with `general` | The guide's code would rate these AMBER. Unknown must never read as good news |
@@ -336,7 +366,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | D13 | Keep the silent 3-second SOS countdown (Summary decision 17), or shorten it? | Keep for now; revisit if it still feels slow after the audio fix. It prevents accidental SOS | Phase 4 |
 | D12 | Render's free plan takes about a minute to wake after 15 idle minutes, which a judge may hit. Paid plan for demo week, or keep it awake some other way? | Decide before submission; check Render pricing then. No paid choice without team approval | Phase 9 |
 | D7 | Gemini model and key | **Decided 10-31:** `gemini-3.1-flash-lite` (I17), free-tier key in `.env`. Google's rate-limit page does not state whether free-tier data is used for training, so only scripted test calls may pass through it | Done |
-| D8 | Reverse geocoding provider | Nominatim for demo scale, cached, never blocking dispatch | Before Phase 4 |
+| D8 | Reverse geocoding provider | **Decided 10-31: OpenStreetMap Nominatim.** Policy: https://operations.osmfoundation.org/policies/nominatim/ (at most 1 request per second across the whole app, identifying User-Agent, cached results, visible attribution, must be switchable off, no personal data, no bulk or systematic use, no autocomplete). `GEOCODER=off` disables it. Public Nominatim has no uptime promise and the policy can change, so a real deployment needs a paid or self-hosted geocoder | Done |
 | D9 | Who reviews the medical content? | **Answered 10-31:** a team member volunteered. **Open:** their medical qualification. The Summary (section 9.8) requires a qualified doctor or medical person, and "Reviewed by" must be truthful. If not qualified, an outside reviewer is still needed | **Now** |
 | D10 | Produce a 60-second cut for Demo Day Drop as well as the 2-3 minute plan? | Yes; one recording session can yield both | Phase 9 |
 | D11 | Evaluate some calls at 8 kHz to mimic telephony for Noise Canceller? (Not real telephony, which stays cut) | Yes, cheap to add in Phase 8 | Phase 8 |
@@ -353,19 +383,19 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R4 | Credit cost unknown; 5,000 credits must cover testing, audio generation and judges' demos | Medium | Measure in section 6, then budget. Mocks are the default for UI work |
 | R5 | One-word answers may be dropped by VAD. "haan" and "nahi" both came through in Hindi in a quiet room (10-31); noise untested | Low-Medium | Include them in noisy clips; tune `x-min-segment-ms` and `x-min-speech-ms` if dropped |
 | R6 | No partial transcripts: Ayu knows only that speech started until the utterance ends, adding end-of-speech delay | Medium | Accept; use cached next line; tune silence |
-| R7 | Voice session stops at the guard limit (10 min) and Prisma at 15 min, with no reconnect yet | Medium | Phase 4 must fix before real SOS loop |
+| R7 | SOS voice now has a 30-minute limit, and Prisma rotates at 14 minutes. The real cap has not been hit in testing | Low-Medium | Run one long session before the demo |
 | R8 | Not tested on Safari, iPhone, Android or real microphones | Medium | Phase 1 team checklist |
 | R9 | Timbre rejects a quick new request after an interrupt on single-request accounts (possible) | Low | Observe in live test; add backoff if seen |
 | R10 | Public link can spend credits. Voice Check is now off in production, voice needs an active case, and SOS is rate limited, but anyone with the link can still start a real-voice SOS case | Low-Medium | Share the link only with testers until submission; watch credits |
-| R13 | No reconnect after a lost connection in SOS: the phone shows "Call 112" but the session stays dead | Medium | Phase 4 |
+| R13 | Phone reconnects and resumes the same conversation (fixed 10-31). A server restart still loses the call, because cases and machines are in memory (I10). Render free may restart at any time | Medium | Phone falls back to the Call 112 message; see D12 |
 | R14 | Dashboard cases disappear on server restart or Render sleep | Low-Medium | Accepted for now (I10); see D12 |
 | R15 | Gnani key appeared in an AI session | Closed | Replaced 10-31 |
-| R16 | Dashboard map pin not confirmed against the real location. One team report said location was wrong, without detail | Medium | Check before Phase 4 location read-back, which depends on it |
+| R16 | Team reported a map pin in a different area of the city (10-31). Cause unknown: code passes coordinates correctly, but the phone's fix may have been wrong (two cases had identical coordinates at ±7 m, which suggests Wi-Fi positioning), or the pin clicked may have been an AI test case using simulated central-Lucknow coordinates. Apple Maps comparison not completed | **High** | Phase 4 spoken read-back with voice correction catches this during the call and makes it easy to retest. AI live tests must not add simulated cases to the team's dashboard without saying so |
 | R17 | Android and Hindi/English SOS lines not tested on real devices | Medium | Check during Phase 3 testing |
 | R18 | **SOS gives no real first aid yet.** Every protocol is a "pending medical review" line. Triage rules are unreviewed too | **High** | Needs a qualified reviewer (D9). No AI may write this content |
-| R19 | Mic is off while Ayu speaks, so a caller talking over the opening or a question is not heard | Medium | Barge-in in Phase 4. Buttons work meanwhile |
+| R19 | Barge-in built, but its loudness threshold (`BARGE_RMS` in `voiceClient.ts`) is a guess until tried on real phone speakers. Too low and Ayu may cut itself off; too high and callers cannot interrupt. The opening line and protocol steps cannot be interrupted | Medium | Tune on the iPhone and Android |
 | R20 | First instruction takes about 3.1 s after the countdown on buttons locally, because both questions are spoken first. Voice answers add more. The 3-second countdown itself is also silent | Medium | Measure on phones; judges will see this number. See D13 |
-| R22 | After the audio fix the team reported the voice "feels half" on iPhone. Meaning not confirmed (cut off or quiet). Two likely causes fixed locally: mic now starts during the countdown, and lines queue instead of replacing each other. Not reproducible on desktop | **High** | Confirm on the iPhone after deployment |
+| R22 | Voice "felt half" on iPhone after the audio fix. **Closed 10-31:** mic now starts during the countdown and lines queue (`5706235`). Team retest on iPhone: every word heard, normal volume | Closed | Cause not isolated; both fixes shipped together |
 | R21 | Voice answers work in a quiet setting; ASR errors and noise may still produce wrong yes/no readings | **High** | Noisy clips, Phase 8 |
 | R11 | Hindi and Hinglish copy is unreviewed draft | Low | Phase 7 |
 | R12 | The original docs are not updated with section 4 and 5 findings | Low | PLAN.md overrides; update docs after team agrees D3 |
@@ -419,6 +449,13 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - 21 fixed lines generated once with Timbre, about 2.9 MB. `npm test`: 105 of 105 (server 99, web 6).
 - Two-browser Chrome run: 13/13. Countdown end to first audio went from 321-721 ms to **8-13 ms** (local copy). First instruction went from 3.6-3.8 s to 3.1 s. These are localhost figures; phone-network figures still need measuring.
 
+**2026-10-31, Phase 4 (local production build, real Gnani, Gemini and Nominatim)**
+- `npm run typecheck`, `npm run build`: pass. `npm test`: 142 of 142 (server 134, web 8). E1-E5 with Gemini: 5/5. 48 fixed lines generated, about 7 MB.
+- New tests found three real bugs, all fixed: a pending re-check delayed the Call 112 warning; updates were lost during a disconnect; "he stopped breathing" during the location question was saved as an address instead of switching to CPR.
+- Two-browser Chrome run, buttons, simulated GPS: 9/9 for read-back ("Hazratganj, Lucknow"), verify, accept, arrival, handover, no-ack, landmark question. First instruction 2.7 s.
+- Forced network drop through a local relay, plus barge-in: 6/6. Chrome's offline mode did not cut open sockets, so the relay was needed; simple offline tests would prove nothing here.
+- **Not tested:** real speech in these new stages, real phones, this build on Render, noise.
+
 ---
 
 ## 13. Changelog
@@ -428,3 +465,5 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - **2026-10-31** Team confirmed real voice works and approved Phase 2. Built SOS flow, case store, live dashboard, public-link guards and `render.yaml`.
 - **2026-10-31** Deployed Phase 2 to Render; iPhone XR test passed apart from the map pin (R16). Built Phase 3: Gemini extraction, triage rules, protocol engine with placeholders, SOS conversation, answer buttons.
 - **2026-10-31** Deployed Phase 3; voice flow passed on iPhone XR. Built pre-generated audio after the team reported late voice.
+- **2026-10-31** At the team's request, rewrote git history and force-pushed to remove a name from the first commit. Commit hashes changed; code unchanged.
+- **2026-10-31** Fixed iPhone audio (R22). Built Phase 4: Nominatim read-back, simulated dispatch, status and re-check loop, barge-in, reconnect.

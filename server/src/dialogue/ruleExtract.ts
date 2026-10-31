@@ -15,6 +15,20 @@ const BREATHING_TOPIC = ["saans", "sans", "सांस", "साँस", "breat
 const RESPONDING_TOPIC = ["jawab", "जवाब", "bol rahe", "bol raha", "bol rahi", "बोल रहे", "बोल रहा", "बोल रही", "सुन रहा", "सुन रहे", "sun raha", "sun rahe", "baat kar", "बात कर", "responding", "hosh", "होश"];
 const MAX_BARE_REPLY_WORDS = 4;
 
+const LOCATION_YES = ["sahi", "सही", "correct", "right", "theek", "ठीक"];
+const LOCATION_NO = ["galat", "गलत", "wrong", "incorrect"];
+
+/** Yes or no to a location read-back. Anything longer is taken as the caller giving a place. */
+export function parseLocationAnswer(utterance: string): TriageAnswer | null {
+  const text = utterance.toLowerCase();
+  const tokens = words(text);
+  if (hasPhrase(text, UNSURE)) return "unsure";
+  if (hasPhrase(text, LOCATION_NO)) return "no";
+  if (tokens.length > MAX_BARE_REPLY_WORDS) return null;
+  if (hasAny(tokens, NEGATIVE)) return "no";
+  return hasAny(tokens, POSITIVE) || hasPhrase(text, LOCATION_YES) ? "yes" : null;
+}
+
 /** Reads a spoken reply to the question just asked. Returns null when the reply is not clear. */
 export function parseAnswer(question: TriageQuestion, utterance: string): TriageAnswer | null {
   const text = utterance.toLowerCase();

@@ -241,6 +241,8 @@ body:has(.sos) { background: var(--sos-bg); }
 .case-row a { color: var(--green); }
 .case-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .case-warning { color: var(--alert); font-weight: 600; }
+.case-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.case-actions .button { flex: 1 1 120px; }
 
 .chip {
   padding: 3px 10px;

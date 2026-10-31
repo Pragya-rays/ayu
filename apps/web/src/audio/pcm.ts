@@ -60,6 +60,38 @@ export class FrameBuffer {
   }
 }
 
+/**
+ * Decides when mic input during playback is the caller rather than Ayu's own echo: it needs
+ * several loud frames in a row. Returns those frames when triggered so their speech is not lost.
+ */
+export class BargeGate {
+  private held: Int16Array[] = [];
+
+  constructor(private readonly threshold: number, private readonly requiredFrames: number) {}
+
+  push(frame: Int16Array): Int16Array[] | null {
+    if (rms(frame) < this.threshold) {
+      this.held = [];
+      return null;
+    }
+    this.held.push(frame);
+    if (this.held.length < this.requiredFrames) return null;
+    const triggered = this.held;
+    this.held = [];
+    return triggered;
+  }
+
+  reset() {
+    this.held = [];
+  }
+}
+
+function rms(frame: Int16Array) {
+  let sum = 0;
+  for (const sample of frame) sum += (sample / 0x8000) ** 2;
+  return Math.sqrt(sum / frame.length);
+}
+
 /** Decodes base64 s16le PCM to floats. A chunk may split a sample, so keep any odd trailing byte. */
 export class PcmDecoder {
   private carry: number | null = null;

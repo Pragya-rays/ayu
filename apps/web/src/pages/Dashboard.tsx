@@ -14,6 +14,13 @@ const yesNo = (value: boolean | undefined) => (value === undefined ? t.dashUnkno
 
 function CaseRow({ item, now }: { item: Case; now: number }) {
   const { location } = item;
+  const waiting = item.dispatch.status === "requested" || item.dispatch.status === "unacknowledged";
+  const act = (action: "accept" | "status", body: object) =>
+    fetch(`/api/cases/${item.id}/${action}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(() => undefined);
   return (
     <li className="case-row" data-closed={Boolean(item.closedAt)}>
       <div className="case-head">
@@ -21,26 +28,49 @@ function CaseRow({ item, now }: { item: Case; now: number }) {
         <span className="mono">{timeSince(item.createdAt, now)}</span>
         <span className="mono">{item.dispatch.status.toUpperCase()}</span>
       </div>
-      {location ? (
+      {item.dispatch.status === "unacknowledged" && <p className="case-warning">{t.dashUnacknowledged}</p>}
+      {location?.addressText && <p><strong>{location.addressText}</strong></p>}
+      {location?.lat != null && location.lng != null ? (
         <p>
           <a href={`https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}#map=17/${location.lat}/${location.lng}`} target="_blank" rel="noreferrer">
             {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
           </a>
-          <span className="mono"> · ±{Math.round(location.accuracyM)} m</span>
+          <span className="mono"> · ±{Math.round(location.accuracyM ?? 0)} m</span>
         </p>
       ) : (
         <p className="case-warning">{t.dashNoLocation}</p>
+      )}
+      {location?.status === "updated" && <p className="case-warning">{t.dashLocationUpdated}</p>}
+      {location?.status === "verified" && <p className="mono">{t.dashLocationConfirmed}</p>}
+      {location?.status === "confirming" && <p className="mono">{t.dashLocationConfirming}</p>}
+      {(location?.spokenText || location?.landmark || location?.floor) && (
+        <p>{t.dashSpokenPlace}: <strong>{[location.spokenText, location.landmark, location.floor].filter(Boolean).join(" · ")}</strong></p>
       )}
       <p>
         {t.dashResponding}: <strong>{yesNo(item.triage.responsive)}</strong> · {t.dashBreathing}: <strong>{yesNo(item.triage.breathingNormally)}</strong>
         {item.triage.emergencyType && <> · {t.dashType}: <strong>{item.triage.emergencyType}</strong></>}
       </p>
       {item.protocolId && <p>{t.dashProtocol}: <strong>{item.protocolId}</strong></p>}
+      {item.dispatch.ambulanceId && (
+        <p>
+          {t.dashAmbulance}: <strong>{item.dispatch.ambulanceId}</strong>
+          {item.dispatch.status !== "arrived" && item.dispatch.etaMinutes !== undefined && ` · ETA ${item.dispatch.etaMinutes} min`}
+        </p>
+      )}
       <p className="mono">
         {item.lang} · {t.dashTurns}: {item.metrics.turns}
         {item.metrics.activationToFirstLineMs !== undefined && ` · ${t.dashFirstLine}: ${item.metrics.activationToFirstLineMs} ms`}
         {item.metrics.tapToFirstInstructionMs !== undefined && ` · ${t.dashFirstInstruction}: ${(item.metrics.tapToFirstInstructionMs / 1000).toFixed(1)} s`}
       </p>
+      {!item.closedAt && item.dispatch.status !== "arrived" && (
+        <div className="case-actions">
+          {waiting && <button className="button ink small" onClick={() => act("accept", {})}>{t.dashAccept}</button>}
+          {!waiting && item.dispatch.status !== "en_route" && (
+            <button className="button plain small" onClick={() => act("status", { status: "en_route" })}>{t.dashOnWay}</button>
+          )}
+          {!waiting && <button className="button plain small" onClick={() => act("status", { status: "arrived" })}>{t.dashArrived}</button>}
+        </div>
+      )}
     </li>
   );
 }
@@ -121,6 +151,7 @@ export function Dashboard() {
           {cases.map((item) => <CaseRow key={item.id} item={item} now={now} />)}
         </ul>
       )}
+      <p className="mono">{t.dashOsm}</p>
     </main>
   );
 }

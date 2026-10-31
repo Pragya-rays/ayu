@@ -1,6 +1,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { CaseStore } from "../cases/store.js";
+import type { DispatchSimulator } from "../dispatch/simulator.js";
 import { RateLimiter } from "./rateLimit.js";
 
 const COOKIE = "ayu_dashboard";
@@ -20,6 +21,7 @@ function readCookie(header: string | undefined, name: string) {
 export function registerDashboardRoutes(
   app: FastifyInstance,
   cases: CaseStore,
+  dispatch: DispatchSimulator,
   options: { secret: string; secureCookies: boolean },
 ) {
   const token = createHmac("sha256", options.secret).update("dashboard-session").digest("hex");
@@ -47,6 +49,29 @@ export function registerDashboardRoutes(
     const item = cases.get(request.params.id);
     if (!item) return reply.code(404).send({ error: "not_found" });
     return { ...item, timeline: cases.eventsFor(item.id) };
+  });
+
+  app.post<{ Params: { id: string }; Body: { ambulanceId?: string } }>("/api/cases/:id/accept", {
+    preHandler: requireDashboard,
+    schema: { body: { type: "object", additionalProperties: false, properties: { ambulanceId: { type: "string", maxLength: 40 } } } },
+  }, async (request, reply) => {
+    const accepted = dispatch.accept(request.params.id, request.body?.ambulanceId);
+    return accepted ? accepted : reply.code(404).send({ error: "not_found" });
+  });
+
+  app.post<{ Params: { id: string }; Body: { status: "en_route" | "arrived" } }>("/api/cases/:id/status", {
+    preHandler: requireDashboard,
+    schema: {
+      body: {
+        type: "object",
+        required: ["status"],
+        additionalProperties: false,
+        properties: { status: { enum: ["en_route", "arrived"] } },
+      },
+    },
+  }, async (request, reply) => {
+    const updated = dispatch.setStatus(request.params.id, request.body.status);
+    return updated ? updated : reply.code(404).send({ error: "not_found" });
   });
 
   app.get("/api/cases/stream", { preHandler: requireDashboard }, (request, reply) => {

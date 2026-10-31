@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
+import type { AddressLookup } from "../cases/addresses.js";
 import type { CaseStore } from "../cases/store.js";
+import type { DispatchSimulator } from "../dispatch/simulator.js";
 import type { Lang } from "../types/voice.js";
 import { RateLimiter } from "./rateLimit.js";
 
@@ -19,7 +21,11 @@ interface StartBody {
   accuracyM?: number;
 }
 
-export function registerSosRoutes(app: FastifyInstance, cases: CaseStore) {
+export function registerSosRoutes(
+  app: FastifyInstance,
+  deps: { cases: CaseStore; dispatch: DispatchSimulator; addresses: AddressLookup },
+) {
+  const { cases, dispatch, addresses } = deps;
   const startLimiter = new RateLimiter(10, 60_000);
 
   app.post<{ Body: StartBody }>("/api/sos/start", {
@@ -39,6 +45,8 @@ export function registerSosRoutes(app: FastifyInstance, cases: CaseStore) {
     }
     const location = lat !== undefined && lng !== undefined ? { lat, lng, accuracyM: accuracyM ?? 0 } : undefined;
     const created = cases.create({ lang, location });
+    dispatch.track(created.id);
+    addresses.start(created.id);
     return reply.code(201).send({ caseId: created.id });
   });
 
@@ -48,7 +56,9 @@ export function registerSosRoutes(app: FastifyInstance, cases: CaseStore) {
     },
   }, async (request, reply) => {
     const updated = cases.setLocation(request.params.id, request.body);
-    return updated ? { ok: true } : reply.code(404).send({ error: "not_found" });
+    if (!updated) return reply.code(404).send({ error: "not_found" });
+    addresses.start(updated.id);
+    return { ok: true };
   });
 
   app.post<{ Params: { id: string } }>("/api/sos/:id/cancel", async (request, reply) => {

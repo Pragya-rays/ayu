@@ -4,11 +4,13 @@ import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";
 import Fastify from "fastify";
 import { NoLLM } from "./adapters/llm.js";
+import type { DispatchSimulator } from "./dispatch/simulator.js";
 import { registerDashboardRoutes } from "./routes/dashboard.js";
 import { registerSosRoutes } from "./routes/sos.js";
 import { registerVoiceGateway, type VoiceGatewayDeps } from "./voice/gateway.js";
 
 export interface AppDeps extends VoiceGatewayDeps {
+  dispatch: DispatchSimulator;
   dashboardSecret: string;
   production: boolean;
 }
@@ -23,8 +25,8 @@ export async function buildApp(deps: AppDeps) {
   const llm = deps.llm instanceof NoLLM ? "rules" : "gemini";
   app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab, llm }));
   registerVoiceGateway(app, deps);
-  registerSosRoutes(app, deps.cases);
-  registerDashboardRoutes(app, deps.cases, { secret: deps.dashboardSecret, secureCookies: deps.production });
+  registerSosRoutes(app, deps);
+  registerDashboardRoutes(app, deps.cases, deps.dispatch, { secret: deps.dashboardSecret, secureCookies: deps.production });
 
   const webDist = resolve(import.meta.dirname, "../../apps/web/dist");
   if (existsSync(webDist)) {
