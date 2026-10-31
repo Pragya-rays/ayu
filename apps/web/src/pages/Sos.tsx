@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang } from "../../../../server/src/types/voice";
-import { fetchLocalLine, playLocalLine } from "../audio/voiceClient";
+import { fetchLocalLine, playLocalLine, requestMic } from "../audio/voiceClient";
 import { useVoice } from "../hooks/useVoice";
 import type { StringKey } from "../i18n/strings";
 
@@ -58,15 +58,20 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   const voiceStarted = useRef(false);
   const exiting = useRef(false);
   const openingAudio = useRef<ArrayBuffer | null>(null);
+  const mic = useRef<Promise<MediaStream> | null>(null);
   const { start: startVoice, stop: stopVoice } = voice;
 
   useWakeLock(stage === "active");
 
-  // The countdown is time to fetch the opening, so it can play the moment the countdown ends.
+  // The countdown is time to fetch the opening, so it can play the moment the countdown ends,
+  // and to start the mic, so iOS does not interrupt that playback by switching audio modes.
   useEffect(() => {
     void fetchLocalLine(`/audio/opening-${lang}.pcm`).then((pcm) => {
       openingAudio.current = pcm;
     });
+    if (mic.current) return;
+    mic.current = requestMic();
+    mic.current.catch(() => undefined); // a refusal is reported when the session starts
   }, [lang]);
 
   useEffect(() => {
@@ -91,6 +96,7 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   const activate = useCallback(async () => {
     const activatedAt = performance.now();
     setStage("active");
+    void audio.resume();
     const pcm = openingAudio.current;
     const localOpening = pcm
       ? { finished: playLocalLine(audio, pcm), startedAfterMs: performance.now() - activatedAt }
@@ -103,7 +109,11 @@ export function Sos({ lang, t, audio, onExit }: Props) {
         positionSent.current = true;
         void post(`/api/sos/${id}/location`, position.current).catch(() => undefined);
       }
-      await startVoice(audio, { echo: false, bargeIn: false, session: { caseId: id, activatedAt, localOpening } });
+      await startVoice(audio, {
+        echo: false,
+        bargeIn: false,
+        session: { caseId: id, activatedAt, localOpening, mic: mic.current ?? undefined },
+      });
     } catch {
       setStage("failed");
     }
@@ -133,6 +143,7 @@ export function Sos({ lang, t, audio, onExit }: Props) {
     exiting.current = true;
     if (caseId.current) await post(`/api/sos/${caseId.current}/cancel`).catch(() => undefined);
     stopVoice();
+    void mic.current?.then((stream) => stream.getTracks().forEach((track) => track.stop())).catch(() => undefined);
     if (audio.state !== "closed") void audio.close().catch(() => undefined);
     onExit();
   };

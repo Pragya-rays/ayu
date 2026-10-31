@@ -49,6 +49,14 @@ export interface VoiceSession {
   activatedAt: number;
   /** Set when the opening already played from the phone's copy, so the server continues after it. */
   localOpening?: { startedAfterMs: number; finished: Promise<void> };
+  /** Microphone requested earlier. Starting it on iOS reconfigures audio and can cut off playback. */
+  mic?: Promise<MediaStream>;
+}
+
+export function requestMic() {
+  return navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  });
 }
 
 export interface VoiceClientOptions {
@@ -94,9 +102,7 @@ export class VoiceClient {
       this.options.onClosed();
     };
 
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
+    this.stream = await (session?.mic ?? requestMic());
     await this.startCapture(socket, this.stream);
   }
 
@@ -158,7 +164,7 @@ export class VoiceClient {
         this.player.stop();
         return;
       case "tts.start":
-        this.player.stop();
+        // Lines queue rather than replace each other, so a late arrival never clips the one playing.
         this.player.reset();
         this.activeTtsId = message.ttsId;
         this.ttsRate = message.sampleRate;

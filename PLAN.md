@@ -14,7 +14,7 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | **Current phase** | Phase 3, SOS Brain. Phase 2 accepted by the team with open items R16 and R17 |
 | **Phase state** | Deployed at https://ayu-4801.onrender.com with Gnani and Gemini active. **Waiting for team testing by voice on a phone** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of the audio fix and confirms the speed on a phone |
+| **Next action** | Team approves the push of the iPhone audio fix (R22), then confirms on the phone |
 | **Blocked on** | Team approval to push, medical reviewer's qualification (D9), award and posting decisions (D3, D4), noisy clips before Phase 4 |
 
 ### If you are an AI agent resuming this project
@@ -203,7 +203,7 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Protocol switch when a caller reports a change | Tested in unit tests |
 | Severity on phone, triage and protocol on dashboard | Tested (live) |
 | Answering by real voice on a phone | Validated by the team on iPhone XR in a quiet setting: CPR, choking and button paths correct, answers heard first time. Noise untested |
-| Pre-generated audio (all 21 fixed lines) | Tested (live) locally. **Not deployed** |
+| Pre-generated audio (all 21 fixed lines) | Deployed 10-31 (`7b5b439`). Live run in desktop Chrome: 8/8, server lines started in 0-1 ms. **Not yet confirmed on iPhone** |
 | Deployment of Phase 3 | Deployed 10-31 at https://ayu-4801.onrender.com |
 
 **Exit criteria (team to complete):**
@@ -365,6 +365,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R18 | **SOS gives no real first aid yet.** Every protocol is a "pending medical review" line. Triage rules are unreviewed too | **High** | Needs a qualified reviewer (D9). No AI may write this content |
 | R19 | Mic is off while Ayu speaks, so a caller talking over the opening or a question is not heard | Medium | Barge-in in Phase 4. Buttons work meanwhile |
 | R20 | First instruction takes about 3.1 s after the countdown on buttons locally, because both questions are spoken first. Voice answers add more. The 3-second countdown itself is also silent | Medium | Measure on phones; judges will see this number. See D13 |
+| R22 | After the audio fix the team reported the voice "feels half" on iPhone. Meaning not confirmed (cut off or quiet). Two likely causes fixed locally: mic now starts during the countdown, and lines queue instead of replacing each other. Not reproducible on desktop | **High** | Confirm on the iPhone after deployment |
 | R21 | Voice answers work in a quiet setting; ASR errors and noise may still produce wrong yes/no readings | **High** | Noisy clips, Phase 8 |
 | R11 | Hindi and Hinglish copy is unreviewed draft | Low | Phase 7 |
 | R12 | The original docs are not updated with section 4 and 5 findings | Low | PLAN.md overrides; update docs after team agrees D3 |
