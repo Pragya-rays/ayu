@@ -155,6 +155,14 @@ body {
 .toggle { display: flex; align-items: center; gap: 10px; min-height: 40px; color: var(--gray); }
 .error { color: var(--alert); margin: 0; }
 
+.text-link { min-height: 44px; border: 0; background: none; color: var(--green); font: 500 16px var(--font-body); text-decoration: underline; cursor: pointer; }
+.medical { display: flex; flex-direction: column; gap: 12px; }
+.medical form { display: flex; flex-direction: column; gap: 12px; }
+.medical label { display: flex; flex-direction: column; gap: 4px; font-weight: 500; }
+.medical input { min-height: 48px; padding: 0 12px; border: 1px solid rgba(14, 14, 12, 0.2); border-radius: var(--radius); font: 16px var(--font-body); }
+.medical-card h2 { margin: 0 0 6px; font-size: 16px; }
+.medical-card { display: flex; flex-direction: column; gap: 4px; }
+.medical-card p { margin: 0; overflow-wrap: anywhere; }
 .normal-line { min-height: 110px; display: flex; flex-direction: column; gap: 8px; }
 .normal-line p:first-child { font-size: 22px; line-height: 1.3; font-weight: 500; }
 .serious { display: flex; flex-direction: column; gap: 10px; border: 2px solid var(--alert); }

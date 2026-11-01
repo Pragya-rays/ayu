@@ -14,7 +14,8 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | **Current phase** | All buildable work for Phases 6-9 is done. Phases 1-5 validated on iPhone XR in quiet conditions; Phase 6 awaits the team's test. What remains needs people (sections 7 and 10) |
 | **Phase state** | Deployed 11-01 (`5ee2d00`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves one push of the batched work, then tests Phase 6 and the shorter lines on the iPhone |
+| **Next action** | Team approves the push of Medical ID and Share. Live version is `ef13e5d`. Then first post (D4), phone test, medical review, video last, submit |
+| **REMINDER 2** | **Final phone test is postponed: the team's phone is unavailable (11-01).** Remind them when the phone is back, and before any further phone-dependent work. Covers Phase 6 brief, transcript, driver buttons, shorter SOS lines, and Airplane Mode |
 | **REMINDER** | **Medical review is parked at the team's request (11-01). Raise it again at the end of every phase, and no later than Phase 7 (Nov 5).** Until then every script and card stays a placeholder. Sheet: `docs/medical-review/REVIEW_SHEET.md`. Also open: whether the team member is medically qualified (D9) |
 | **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
 
@@ -108,6 +109,7 @@ These differ from or add to the Project Summary.
 - **Award names:** the target "Real World Impact" is actually **Real Deal** ("most useful real-world problem solved"; rural health workers are a listed example). Others relevant to us: **Mixed Vibes** (code-mixed voice), **Noise Canceller** (noisy real telephonic audio), **Two-Person Army**, **Demo Day Drop** (best **60-second** video), **Small Town, Big Build** (Tier 2/3 college or city), **Crowd Favourite** (public votes). Max one award per entrant. Healthcare is not its own category.
 - **Internship shortlisting is driven by verified post engagement.** The published steps are engagement check, eligibility check, then "eligible projects with the strongest verified engagement", then interviews. Purchased votes, bots and engagement exchanges are excluded.
 - **Mandatory submission items:** working app shown in a public video; project title, problem, target users, Gnani models used, each member's contribution; a demo video; a public LinkedIn or X post **live before submission**, tagging Gnani AI with `#GreatIndianAIInternshipChallenge` and `#GnaniAI`; one nominated link per platform.
+- **Authenticity (read 11-01):** "plagiarism and misleading demos aren't allowed". The FAQ advises synthetic data and no real phone numbers, account numbers, Aadhaar, PAN or recorded calls. No rule on AI coding tools was found, and each member is interviewed individually.
 - **Eligibility:** enrolled at an Indian college, 18+. Both teammates must qualify; teammate must accept terms.
 - **Evon v3.3 is not on the API platform**, so Gnani's own LLM is not available to us that way. Gemini stays (Open Question 3 is effectively answered).
 - Prisma v3.0 and Timbre v3.0 are listed as newer releases. Using them is allowed; name each model used in the submission.
@@ -284,14 +286,15 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 - [ ] Open `/driver` on a second device and accept from there
 
 ### Phase 7 — Safety, Resilience, Polish · **BUILD WORK DONE, content waiting on people**
-The team asked on 11-01 to build straight through and finish by Nov 2, so remaining build work is batched into one push.
+The team asked on 11-01 to build straight through, then returned to the usual pace the same day: the deadline stays Nov 10, one phase at a time with team review. Work below was built during that push.
 
 | Item | Status |
 |---|---|
 | Pre-generated Timbre audio for all fixed lines | Done, 114 lines |
 | Shorter SOS lines (D14), decided by the assistant on the team's request to keep moving | Built, not yet heard on a phone |
 | Service worker: app opens offline, spoken and written "call 112", never claims help was sent | Tested in Chrome, 5/5. **Not tried on a real phone.** Offline triage is not built |
-| Medical ID and emergency contact link | **Cut** under the plan's cut order, to protect testing time |
+| Medical ID: optional, stored on the phone, sent only with an SOS, shown apart from the brief, deletable | Restored 11-01, tested in Chrome 7/7. **Not deployed; not tried on a real phone** |
+| Share my location during SOS: the caller's own share sheet, falling back to copy. Ayu sends nothing itself (keeps the no-SMS rule) | Restored 11-01, tested in Chrome and unit tests. **Native share sheet not tried on a phone during SOS** |
 | Doctor review, replacing placeholders | **Waiting on the team (parked)** |
 | Native-speaker review of Hindi and Hinglish | **Waiting on the team** |
 
@@ -426,9 +429,9 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 
 | # | Question | Recommendation | Needed by |
 |---|---|---|---|
-| D1 | Gnani key | **Answered 10-31:** team member will supply it, added to `.env` locally. Still to confirm: team of two and both eligible | Now |
+| D1 | Team and key | **Decided 11-01:** team of two at SRMCE, Lucknow, both registered. Aryan Pandey did the UI, Pragya the backend. Key held in `.env` | Done |
 | D2 | Which HTTPS host? | **Decided 10-31: Render.** Confirm plan limits (idle sleep, persistent disk) at setup; these affect demos and D6 | Set up in Phase 2 |
-| D3 | Update target award from "Real World Impact" to **Real Deal**, with Mixed Vibes and Noise Canceller as secondary? | Yes. Also check if Lucknow qualifies for Small Town, Big Build | Now |
+| D3 | Target award. **Decided 11-01, team deferred to the recommendation:** Real Deal first; Two-Person Army and Mixed Vibes also fit. The page does not say entrants choose, and does not define Tier 2 or 3 towns, so Small Town, Big Build is unconfirmed for SRMCE, Lucknow | Done |
 | D4 | **Post early, not on Nov 9.** Shortlisting depends on verified engagement, and the plan leaves almost no time for it | Build-in-public post around Phase 2-3, final post Nov 8-9. Authentic reach only | By Nov 3 |
 | D5 | Add Playwright as a dev dependency for repeatable browser tests? | Optional. Worth it if the UI gets complex | Phase 2 |
 | D6 | DB for the case store | **Decided 10-31:** in memory (I10). Revisit only if demo history must survive restarts | Done |
@@ -439,7 +442,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | D12 | Render's free plan takes about a minute to wake after 15 idle minutes, which a judge may hit. Paid plan for demo week, or keep it awake some other way? | Decide before submission; check Render pricing then. No paid choice without team approval | Phase 9 |
 | D7 | Gemini model and key | **Decided 10-31:** `gemini-3.1-flash-lite` (I17), free-tier key in `.env`. Google's rate-limit page does not state whether free-tier data is used for training, so only scripted test calls may pass through it | Done |
 | D8 | Reverse geocoding provider | **Decided 10-31: OpenStreetMap Nominatim.** Policy: https://operations.osmfoundation.org/policies/nominatim/ (at most 1 request per second across the whole app, identifying User-Agent, cached results, visible attribution, must be switchable off, no personal data, no bulk or systematic use, no autocomplete). `GEOCODER=off` disables it. Public Nominatim has no uptime promise and the policy can change, so a real deployment needs a paid or self-hosted geocoder | Done |
-| D9 | Who reviews the medical content? | Team member said on 11-01 they are qualified. **Open:** the Project Summary describes the team member as a B.Tech CS/DS student, so name, qualification and registration are needed before any "Reviewed by" label. The label is public and must be truthful. Review sheet is at `docs/medical-review/REVIEW_SHEET.md`, git-ignored, and nothing from it is in the app | **Now** |
+| D9 | Who reviews the medical content? | Pragya said on 11-01 they are qualified. **Open:** the Summary's B.Tech CS/DS line originally described Aryan and was renamed, so it proves nothing either way. Qualification and registration are still needed before any "Reviewed by" label. The label is public and must be truthful. Review sheet is at `docs/medical-review/REVIEW_SHEET.md`, git-ignored, and nothing from it is in the app | **Now** |
 | D10 | Produce a 60-second cut for Demo Day Drop as well as the 2-3 minute plan? | Yes; one recording session can yield both | Phase 9 |
 | D11 | Evaluate some calls at 8 kHz to mimic telephony for Noise Canceller? (Not real telephony, which stays cut) | Yes, cheap to add in Phase 8 | Phase 8 |
 
@@ -560,6 +563,9 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - Offline in Chrome: 5/5 (app opens, says to call 112, never claims help was sent). Three-screen 11/11 with shorter lines. Hindi and English end to end 10/10.
 - Synthetic scorecard: correct script 40/40, landmark 38/40, number 8/8, short answers 16/16, median Prisma about 0.7 s. Real failures: "Aminabad" split by noise, twice. The first run showed 0/8 for numbers because of a bug in the scorer, not Prisma; re-scored from the same transcripts, with no new calls.
 - Limits: synthetic speech and noise; file mode, not the live stream; only the first sentence passed through noise.
+
+**2026-11-01, Phase 7 Medical ID and share**
+- `npm test`: 222 of 222 (server 210, web 12). Chrome 7/7, three-screen 11/11. The browser test found Share did nothing if the share sheet failed; fixed with a copy fallback, applied to Normal mode too.
 
 ---
 

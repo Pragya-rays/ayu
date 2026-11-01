@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang, SosState } from "../../../../server/src/types/voice";
 import { fetchLocalLine, playLocalLine, requestMic } from "../audio/voiceClient";
+import { shareOrCopy } from "../audio/share";
 import { useVoice } from "../hooks/useVoice";
 import type { StringKey } from "../i18n/strings";
+import type { MedicalId } from "./MedicalId";
 
 const COUNTDOWN_SECONDS = 3;
 const GPS_TIMEOUT_MS = 8000;
@@ -16,6 +18,7 @@ interface Props {
   lang: Lang;
   t: (key: StringKey) => string;
   audio: AudioContext;
+  medicalId: MedicalId | null;
   onExit(): void;
 }
 
@@ -48,11 +51,12 @@ function useWakeLock(enabled: boolean) {
   }, [enabled]);
 }
 
-export function Sos({ lang, t, audio, onExit }: Props) {
+export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
   const voice = useVoice(lang);
   const [stage, setStage] = useState<Stage>("arming");
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
   const [gps, setGps] = useState<GpsState>("waiting");
+  const [copied, setCopied] = useState(false);
   const caseId = useRef<string | null>(null);
   const position = useRef<Position | null>(null);
   const sentAccuracy = useRef(Number.POSITIVE_INFINITY);
@@ -117,7 +121,7 @@ export function Sos({ lang, t, audio, onExit }: Props) {
       : undefined;
     try {
       sentAccuracy.current = position.current?.accuracyM ?? Number.POSITIVE_INFINITY;
-      const { caseId: id } = await post("/api/sos/start", { lang, consent: true, ...position.current });
+      const { caseId: id } = await post("/api/sos/start", { lang, consent: true, ...position.current, medicalId: medicalId ?? undefined });
       caseId.current = id;
       sendPosition(id);
       await startVoice(audio, {
@@ -128,7 +132,7 @@ export function Sos({ lang, t, audio, onExit }: Props) {
     } catch {
       setStage("failed");
     }
-  }, [audio, lang, sendPosition, startVoice]);
+  }, [audio, lang, medicalId, sendPosition, startVoice]);
 
   useEffect(() => {
     if (stage !== "arming") return;
@@ -156,6 +160,14 @@ export function Sos({ lang, t, audio, onExit }: Props) {
     if (voice.status !== "idle") voiceStarted.current = true;
     else if (voiceStarted.current && !exiting.current) setStage("failed");
   }, [voice.status]);
+
+  /** The caller's own share sheet, so they choose who hears. Ayu never messages anyone itself. */
+  const shareLocation = async () => {
+    const spot = position.current;
+    if (!spot) return;
+    const text = `${t("sosShareText")} https://www.openstreetmap.org/?mlat=${spot.lat}&mlon=${spot.lng}#map=17/${spot.lat}/${spot.lng}`;
+    if (await shareOrCopy(text) === "copied") setCopied(true);
+  };
 
   const exit = async () => {
     exiting.current = true;
@@ -235,6 +247,9 @@ export function Sos({ lang, t, audio, onExit }: Props) {
           </div>
         )}
         <a className="button sos-call" href="tel:112">{t("call112")}</a>
+        {gps === "ok" && !arrived && (
+          <button className="button sos-cancel small" onClick={shareLocation}>{copied ? t("sosShareCopied") : t("sosShare")}</button>
+        )}
         <button className="button sos-cancel small" onClick={exit}>{arrived ? t("sosClose") : t("sosCancel")}</button>
         <p className="sos-disclaimer">{t("disclaimer")}</p>
       </div>

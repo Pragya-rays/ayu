@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { AddressLookup } from "../cases/addresses.js";
 import type { CaseStore } from "../cases/store.js";
 import type { DispatchSimulator } from "../dispatch/simulator.js";
+import type { Case } from "../types/case.js";
 import type { Lang } from "../types/voice.js";
 import { RateLimiter } from "./rateLimit.js";
 
@@ -13,12 +14,15 @@ const coordinates = {
   accuracyM: { type: "number", minimum: 0 },
 } as const;
 
+const medicalField = { type: "string", maxLength: 200 } as const;
+
 interface StartBody {
   lang: Lang;
   consent: boolean;
   lat?: number;
   lng?: number;
   accuracyM?: number;
+  medicalId?: Case["medicalId"];
 }
 
 export function registerSosRoutes(
@@ -34,17 +38,26 @@ export function registerSosRoutes(
         type: "object",
         required: ["lang", "consent"],
         additionalProperties: false,
-        properties: { lang: { enum: ["hi", "hinglish", "en"] }, consent: { type: "boolean" }, ...coordinates },
+        properties: {
+          lang: { enum: ["hi", "hinglish", "en"] },
+          consent: { type: "boolean" },
+          ...coordinates,
+          medicalId: {
+            type: "object",
+            additionalProperties: false,
+            properties: { allergies: medicalField, conditions: medicalField, medicines: medicalField },
+          },
+        },
       },
     },
   }, async (request, reply) => {
-    const { lang, consent, lat, lng, accuracyM } = request.body;
+    const { lang, consent, lat, lng, accuracyM, medicalId } = request.body;
     if (!consent) return reply.code(400).send({ error: "consent_required" });
     if (!startLimiter.allow(request.ip) || cases.activeCount() >= MAX_ACTIVE_CASES) {
       return reply.code(429).send({ error: "too_many_requests" });
     }
     const location = lat !== undefined && lng !== undefined ? { lat, lng, accuracyM: accuracyM ?? 0 } : undefined;
-    const created = cases.create({ lang, location });
+    const created = cases.create({ lang, location, medicalId });
     dispatch.track(created.id);
     addresses.start(created.id);
     return reply.code(201).send({ caseId: created.id });

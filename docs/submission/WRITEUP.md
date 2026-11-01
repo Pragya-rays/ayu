@@ -1,7 +1,7 @@
 # Ayu: a Hindi and Hinglish voice assistant for health emergencies
 
 **Live app:** https://ayu-4801.onrender.com · **Code:** https://github.com/Pragya-rays/ayu
-**Team:** TODO names · **Gnani models used:** Prisma v3.0 (speech to text), Timbre v2.5 (text to speech)
+**Team of two:** Pragya and Aryan Pandey, SRMCE, Lucknow · **Gnani models used:** Prisma v3.0 (speech to text), Timbre v2.5 (text to speech)
 
 > Prototype, not a medical device. It does not replace emergency services. Ambulance dispatch is simulated.
 
@@ -19,7 +19,7 @@ Small hospitals often have no 24x7 call centre, so one front-desk person has to 
 
 ## What Ayu does
 
-**SOS.** One tap starts a 3-second countdown, then Ayu shares the location and raises a simulated ambulance request straight away, before asking anything. It asks two questions, whether the person is responding and breathing normally, and fixed rules choose severity and a script. Ayu reads the area back so the caller can correct it, reports ambulance status, re-checks breathing every 45 seconds, and tells the caller to call 112 in every red case and whenever no one accepts within 60 seconds.
+**SOS.** One tap starts a 3-second countdown, then Ayu shares the location and raises a simulated ambulance request straight away, before asking anything. It asks two questions, whether the person is responding and breathing normally, and fixed rules choose severity and a script. Ayu reads the area back so the caller can correct it, reports ambulance status, re-checks breathing every 45 seconds, and tells the caller to call 112 in every red case and whenever no one accepts within 60 seconds. An optional Medical ID, stored only on the phone, reaches responders only when an SOS starts, and the caller can share their location with family through their own phone.
 
 **Normal mode.** A short voice conversation for everyday problems. Gemini writes fitted follow-up questions, while warning-sign questions stay fixed. Chest or jaw pain, breathlessness and similar signs bring up "Switch to SOS?" It never diagnoses or names medicines.
 
@@ -99,4 +99,5 @@ A consent screen explains that voice is processed by speech services and locatio
 
 ## Team contributions
 
-TODO: each member's name and what they did.
+- **Pragya:** backend
+- **Aryan Pandey:** user interface

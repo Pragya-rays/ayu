@@ -4,6 +4,7 @@ import { unlockAudio } from "./audio/voiceClient";
 import { strings, type StringKey } from "./i18n/strings";
 import { Dashboard } from "./pages/Dashboard";
 import { Driver } from "./pages/Driver";
+import { MedicalIdPage, type MedicalId } from "./pages/MedicalId";
 import { Normal } from "./pages/Normal";
 import { Sos } from "./pages/Sos";
 import { VoiceCheck } from "./pages/VoiceCheck";
@@ -48,6 +49,14 @@ function PhoneApp() {
   const [sosAudio, setSosAudio] = useState<AudioContext | null>(null);
   const [talkAudio, setTalkAudio] = useState<AudioContext | null>(null);
   const [voiceLab, setVoiceLab] = useState(false);
+  const [medicalOpen, setMedicalOpen] = useState(false);
+  const [medicalId, setMedicalId] = useState<MedicalId | null>(() => {
+    try {
+      return JSON.parse(readStored("ayu.medicalId") ?? "null") as MedicalId | null;
+    } catch {
+      return null;
+    }
+  });
   const t = (key: StringKey) => strings[lang][key];
 
   useEffect(() => {
@@ -65,6 +74,11 @@ function PhoneApp() {
   const accept = () => {
     writeStored("ayu.consentAt", new Date().toISOString());
     setConsented(true);
+  };
+
+  const saveMedicalId = (value: MedicalId | null) => {
+    setMedicalId(value);
+    writeStored("ayu.medicalId", JSON.stringify(value));
   };
 
   if (!consented) {
@@ -87,7 +101,8 @@ function PhoneApp() {
     );
   }
 
-  if (sosAudio) return <Sos lang={lang} t={t} audio={sosAudio} onExit={() => setSosAudio(null)} />;
+  if (sosAudio) return <Sos lang={lang} t={t} audio={sosAudio} medicalId={medicalId} onExit={() => setSosAudio(null)} />;
+  if (medicalOpen) return <MedicalIdPage t={t} value={medicalId} onSave={saveMedicalId} onBack={() => setMedicalOpen(false)} />;
   if (talkAudio) {
     return (
       <Normal
@@ -118,6 +133,7 @@ function PhoneApp() {
         <div className="actions">
           <button className="button ink" onClick={() => setTalkAudio(unlockAudio())}>{t("talk")}</button>
           <button className="button sos" onClick={() => setSosAudio(unlockAudio())}>{t("sos")}</button>
+          <button className="text-link" onClick={() => setMedicalOpen(true)}>{t(medicalId ? "medicalEdit" : "medicalAdd")}</button>
           <p className="mono">{t("disclaimer")}</p>
         </div>
       </main>

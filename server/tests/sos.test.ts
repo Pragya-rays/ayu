@@ -67,6 +67,17 @@ describe("SOS routes", () => {
     expect(cases.get(caseId)!.location).toMatchObject(position);
   });
 
+  it("stores a Medical ID only when the caller sends one, with limits", async () => {
+    const { caseId } = (await post("/api/sos/start", { lang: "en", consent: true, medicalId: { allergies: "penicillin" } })).json();
+    expect(cases.get(caseId)!.medicalId).toEqual({ allergies: "penicillin" });
+    expect(cases.get(caseId)!.brief).not.toContain("penicillin");
+    const plain = (await post("/api/sos/start", { lang: "en", consent: true })).json();
+    expect(cases.get(plain.caseId)!.medicalId).toBeUndefined();
+    expect((await post("/api/sos/start", { lang: "en", consent: true, medicalId: { allergies: "x".repeat(201) } })).statusCode).toBe(400);
+    const extra = (await post("/api/sos/start", { lang: "en", consent: true, medicalId: { aadhaar: "1", allergies: "dust" } })).json();
+    expect(cases.get(extra.caseId)!.medicalId).toEqual({ allergies: "dust" });
+  });
+
   it("requires consent and validates input", async () => {
     expect((await post("/api/sos/start", { lang: "hi", consent: false })).statusCode).toBe(400);
     expect((await post("/api/sos/start", { lang: "fr", consent: true })).statusCode).toBe(400);

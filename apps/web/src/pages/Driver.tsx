@@ -1,7 +1,7 @@
 import type { Case } from "../../../../server/src/types/case";
 import { caseAction, useCases } from "../hooks/useCases";
 import { strings } from "../i18n/strings";
-import { DashboardLogin } from "./Dashboard";
+import { DashboardLogin, MedicalIdCard } from "./Dashboard";
 
 const t = strings.en;
 
@@ -26,6 +26,7 @@ function DriverCard({ item }: { item: Case }) {
         </a>
       )}
       <p className="driver-brief">{item.brief}</p>
+      {item.medicalId && <MedicalIdCard medicalId={item.medicalId} />}
       <div className="driver-actions">
         {waiting && <button className="button ink" onClick={() => caseAction(item.id, "accept", {})}>{t.dashAccept}</button>}
         {!waiting && dispatch.status !== "en_route" && dispatch.status !== "arrived" && (

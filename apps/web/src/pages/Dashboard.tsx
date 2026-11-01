@@ -38,6 +38,18 @@ export function DashboardLogin({ onLogin, failed }: { onLogin(secret: string): v
   );
 }
 
+/** Caller-entered text, kept apart from the brief, which holds confirmed fields only. */
+export function MedicalIdCard({ medicalId }: { medicalId: NonNullable<Case["medicalId"]> }) {
+  return (
+    <section className="medical-card">
+      <h2>{t.medicalTitle}</h2>
+      {medicalId.allergies && <p>{t.medicalAllergies}: <strong>{medicalId.allergies}</strong></p>}
+      {medicalId.conditions && <p>{t.medicalConditions}: <strong>{medicalId.conditions}</strong></p>}
+      {medicalId.medicines && <p>{t.medicalMedicines}: <strong>{medicalId.medicines}</strong></p>}
+    </section>
+  );
+}
+
 function CaseRow({ item, now, selected, onSelect }: { item: Case; now: number; selected: boolean; onSelect(): void }) {
   const { location } = item;
   const waiting = item.dispatch.status === "requested" || item.dispatch.status === "unacknowledged";
@@ -131,6 +143,7 @@ function CaseDetail({ item, tick }: { item: Case; tick: number }) {
         <p>{item.brief}</p>
         {onset && <p className="mono">{t.dashOnset}: {onset}</p>}
       </section>
+      {item.medicalId && <MedicalIdCard medicalId={item.medicalId} />}
       <section>
         <h2>{t.dashTranscript}</h2>
         {transcript.length === 0 && <p className="mono">{t.dashNoSpeech}</p>}

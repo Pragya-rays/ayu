@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { NormalSummary } from "../../../../server/src/types/normal";
 import type { Lang } from "../../../../server/src/types/voice";
+import { shareOrCopy } from "../audio/share";
 import { useVoice } from "../hooks/useVoice";
 import type { StringKey } from "../i18n/strings";
 
@@ -24,15 +25,7 @@ function SummaryCard({ summary, t, onDone }: { summary: NormalSummary; t: Props[
       "",
       t("disclaimer"),
     ].join("\n");
-    try {
-      if (navigator.share) await navigator.share({ text });
-      else {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-      }
-    } catch {
-      // The person cancelled the share sheet, or the browser refused.
-    }
+    if (await shareOrCopy(text) === "copied") setCopied(true);
   };
 
   return (

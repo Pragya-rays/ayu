@@ -15,7 +15,7 @@ export class CaseStore {
   private readonly listeners = new Set<Listener>();
   private readonly timelineListeners = new Set<(caseId: string) => void>();
 
-  create(input: { lang: Lang; location?: LocationInput }): Case {
+  create(input: { lang: Lang; location?: LocationInput; medicalId?: Case["medicalId"] }): Case {
     const now = new Date().toISOString();
     const created: Case = {
       id: randomUUID(),
@@ -26,6 +26,7 @@ export class CaseStore {
       protocolId: null,
       location: input.location ? { ...input.location, status: "captured" } : null,
       triage: {},
+      medicalId: input.medicalId,
       dispatch: { status: "requested", simulated: true, requestedAt: now },
       consent: { given: true, at: now },
       metrics: { turns: 0, misunderstandings: 0 },
