@@ -39,7 +39,7 @@ export const config = {
   },
   gemini: {
     apiKey: env.GEMINI_API_KEY ?? "",
-    model: env.GEMINI_MODEL ?? "gemini-3.1-flash-lite",
+    model: env.GEMINI_MODEL ?? "gemini-3.5-flash-lite",
     timeoutMs: num(env.GEMINI_TIMEOUT_MS, 2500),
   },
   prisma: {

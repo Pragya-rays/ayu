@@ -13,7 +13,9 @@
     "spike": "tsx scripts/gnani-spike.ts",
     "gen:audio": "tsx scripts/gen-audio.ts",
     "gemini:check": "tsx scripts/gemini-check.ts",
-    "eval:triage": "tsx scripts/triage-scenarios.ts"
+    "eval:triage": "tsx scripts/triage-scenarios.ts",
+    "normal:check": "tsx scripts/normal-check.ts",
+    "voice:samples": "tsx scripts/voice-samples.ts"
   },
   "dependencies": {
     "@fastify/static": "^10.1.8",

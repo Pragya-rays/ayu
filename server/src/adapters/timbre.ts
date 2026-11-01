@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import { toSpokenHinglish } from "../dialogue/hinglishSpeech.js";
 import type { Lang } from "../types/voice.js";
 import type { TTSAdapter, TtsEvents, TtsHandle } from "./types.js";
 
@@ -23,7 +24,7 @@ export class TimbreAdapter implements TTSAdapter {
 
   buildRequest(text: string, lang: Lang) {
     return {
-      text,
+      text: lang === "hinglish" ? toSpokenHinglish(text) : text,
       model: this.options.model,
       voice: this.options.voices[lang],
       language: LANGUAGE[lang],

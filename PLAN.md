@@ -12,9 +12,9 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | | |
 |---|---|
 | **Current phase** | Phase 5, Normal Mode. Phases 1-4 validated on iPhone XR in quiet conditions |
-| **Phase state** | Built and tested locally on real services. **Not deployed; https://ayu-4801.onrender.com still runs Phase 4 (`b037d41`)** |
+| **Phase state** | Deployed 10-31 (`54cc5be`) at https://ayu-4801.onrender.com. A live typed Normal check reached the SOS prompt; it creates no dashboard case. Gemini follow-up questions and the Hinglish voice fix followed on 11-01 |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of Phase 5, then tests by voice on the iPhone. Noisy clips and Android still outstanding |
+| **Next action** | Team retests Normal mode and pronunciation on the iPhone. Noisy clips and Android still outstanding |
 | **Blocked on** | Medical reviewer's qualification (D9), award and posting decisions (D3, D4) |
 
 ### If you are an AI agent resuming this project
@@ -255,12 +255,14 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Summary card with share | Tested in Chrome. **Share not tried on a phone** |
 | Typed input and Yes / No buttons | Tested in Chrome |
 | Real voice in Normal mode, on a phone | **Not tested** |
-| Deployment | **Not deployed** |
+| Deployment | Deployed 10-31. Live typed check in desktop Chrome reached the SOS prompt |
 
 **Exit criteria (team to complete):**
-- [ ] Approve the push
-- [ ] Try one everyday problem by voice on the iPhone and read the summary
-- [ ] Mention jaw or chest pain and check the SOS prompt appears
+- [x] Approve the push (deployed 10-31)
+- [x] Try one everyday problem by voice on the iPhone and read the summary (10-31: heard correctly. Team says it feels built only for fixed cases, see D15)
+- [x] Mention jaw or chest pain and check the SOS prompt appears (10-31)
+- [ ] Share on a phone (10-31: not clearly reported)
+- [ ] Some Hindi words are mispronounced (10-31 team report; which words not yet known, see D16)
 - [ ] Decide on shorter SOS lines (D14)
 
 ### Phase 6 — Dashboard Complete (Nov 5)
@@ -354,7 +356,10 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I13 | 10-31 | Added `metrics.activationToFirstLineMs` to the shared Case type | `tapToFirstInstructionMs` is reserved for the first protocol step (Phase 3). This one excludes the deliberate 3-second countdown |
 | I14 | 10-31 | SOS opening line is cached in memory and generated at server start, ahead of Phase 7 pre-generation | Fast first line and saves credits. Spends one request per language per server start |
 | I15 | 10-31 | Dashboard password uses an HttpOnly cookie | Browser SSE cannot send custom headers |
-| I31 | 10-31 | **Stricter than the guide:** Normal questions come from a fixed list; Gemini only classifies the issue and spots warning signs | Nothing the LLM writes is ever spoken, questions start instantly from stored audio, and no credits per call. Less free-flowing; the team may overrule this |
+| I31 | 10-31 | Replaced by I35 after team feedback. Normal questions started as a fixed list only | Safe, but felt built only for fixed cases |
+| I35 | 11-01 | Gemini may phrase everyday follow-ups, which must pass `checkQuestion` (one short question; no medicine, instruction or diagnosis wording). Warning-sign questions stay fixed. Failure falls back to the fixed list | Team decision D15. Generated lines use live Timbre, so they cost credits and start slower |
+| I37 | 11-01 | Hinglish stays in Latin on screen; `dialogue/hinglishSpeech.ts` converts words to Devanagari only in the text sent to Timbre. Applies to fixed lines, templates and Gemini questions. **New Hinglish words must go in its list**; a test fails if a fixed line is missed. Unlisted words in Gemini questions stay Latin, as before | Team chose sample B. One list covers everything, and Hinglish readers keep Latin text |
+| I36 | 11-01 | Gemini model changed to `gemini-3.5-flash-lite` with minimal thinking, replacing I17 | Median about 0.85 s, against 1-8 s with timeouts on default thinking. Extraction accuracy unchanged at 6/7, E1-E5 5/5 |
 | I32 | 10-31 | Warning-sign keywords outrank a parsed yes/no | "saans nahi aa rahi" looks like a "no" but is a warning sign |
 | I33 | 10-31 | Normal mode stores no case and does not reconnect | No record is needed, and a dropped chat can simply restart |
 | I34 | 10-31 | SOS screen styles scoped to `main.sos` | The `.sos` rule leaked onto buttons named `sos`, making them full-screen height since Phase 2 |
@@ -386,6 +391,8 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | D4 | **Post early, not on Nov 9.** Shortlisting depends on verified engagement, and the plan leaves almost no time for it | Build-in-public post around Phase 2-3, final post Nov 8-9. Authentic reach only | By Nov 3 |
 | D5 | Add Playwright as a dev dependency for repeatable browser tests? | Optional. Worth it if the UI gets complex | Phase 2 |
 | D6 | DB for the case store | **Decided 10-31:** in memory (I10). Revisit only if demo history must survive restarts | Done |
+| D15 | Normal mode feels fixed. **Decided 11-01:** Gemini writes the everyday follow-ups (I35); warning-sign questions stay fixed; advice stays cards only, since free-form medical Q&A is on the Cut list | Done |
+| D16 | Hinglish "dard", "takleef" and similar were mispronounced. **Decided 11-01 by ear:** sample B, voice Poorvi fed Hindi script (I37) | Done |
 | D14 | Shorten the SOS opening and the two questions? Ayu speaks for 7.1 s before the first instruction (opening 3.0, questions 1.9 and 2.2), which is most of the 11-16 s | Yes. Shorter lines could save about 3 s, and wording must stay plain. Needs `gen:audio` afterwards | Phase 6 |
 | D13 | Keep the silent 3-second SOS countdown (Summary decision 17), or shorten it? | Keep for now; revisit if it still feels slow after the audio fix. It prevents accidental SOS | Phase 4 |
 | D12 | Render's free plan takes about a minute to wake after 15 idle minutes, which a judge may hit. Paid plan for demo week, or keep it awake some other way? | Decide before submission; check Render pricing then. No paid choice without team approval | Phase 9 |
@@ -416,6 +423,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R15 | Gnani key appeared in an AI session | Closed | Replaced 10-31 |
 | R16 | **Closed 10-31:** the spoken area was correct on the team's iPhone. The earlier wrong pin stays unexplained; it may have been an AI test case with simulated coordinates. AI live tests must not add simulated cases to the team's dashboard without saying so | Closed | Read-back with voice correction catches any bad fix during a call |
 | R17 | Android and Hindi/English SOS lines not tested on real devices | Medium | Check during Phase 3 testing |
+| R23 | **Gemini free tier allows 15 requests per minute** (measured 11-01), shared by all users. Each thing a caller says is one request. Over the limit it returns 429 in about 0.4 s and Ayu uses rules and fixed questions, so calls stay safe but lose Gemini's help. Several judges at once could hit this. Daily limit not measured | Medium | Accept for one user at a time; consider a paid tier for demo week |
 | R18 | **Ayu gives no real first aid or home-care advice yet.** Every protocol and card is a "pending medical review" line. Triage rules, warning signs and waiting tips are unreviewed too | **High** | Needs a qualified reviewer (D9). No AI may write this content |
 | R19 | Barge-in works on iPhone XR on speaker, in a quiet setting, with no self-interruption (10-31). Android and noise are untested; the threshold (`BARGE_RMS` in `voiceClient.ts`) may need tuning there. The opening line and protocol steps cannot be interrupted | Low-Medium | Check on Android and in the noisy tests |
 | R20 | First instruction takes 11-16 s by voice on a real phone, against about 3 s with buttons. Calculated breakdown, not traced per call: Ayu speaking 7.1 s, silence detection 1.6 s, Prisma about 0.8 s, and the rest is the caller responding. Technology is the smaller part. Interrupting Ayu already shortens it | **High** | See D13 and D14; judges will see this number |
@@ -492,6 +500,12 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - SOS regression after the styling fix: 9 of 10 checks, plus 6/6 forced-drop and barge-in. The one failure is the known Chrome offline step, which does not cut open sockets; the forced-drop run covers it.
 - Code review found "saans nahi aa rahi" would cancel a warning sign (fixed, I32). Screenshots found the full-height SOS button (fixed, I34); no automated test caught it.
 - **Not tested:** real voice in Normal mode, phones, share, noise.
+
+**2026-11-01, Phase 5 revision (local build, real Gnani and Gemini)**
+- `npm test`: 201 of 201 (server 193, web 8). `npm run normal:check`: 10/11 questions passed on a clean run, median 849 ms, none gave advice; an injection attempt and two "which medicine" requests got ordinary follow-ups.
+- Extraction with the new model after cooldown: 6/7, median 967 ms; the miss is caught by rules. E1-E5 with Gemini: 5/5. A first run showed 0/7 only because the rate limit was exhausted; a passing E1-E5 there proved nothing about Gemini.
+- Live typed conversation: fitted question in about 1.5 s, then a fixed warning-sign question in about 1 s.
+- Pronunciation: team picked sample B by ear. Hinglish audio regenerated (`npm run gen:audio -w server -- hinglish`). `npm test`: 205 of 205 (server 197, web 8).
 
 ---
 

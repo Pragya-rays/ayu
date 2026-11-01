@@ -12,6 +12,7 @@ import { parseLocationAnswer } from "./ruleExtract.js";
 const SILENCE_PROMPT_MS = 10000;
 const MAX_QUESTIONS = 6;
 const MAX_ATTEMPTS = 2;
+const CONTEXT_LINES = 10;
 
 export interface NormalIo {
   say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean }): Promise<void>;
@@ -24,12 +25,15 @@ export interface NormalDeps {
 }
 
 /**
- * Normal mode (Dev Guide 5.2). Every spoken line is fixed: questions come from a set list, and
- * advice comes only from home-care cards. The LLM names a likely issue and spots warning signs.
+ * Normal mode (Dev Guide 5.2). Warning-sign questions always come from the fixed list and advice
+ * only from home-care cards. The LLM names a likely issue, spots warning signs, and may phrase
+ * the everyday follow-ups, which pass `checkQuestion` first and fall back to the fixed list.
  */
 export class NormalMachine {
   private stage: NormalState["stage"] = "greeting";
-  private question: QuestionId | "open" | null = null;
+  private question: QuestionId | "open" | "followup" | null = null;
+  private readonly conversation: string[] = [];
+  private suggested: string | null = null;
   private plan: QuestionId[] = [];
   private asked = 0;
   private attempts = 0;
@@ -57,16 +61,18 @@ export class NormalMachine {
   /** Spoken or typed input. Warning signs are checked before anything else. */
   onInput(text: string) {
     this.said.push(text);
+    this.conversation.push(`Person: ${text}`);
     const flags = findRedFlags(text);
-    const classified = this.deps.classifier.classify(this.said.slice(-3)).catch(() => null);
+    const classified = this.deps.classifier.classify(this.conversation.slice(-CONTEXT_LINES), this.lang).catch(() => null);
 
     return this.run(async () => {
       if (this.stage !== "collect" || !this.question) return;
       this.clearSilence();
       const asked = this.question;
 
-      const reply = asked === "open" ? null : parseLocationAnswer(text);
-      const details = asked === "open" ? null : QUESTIONS[asked];
+      const fixedQuestion = asked === "open" || asked === "followup" ? null : QUESTIONS[asked];
+      const reply = fixedQuestion ? parseLocationAnswer(text) : null;
+      const details = fixedQuestion;
       const saidYesToFlag = details?.redFlag && reply === "yes";
       // Keywords win over a parsed "no": "saans nahi aa rahi" is a warning sign, not a denial.
       flags.forEach((flag) => this.redFlags.add(flag));
@@ -75,6 +81,7 @@ export class NormalMachine {
       const result = await classified;
       this.issue ??= result?.issueId ?? findIssue(text);
       result?.redFlags.forEach((flag) => this.redFlags.add(flag));
+      this.suggested = result?.question ?? null;
 
       if (this.redFlags.size) return this.offerSos();
 
@@ -115,8 +122,8 @@ export class NormalMachine {
     return this.queue;
   }
 
-  private async speak(text: string) {
-    if (!this.stopped) await this.io.say(text, { lang: this.lang, cacheable: true, interruptible: true });
+  private async speak(text: string, cacheable = true) {
+    if (!this.stopped) await this.io.say(text, { lang: this.lang, cacheable, interruptible: true });
   }
 
   private armSilence() {
@@ -128,7 +135,7 @@ export class NormalMachine {
         this.attempts++;
         if (this.attempts >= MAX_ATTEMPTS) {
           // Silence on a warning-sign question must not end in reassurance.
-          if (waitingOn !== "open" && waitingOn && QUESTIONS[waitingOn].redFlag) this.unansweredRedFlag = true;
+          if (waitingOn && waitingOn !== "open" && waitingOn !== "followup" && QUESTIONS[waitingOn].redFlag) this.unansweredRedFlag = true;
           await this.finish();
           return;
         }
@@ -148,10 +155,22 @@ export class NormalMachine {
     if (!next || this.asked >= MAX_QUESTIONS) return this.finish();
     this.asked++;
     this.attempts = 0;
-    this.question = next;
+    // Warning-sign questions are never reworded. An everyday one may use the checked suggestion.
+    const generated = QUESTIONS[next].redFlag ? null : this.takeSuggestion();
+    this.question = generated ? "followup" : next;
+    const asking = this.question;
     this.publish();
-    await this.speak(QUESTIONS[next].text[this.lang]);
-    if (this.question === next) this.armSilence();
+    const line = generated ?? QUESTIONS[next].text[this.lang];
+    this.conversation.push(`Ayu: ${line}`);
+    await this.speak(line, !generated);
+    if (this.question === asking) this.armSilence();
+  }
+
+  /** Skips a suggestion that merely repeats something already asked. */
+  private takeSuggestion() {
+    const suggestion = this.suggested;
+    this.suggested = null;
+    return suggestion && !this.conversation.includes(`Ayu: ${suggestion}`) ? suggestion : null;
   }
 
   private async offerSos() {
@@ -187,7 +206,7 @@ export class NormalMachine {
   }
 
   private publish() {
-    const question = this.question && this.question !== "open" ? QUESTIONS[this.question] : null;
+    const question = this.question && this.question !== "open" && this.question !== "followup" ? QUESTIONS[this.question] : null;
     this.io.publish({
       stage: this.stage,
       expectsYesNo: Boolean(question?.yesNo),

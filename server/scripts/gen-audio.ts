@@ -14,7 +14,9 @@ import type { Lang } from "../src/types/voice.js";
 const { apiKey } = config.gnani;
 if (!apiKey) throw new Error("Set GNANI_API_KEY in .env first");
 
-const LANGS: Lang[] = ["en", "hi", "hinglish"];
+// Pass one language to regenerate only that one and keep the rest: npm run gen:audio -- hinglish
+const only = process.argv[2] as Lang | undefined;
+const LANGS: Lang[] = only ? [only] : ["en", "hi", "hinglish"];
 const stepLines = [...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text));
 const cardLines = [...loadHomeCare().values()].flatMap((card) => card.steps);
 const allLines = [...FIXED_LINES, ...NORMAL_FIXED_LINES, ...stepLines, ...cardLines];
@@ -41,7 +43,7 @@ for (const { lang, text } of lines) {
   console.log(`${generated.length}/${lines.length} ${lang}: ${text}`);
 }
 
-if (existsSync(AUDIO_DIR)) rmSync(AUDIO_DIR, { recursive: true });
+if (!only && existsSync(AUDIO_DIR)) rmSync(AUDIO_DIR, { recursive: true });
 mkdirSync(AUDIO_DIR, { recursive: true });
 mkdirSync(webAudioDir, { recursive: true });
 for (const { lang, text, pcm } of generated) {
