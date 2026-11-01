@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { AUDIO_DIR, audioFileName } from "../src/adapters/cachedTts.js";
+import { trimSilence } from "../src/adapters/pcmTrim.js";
 import { TimbreAdapter } from "../src/adapters/timbre.js";
 import { config } from "../src/config.js";
 import { CONNECTION_LOST, FIXED_LINES, SOS_OPENING } from "../src/dialogue/lines.js";
@@ -20,7 +21,7 @@ const mode = process.argv[2];
 const only = mode === "missing" ? undefined : (mode as Lang | undefined);
 const partial = Boolean(mode);
 const LANGS: Lang[] = only ? [only] : ["en", "hi", "hinglish"];
-const stepLines = [...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text));
+const stepLines = [...loadProtocols().values()].flatMap((protocol) => [...protocol.steps, ...protocol.waiting].map((step) => step.text));
 const cardLines = [...loadHomeCare().values()].flatMap((card) => card.steps);
 const allLines = [...FIXED_LINES, ...NORMAL_FIXED_LINES, ...stepLines, ...cardLines];
 const lines = LANGS.flatMap((lang) => [...new Set(allLines.map((line) => line[lang]))].map((text) => ({ lang, text })))
@@ -52,8 +53,9 @@ mkdirSync(AUDIO_DIR, { recursive: true });
 mkdirSync(webAudioDir, { recursive: true });
 for (const { lang, text, pcm } of generated) {
   writeFileSync(resolve(AUDIO_DIR, audioFileName(lang, text)), pcm);
-  if (text === SOS_OPENING[lang]) writeFileSync(resolve(webAudioDir, `opening-${lang}.pcm`), pcm);
-  if (text === CONNECTION_LOST[lang]) writeFileSync(resolve(webAudioDir, `offline-${lang}.pcm`), pcm);
+  // The phone plays these itself, so they are trimmed here rather than on loading.
+  if (text === SOS_OPENING[lang]) writeFileSync(resolve(webAudioDir, `opening-${lang}.pcm`), trimSilence(pcm, config.timbre.sampleRate));
+  if (text === CONNECTION_LOST[lang]) writeFileSync(resolve(webAudioDir, `offline-${lang}.pcm`), trimSilence(pcm, config.timbre.sampleRate));
 }
 
 // Lines that no longer exist would otherwise stay in the repo for good.

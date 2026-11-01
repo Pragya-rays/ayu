@@ -24,7 +24,7 @@
         "hi": "उन्हें ज़मीन पर बैठाइए, घुटने मोड़कर और पीठ को सहारा देकर।",
         "hinglish": "Unhe zameen par baithaiye, ghutne mod kar aur peeth ko sahara de kar."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -34,7 +34,7 @@
         "hi": "उन्हें शांत और स्थिर रखिए।",
         "hinglish": "Unhe shaant aur sthir rakhiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -44,7 +44,7 @@
         "hi": "गर्दन और छाती के तंग कपड़े ढीले कीजिए।",
         "hinglish": "Gardan aur chhati ke tang kapde dheele kijiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -54,7 +54,7 @@
         "hi": "खाना या पानी मत दीजिए।",
         "hinglish": "Khana ya paani mat dijiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -64,7 +64,7 @@
         "hi": "देखते रहिए कि वो जवाब दे रहे हैं और सांस ले रहे हैं।",
         "hinglish": "Dekhte rahiye ki woh jawab de rahe hain aur saans le rahe hain."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -74,7 +74,7 @@
         "hi": "अगर वो जवाब देना या सांस लेना बंद करें, मुझे तुरंत बताइए।",
         "hinglish": "Agar woh jawab dena ya saans lena band karein, mujhe turant batayein."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     }
   ],

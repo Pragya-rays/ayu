@@ -13,7 +13,8 @@
   ],
   "sources": [
     "Ahmed SM et al. Compression-only life support. Indian J Anaesth 2017;61:867-73. https://pmc.ncbi.nlm.nih.gov/articles/5702999/",
-    "St John Ambulance, CPR. https://www.sja.org.uk/first-aid-advice/cpr/"
+    "St John Ambulance, CPR. https://www.sja.org.uk/first-aid-advice/cpr/",
+    "Hwang BN et al. Effects of positive dispatcher encouragement on the maintenance of bystander CPR quality. Medicine 2020;99(42):e22728. Metronome at 110 per minute. https://pmc.ncbi.nlm.nih.gov/articles/PMC7571937"
   ],
   "reviewedBy": "",
   "reviewedAt": "",
@@ -25,7 +26,7 @@
         "hi": "उन्हें सख़्त ज़मीन पर पीठ के बल सीधा लिटाइए।",
         "hinglish": "Unhe sakht zameen par peeth ke bal seedha litayein."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -35,7 +36,7 @@
         "hi": "उनके पास घुटनों पर बैठिए।",
         "hinglish": "Unke paas ghutnon par baithiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -45,7 +46,7 @@
         "hi": "एक हाथ की हथेली का निचला हिस्सा छाती के बीच में रखिए।",
         "hinglish": "Ek haath ki hatheli ka nichla hissa chhati ke beech mein rakhiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -55,7 +56,7 @@
         "hi": "दूसरा हाथ उसके ऊपर रखिए। बाँहें सीधी रखिए।",
         "hinglish": "Doosra haath uske upar rakhiye. Baanhein seedhi rakhiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -65,7 +66,7 @@
         "hi": "ज़ोर से लगभग 5 सेंटीमीटर नीचे दबाइए।",
         "hinglish": "Zor se lagbhag 5 centimetre neeche dabaiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -75,7 +76,7 @@
         "hi": "हर बार दबाने के बाद छाती को पूरा ऊपर आने दीजिए।",
         "hinglish": "Har baar dabane ke baad chhati ko poora upar aane dijiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -85,8 +86,19 @@
         "hi": "तेज़ दबाइए, हर सेकंड में लगभग दो बार। रुकिए मत।",
         "hinglish": "Tez dabaiye, har second mein lagbhag do baar. Rukiye mat."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
+    },
+    {
+      "id": "beat",
+      "text": {
+        "en": "Push in time with this beat.",
+        "hi": "इस ताल के साथ दबाइए।",
+        "hinglish": "Is taal ke saath dabaiye."
+      },
+      "pauseAfterMs": 2300,
+      "interruptible": false,
+      "startsRhythm": true
     },
     {
       "id": "s8",
@@ -95,7 +107,7 @@
         "hi": "कोई साथ हो तो हर 2 मिनट में बदल लीजिए।",
         "hinglish": "Koi saath ho to har 2 minute mein badal lijiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     },
     {
@@ -105,7 +117,7 @@
         "hi": "तभी रुकिए जब वो हिलें या सांस लें, या मदद आ जाए।",
         "hinglish": "Tabhi rukiye jab woh hilein ya saans lein, ya madad aa jaye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": false
     }
   ],

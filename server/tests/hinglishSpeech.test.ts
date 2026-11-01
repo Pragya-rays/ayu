@@ -29,7 +29,7 @@ describe("Hinglish speech", () => {
 
   it("reads first-aid and home-care steps from their Hindi text", () => {
     const steps = [
-      ...[...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text)),
+      ...[...loadProtocols().values()].flatMap((protocol) => [...protocol.steps, ...protocol.waiting].map((step) => step.text)),
       ...[...loadHomeCare().values()].flatMap((card) => card.steps),
     ];
     expect(steps.length).toBeGreaterThan(40);

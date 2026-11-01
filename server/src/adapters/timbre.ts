@@ -11,9 +11,12 @@ export interface TimbreOptions {
   speed: number;
   sampleRate: number;
   voices: Record<Lang, string>;
+  stallMs?: number;
 }
 
 const LANGUAGE: Record<Lang, string> = { hi: "hi-IN", hinglish: "hi-en", en: "en-IN" };
+// The SOS conversation waits for each line to end, so a silent Timbre must never hold it up for good.
+const STALL_MS = 8000;
 
 export class TimbreAdapter implements TTSAdapter {
   readonly sampleRate: number;
@@ -44,9 +47,11 @@ export class TimbreAdapter implements TTSAdapter {
   synthesize({ text, lang, spoken }: { text: string; lang: Lang; spoken?: string }, events: TtsEvents): TtsHandle {
     const socket = new WebSocket(this.options.url, { headers: { "X-API-Key-ID": this.options.apiKey } });
     let finished = false;
+    let stallTimer: NodeJS.Timeout | undefined;
 
     const finish = () => {
       finished = true;
+      clearTimeout(stallTimer);
       socket.close();
     };
     const fail = (code: string, message: string) => {
@@ -54,11 +59,20 @@ export class TimbreAdapter implements TTSAdapter {
       finish();
       events.onError({ code, message });
     };
+    const watchForStall = () => {
+      clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        fail("timbre_timeout", "Timbre stopped responding");
+        socket.terminate();
+      }, this.options.stallMs ?? STALL_MS);
+    };
+    watchForStall();
 
     socket.on("open", () => socket.send(JSON.stringify(this.buildRequest(text, lang, spoken))));
 
     socket.on("message", (raw) => {
       if (finished) return;
+      watchForStall();
       let message: Record<string, any>;
       try {
         message = JSON.parse(raw.toString());
@@ -87,6 +101,7 @@ export class TimbreAdapter implements TTSAdapter {
       cancel() {
         if (finished) return;
         finished = true;
+        clearTimeout(stallTimer);
         if (socket.readyState === WebSocket.CONNECTING) socket.terminate();
         else socket.close();
       },

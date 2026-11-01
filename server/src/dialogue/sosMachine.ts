@@ -15,6 +15,7 @@ import { higherSeverity, triage, type TriageResult } from "./triageRules.js";
 
 const SILENCE_PROMPT_MS = 8000;
 const RECHECK_MS = 45000;
+const WAITING_STEP_MS = 20000;
 const MAX_ATTEMPTS = 2;
 const POOR_ACCURACY_M = 100;
 const ETA_SPOKEN_AT = 5;
@@ -57,8 +58,12 @@ export class SosMachine {
   private readonly heard: string[] = [];
   private silenceTimer: NodeJS.Timeout | undefined;
   private recheckTimer: NodeJS.Timeout | undefined;
+  private waitingStepTimer: NodeJS.Timeout | undefined;
   private queue: Promise<void> = Promise.resolve();
   private current: TriageResult | null = null;
+  private steps: { protocol: Protocol; next: number; first: boolean } | null = null;
+  private rhythm = false;
+  private readonly saidWaiting = new Set<string>();
   private heldUpdates: { text: string; cacheable: boolean }[] = [];
   private lastDispatchStatus: Case["dispatch"]["status"] = "requested";
   private lastSpokenEta = Number.POSITIVE_INFINITY;
@@ -87,7 +92,7 @@ export class SosMachine {
   detach() {
     this.io = null;
     this.clearSilenceTimer();
-    clearTimeout(this.recheckTimer);
+    this.clearWaitingTimers();
   }
 
   /** The phone reconnected: restore the screen and pick up whatever was in progress. */
@@ -95,6 +100,7 @@ export class SosMachine {
     this.io = io;
     this.publish();
     return this.run(async () => {
+      await this.finishSteps();
       if (this.question) await this.ask(this.question);
       else if (this.stage === "waiting") await this.enterWaiting();
     });
@@ -170,7 +176,7 @@ export class SosMachine {
   stop() {
     this.stopped = true;
     this.clearSilenceTimer();
-    clearTimeout(this.recheckTimer);
+    this.clearWaitingTimers();
   }
 
   private run(step: () => Promise<void>) {
@@ -234,7 +240,7 @@ export class SosMachine {
     this.question = question;
     this.publish();
     await this.speak(line.text, { cacheable: line.cacheable });
-    if (this.question === question) this.armSilenceTimer(question);
+    if (this.question === question && this.io) this.armSilenceTimer(question);
   }
 
   private armSilenceTimer(question: SosQuestion) {
@@ -325,7 +331,7 @@ export class SosMachine {
   private async decide() {
     const first = this.current === null;
     await this.deliver(this.assess());
-    if (first) await this.confirmLocation();
+    if (first && this.stage !== "arrived") await this.confirmLocation();
   }
 
   private async deliver(result: TriageResult) {
@@ -336,21 +342,43 @@ export class SosMachine {
     this.current = { severity, protocolId: result.protocolId };
     this.stage = "protocol";
     this.question = null;
+    this.rhythm = false;
+    this.steps = { protocol, next: 0, first };
     this.saveFacts();
     cases.setAssessment(this.caseId, severity, protocol.id);
     this.publish();
+    await this.finishSteps();
+  }
 
-    for (const [index, step] of protocol.steps.entries()) {
-      if (index === 0 && first) cases.recordFirstInstruction(this.caseId);
+  /** Carries on from the next unheard step, so a dropped connection never loses an instruction. */
+  private async finishSteps() {
+    const progress = this.steps;
+    if (!progress) return;
+    const { cases } = this.deps;
+    const { protocol } = progress;
+    const stillCurrent = () => this.steps === progress && this.io !== null;
+
+    while (stillCurrent() && progress.next < protocol.steps.length) {
+      const step = protocol.steps[progress.next]!;
+      if (progress.next === 0 && progress.first) cases.recordFirstInstruction(this.caseId);
       cases.addEvent(this.caseId, "instruction_spoken", { protocolId: protocol.id, stepId: step.id });
+      if (step.startsRhythm && !this.rhythm) {
+        this.rhythm = true;
+        this.publish();
+      }
       await this.speak(step.text[this.lang], { interruptible: step.interruptible });
+      if (!stillCurrent()) return; // cut off, so this step is said again on return
+      progress.next++;
       // A moment to act before the next step.
-      if (index < protocol.steps.length - 1) await this.io?.pause?.(step.pauseAfterMs);
+      if (progress.next < protocol.steps.length) await this.io?.pause?.(step.pauseAfterMs);
     }
-    if (severity === "RED" && protocol.callEmergencyLine && !this.lastSpokenRed) {
-      this.lastSpokenRed = true;
+    if (!stillCurrent()) return;
+    if (this.current?.severity === "RED" && protocol.callEmergencyLine && !this.lastSpokenRed) {
       await this.speak(CALL_112[this.lang]);
+      if (!stillCurrent()) return;
+      this.lastSpokenRed = true;
     }
+    this.steps = null;
   }
 
   /** Location read-back. Poor GPS or a weak address always goes to a spoken landmark instead. */
@@ -414,12 +442,32 @@ export class SosMachine {
   }
 
   private armRecheck() {
-    clearTimeout(this.recheckTimer);
+    this.clearWaitingTimers();
+    const idle = () => this.stage === "waiting" && !this.question && this.io !== null;
+    this.waitingStepTimer = setTimeout(() => {
+      void this.run(async () => {
+        if (idle()) await this.sayWaitingStep();
+      });
+    }, WAITING_STEP_MS);
     this.recheckTimer = setTimeout(() => {
       void this.run(async () => {
-        if (this.stage === "waiting" && !this.question && this.io) await this.ask("recheck");
+        if (idle()) await this.ask("recheck");
       });
     }, RECHECK_MS);
+  }
+
+  private clearWaitingTimers() {
+    clearTimeout(this.recheckTimer);
+    clearTimeout(this.waitingStepTimer);
+  }
+
+  /** One useful thing to do between re-checks, from the fixed list for this protocol. */
+  private async sayWaitingStep() {
+    const steps = this.current ? this.deps.protocols.get(this.current.protocolId)?.waiting ?? [] : [];
+    const step = steps.find((item) => !this.saidWaiting.has(item.id)) ?? steps.find((item) => item.repeat);
+    if (!step) return;
+    this.saidWaiting.add(step.id);
+    await this.speak(step.text[this.lang]);
   }
 
   private async handleRecheckReply(text: string, extraction: Promise<Extraction | null>) {
@@ -446,7 +494,9 @@ export class SosMachine {
   private handleArrival() {
     this.heldUpdates = [];
     this.clearQuestion();
-    clearTimeout(this.recheckTimer);
+    this.clearWaitingTimers();
+    this.steps = null;
+    this.rhythm = false;
     this.stage = "arrived";
     this.publish();
     this.io?.interrupt();
@@ -510,6 +560,7 @@ export class SosMachine {
       protocolTitle: protocol?.title[this.lang] ?? null,
       placeholder: protocol?.status === "placeholder",
       sourced: protocol?.status === "sourced",
+      rhythm: this.rhythm,
       dispatchStatus: item?.dispatch.status ?? "requested",
       etaMinutes: item?.dispatch.etaMinutes ?? null,
       ambulanceId: item?.dispatch.ambulanceId ?? null,

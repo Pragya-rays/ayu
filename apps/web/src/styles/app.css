@@ -208,6 +208,21 @@ main.sos.arming { align-items: stretch; justify-content: center; text-align: cen
 
 .sos-note { margin: 0; font-size: 18px; color: #ffb86b; }
 
+/* Pulses at the metronome's rate, for a room too loud to hear the click. */
+.sos-beat { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 22px; font-weight: 600; }
+.sos-beat::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sos-alert);
+  animation: beat calc(60s / 110) ease-out infinite;
+}
+@keyframes beat {
+  from { transform: scale(1.3); opacity: 1; }
+  to { transform: scale(0.7); opacity: 0.35; }
+}
+
 .sos-listen { display: flex; align-items: center; gap: 16px; min-height: 56px; }
 .sos-transcript { margin: 0; font-size: 18px; opacity: 0.85; }
 

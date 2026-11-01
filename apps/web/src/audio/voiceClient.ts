@@ -145,7 +145,9 @@ export class VoiceClient {
     socket.onclose = (event) => {
       const final = event.code === CLOSE_POLICY || event.code === CLOSE_CASE_ENDED;
       if (this.closing || final || !session || session.reconnect === false || this.reconnects >= MAX_RECONNECTS) {
-        this.releaseAudio();
+        // SOS owns its audio: it must still say to call 112, and any CPR beat must keep going.
+        const sosEndedByNetwork = !this.closing && Boolean(session) && session?.reconnect !== false;
+        this.releaseAudio(!sosEndedByNetwork);
         this.options.onClosed();
         return;
       }
@@ -231,11 +233,11 @@ export class VoiceClient {
     if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message));
   }
 
-  private releaseAudio() {
+  private releaseAudio(closeContext = true) {
     this.player.stop();
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
-    if (this.context.state !== "closed") void this.context.close().catch(() => undefined);
+    if (closeContext && this.context.state !== "closed") void this.context.close().catch(() => undefined);
   }
 }
 

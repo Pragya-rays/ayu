@@ -29,9 +29,11 @@ function setup(options: {
   if (address) cases.setAddress(sos.id, address.text, address.weak);
   const spoken: string[] = [];
   const states: SosState[] = [];
+  const hooks: { onSay?: (text: string) => void } = {};
   const io: SosIo = {
     async say(text) {
       spoken.push(text);
+      hooks.onSay?.(text);
     },
     interrupt() {},
     publish: (state) => states.push(state),
@@ -53,7 +55,7 @@ function setup(options: {
     if (updated.id === sos.id && !updated.closedAt) void machine.onCaseChanged(updated);
   });
   dispatch.track(sos.id);
-  return { cases, sos, spoken, states, machine, dispatch, io };
+  return { cases, sos, spoken, states, machine, dispatch, io, hooks };
 }
 
 /** Runs triage to CPR and stops at the location question. */
@@ -260,6 +262,79 @@ describe("waiting loop", () => {
     expect(asked.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("says one waiting step between re-checks", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onAnswer("no");
+    await context.machine.onAnswer("yes"); // collapsed, breathing
+    const waiting = protocols.get("recovery_stroke_collapse")!.waiting.map((step) => step.text[LANG]);
+    expect(context.spoken).not.toContain(waiting[0]);
+    await context.machine.onAnswer("yes"); // location correct
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(context.spoken.at(-1)).toBe(waiting[0]);
+    await vi.advanceTimersByTimeAsync(25000);
+    expect(context.spoken.at(-1)).toBe(RECHECK_STILL[LANG]);
+    await context.machine.onAnswer("yes");
+    await vi.advanceTimersByTimeAsync(20000);
+    expect(context.spoken.at(-1)).toBe(waiting[1]);
+  });
+
+  it("gives each protocol only steps that fit it", () => {
+    const words = (id: "cpr" | "choking" | "severe_bleeding") => protocols.get(id)!.waiting.map((step) => step.text.en).join(" ");
+    for (const id of ["cpr", "choking", "severe_bleeding"] as const) expect(words(id)).not.toMatch(/Do not move/);
+    expect(words("cpr")).not.toMatch(/food|medicine|Loosen/);
+    expect(protocols.get("cpr")!.waiting.filter((step) => step.repeat)).toHaveLength(1);
+  });
+
+  it("keeps encouraging during CPR after the list runs out", async () => {
+    const context = setup();
+    await toWaiting(context);
+    const keepGoing = protocols.get("cpr")!.waiting.find((step) => step.repeat)!.text[LANG];
+    for (let cycle = 0; cycle < 6; cycle++) {
+      await vi.advanceTimersByTimeAsync(45000);
+      await context.machine.onAnswer("no");
+    }
+    expect(context.spoken.filter((line) => line === keepGoing).length).toBeGreaterThanOrEqual(2);
+    expect(context.spoken.filter((line) => line === protocols.get("cpr")!.waiting[0]!.text[LANG])).toHaveLength(1);
+  });
+
+  it("starts the beat during CPR only, and stops it when breathing returns", async () => {
+    const context = setup();
+    await toLocation(context);
+    expect(context.states.at(-1)?.rhythm).toBe(true);
+    const firstOn = context.states.findIndex((state) => state.rhythm);
+    expect(context.states.slice(0, firstOn).every((state) => state.protocolTitle === null || state.protocolTitle === "CPR")).toBe(true);
+    await context.machine.onAnswer("yes");
+    await vi.advanceTimersByTimeAsync(45000);
+    await context.machine.onAnswer("yes"); // started breathing
+    expect(context.sos.protocolId).toBe("recovery_stroke_collapse");
+    expect(context.states.at(-1)?.rhythm).toBe(false);
+  });
+
+  it("never starts the beat outside CPR", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onAnswer("no");
+    await context.machine.onAnswer("yes");
+    expect(context.states.some((state) => state.rhythm)).toBe(false);
+  });
+
+  it("stops the beat and the remaining steps when the ambulance arrives", async () => {
+    const context = setup();
+    const steps = protocols.get("cpr")!.steps.map((step) => step.text[LANG]);
+    await context.machine.begin();
+    await context.machine.onAnswer("no");
+    context.hooks.onSay = (text) => {
+      if (text === steps[7]) context.dispatch.setStatus(context.sos.id, "arrived");
+    };
+    await context.machine.onAnswer("no");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(context.spoken.at(-1)).toBe(ARRIVED[LANG]);
+    expect(context.spoken).not.toContain(steps[8]);
+    expect(context.spoken).not.toContain(locationConfirm(LANG, GOOD.text));
+    expect(context.states.at(-1)?.rhythm).toBe(false);
+  });
+
   it("stops re-checking on arrival", async () => {
     const context = setup();
     await toWaiting(context);
@@ -291,6 +366,38 @@ describe("reconnecting", () => {
     await vi.advanceTimersByTimeAsync(0);
     await context.machine.attach(context.io);
     expect(context.spoken).toContain(dispatched(LANG, 8));
+  });
+
+  it("repeats the step cut off by a drop, then finishes the rest in order", async () => {
+    const context = setup();
+    const steps = protocols.get("cpr")!.steps.map((step) => step.text[LANG]);
+    await context.machine.begin();
+    await context.machine.onAnswer("no");
+    context.hooks.onSay = (text) => {
+      if (text === steps[2]) context.machine.detach();
+    };
+    await context.machine.onAnswer("no");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(context.spoken.at(-1)).toBe(steps[2]);
+
+    context.hooks.onSay = undefined;
+    const count = context.spoken.length;
+    await context.machine.attach(context.io);
+    expect(context.spoken.slice(count)).toEqual([...steps.slice(2), CALL_112[LANG], locationConfirm(LANG, GOOD.text)]);
+  });
+
+  it("does not record a step as spoken while disconnected", async () => {
+    const context = setup();
+    const steps = protocols.get("cpr")!.steps;
+    await context.machine.begin();
+    await context.machine.onAnswer("no");
+    context.hooks.onSay = (text) => {
+      if (text === steps[1]!.text[LANG]) context.machine.detach();
+    };
+    await context.machine.onAnswer("no");
+    await vi.advanceTimersByTimeAsync(0);
+    const recorded = context.cases.eventsFor(context.sos.id).filter((event) => event.type === "instruction_spoken");
+    expect(recorded).toHaveLength(2);
   });
 });
 

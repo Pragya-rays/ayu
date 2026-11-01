@@ -3,7 +3,7 @@
 **The project's permanent development log and single source of truth for progress.**
 Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJECT_SUMMARY.md); implementation detail in [docs/AYU_DEV_GUIDE.md](docs/AYU_DEV_GUIDE.md). If those docs conflict with section 4 below, section 4 wins on Gnani API facts because it was read from the live docs.
 
-**Last updated:** 2026-10-31 · **Deadline:** 2026-11-10, 11:59 PM IST (target: submit Nov 9)
+**Last updated:** 2026-11-01 · **Deadline:** 2026-11-10, 11:59 PM IST (target: submit Nov 9)
 
 ---
 
@@ -11,12 +11,13 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | All buildable work for Phases 6-9 is done. Phases 1-5 validated on iPhone XR in quiet conditions; Phase 6 awaits the team's test. What remains needs people (sections 7 and 10) |
-| **Phase state** | Deployed 11-01 (`4fdb66e`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
-| **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Live version is `9978cfd`. New first-aid steps heard on a phone 11-01: no wrong words, sensible order, tag visible, pace judged too fast, so pauses raised from 0.8 s to 2 s (not deployed). Team approves the push and rechecks the pace. Then more user trials, medical review, video, Post 3 with the video by about Nov 7, submit by Nov 9. **The team chose on 11-01 to register later: required before submitting, do by about Nov 5.** Whether Post 1 or the wording sheet went out is unconfirmed |
-| **REMINDER** | The team chose to ship published first aid without a doctor (I44). A review stays optional: `docs/medical-review/REVIEW_SHEET.md`. **Registration is still required, by about Nov 5** |
-| **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
+| **Current phase** | **Phases 10 and 11: built and tested in Chrome, not pushed, waiting for team review.** Phases 1-5 validated on iPhone XR in quiet conditions |
+| **Phase state** | Live version is `71408ff`, without Phases 10 and 11. They stay local until the team says push, then need a phone check (`docs/testing/PHONE_TEST.md`, steps 21-25) |
+| **Real Gnani API tested?** | **Yes.** Real voice on iPhone XR and Samsung in quiet settings, and a stream scorecard on synthetic noisy calls. See sections 6 and 12 |
+| **Next action** | Team reviews Phases 10 and 11. On "push", deploy and hear the CPR beat, waiting steps and trimmed audio on a real phone |
+| **Who does what** | **Team decision 11-01:** the assistant works on the product only. The team handles registration, posts, video, trials and submission, so the assistant does not raise them. Registration is not confirmed done |
+| **Medical status** | The team chose to ship published first aid without a doctor (I44). The labels in I44 stay |
+| **Blocked on** | Nothing in the build |
 
 ### If you are an AI agent resuming this project
 1. Read this section, then sections 3, 4, 10 and 11, then the current phase in section 7.
@@ -31,7 +32,7 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 ## 2. Project in brief
 
-Ayu is a Hindi/Hinglish-first, voice-first health assistant (mobile PWA). **Normal mode** handles everyday health questions. **SOS mode** is one tap to share location, open a **simulated** dispatch case, and be talked through fixed, doctor-reviewed first-aid steps until help arrives. A hospital dashboard shows live cases with a pre-arrival brief.
+Ayu is a Hindi/Hinglish-first, voice-first health assistant (mobile PWA). **Normal mode** handles everyday health questions. **SOS mode** is one tap to share location, open a **simulated** dispatch case, and be talked through fixed first-aid steps from published guidance, not reviewed by a doctor (I44), until help arrives. A hospital dashboard shows live cases with a pre-arrival brief.
 
 **The two core engines are Gnani Prisma (STT) and Timbre (TTS).** Every user interaction passes through them; the rest of the system exists to decide what Ayu hears and says. Gemini is bounded support only.
 
@@ -200,8 +201,8 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 |---|---|
 | Gemini adapter, strict schema validation, fallback to rules | Tested (live) |
 | Rule-based reading of Hindi/Hinglish answers and facts, works without the LLM | Tested |
-| Table-driven triage rules | Tested. **Needs medical review** |
-| 7 protocol files, validator, startup fails on bad or missing files | Tested. **All are placeholders with no first-aid text** |
+| Table-driven triage rules | Tested. Not reviewed by a doctor (I44) |
+| 7 protocol files, validator, startup fails on bad or missing files | Tested. Real steps from published guidance since 11-01 (I44), heard on a phone |
 | SOS conversation: opening, two questions, protocol, Call 112 line on RED | Tested (live) in Chrome using buttons |
 | Yes / No / Not sure buttons, silence prompt, retry then move on | Tested |
 | Protocol switch when a caller reports a change | Tested in unit tests |
@@ -235,7 +236,7 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Barge-in with a loudness gate; protocol steps stay uninterruptible | Tested in Chrome with a simulated signal. **Threshold untested on a real phone speaker** |
 | Reconnect after a network drop, same conversation; long drop ends in Call 112 | Tested in Chrome with a forced drop |
 | Prisma reopened if it drops, and rotated at 14 minutes | Reopen tested with a fake; **the real 15-minute cap has not been hit** |
-| Filler steps (Summary 7.4) | **Held back on purpose:** need medical review (R18) |
+| Filler steps (Summary 7.4) | Built in Phase 10 |
 
 **Exit criteria (team to complete):**
 - [x] Approve the push (deployed 10-31)
@@ -253,9 +254,9 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 |---|---|
 | Talk to Ayu on the public site; short-lived session, rate limited, keeps no record | Tested in Chrome on real services |
 | One question at a time from a fixed list, at most 6, warning-sign questions before advice | Tested |
-| Warning signs by rules plus Gemini; "Switch to SOS" prompt, never automatic | Tested. **List needs medical review** |
+| Warning signs by rules plus Gemini; "Switch to SOS" prompt, never automatic | Tested. Not reviewed by a doctor (I44) |
 | Decline SOS, unclear reply or silence on a warning question: no home care, see a doctor | Tested |
-| 5 home-care cards, validator, startup fails on bad or missing files | Tested. **All placeholders with no advice** |
+| 5 home-care cards, validator, startup fails on bad or missing files | Tested. Real advice from published guidance since 11-01 (I44), no medicines |
 | Summary card with share | Tested in Chrome. **Share not tried on a phone** |
 | Typed input and Yes / No buttons | Tested in Chrome |
 | Real voice in Normal mode, on a phone | **Not tested** |
@@ -296,10 +297,8 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 | Service worker: app opens offline, spoken and written "call 112", never claims help was sent | Tested in Chrome, 5/5. **Not tried on a real phone.** Offline triage is not built |
 | Medical ID: optional, stored on the phone, sent only with an SOS, shown apart from the brief, deletable | Restored 11-01, tested in Chrome 7/7. **Not deployed; not tried on a real phone** |
 | Share my location during SOS: the caller's own share sheet, falling back to copy. Ayu sends nothing itself (keeps the no-SMS rule) | Restored 11-01, tested in Chrome and unit tests. **Native share sheet not tried on a phone during SOS** |
-| Doctor review, replacing placeholders | **Waiting on the team (parked)** |
-| Native-speaker review of Hindi and Hinglish | **Waiting on the team** |
-
-**Exit, still open:** no placeholder text ships.
+| Replacing placeholders | Done 11-01 from published guidance (I44). No placeholder text ships. A doctor's review stays optional |
+| Native-speaker review of Hindi and Hinglish | Team's call. Sheet refreshed 11-01 |
 
 ### Phase 8 — Evaluation · **SYNTHETIC PART DONE, real calls waiting on the team**
 
@@ -321,6 +320,43 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 | Demo video, 60-second cut and backup recording | **Waiting on the team** |
 | Public posts, live before submission | **Waiting on the team** |
 | Submit through the form | **Waiting on the team**; the assistant cannot submit |
+
+### Phase 10 — SOS finishing pass (Nov 1) · **BUILT, waiting for team review, not pushed**
+**Goal:** finish what the Summary promised for the wait until help arrives, and close the ways an SOS could silently fail.
+
+| Item | Status |
+|---|---|
+| Waiting steps (Summary 6.5, 7.4), one between re-checks, chosen per protocol, in `server/src/protocols/waiting/steps.json` | Tested in Chrome and unit tests. **Not yet heard on a phone** |
+| CPR beat at 110 per minute, with a pulsing dot for loud rooms. Plays from the phone, so it survives a lost connection (Summary section 10) | Tested in Chrome. **Volume, and whether it interrupts Ayu, not tried on a phone speaker** |
+| Encouragement during CPR, repeated once the list runs out | Tested |
+| Instructions resume after a drop. **Bug:** a blip mid-CPR silently lost every remaining step and the 112 line, while the dashboard logged them as spoken | Fixed; the failing test came first. Tested in Chrome with a forced drop |
+| Arrival stops the remaining steps at once. **Bug:** they carried on, and "the ambulance is here" waited behind them | Fixed, unit tests |
+| Timbre time limit, 8 s of silence. **Bug:** a hung request froze the whole SOS conversation | Fixed, tests with a silent fake server. Seen once in real use: a generation run hung on one request |
+| SOS start time limit, 10 s, then the Call 112 screen. **Bug:** it could wait forever after saying help was being sent | Fixed, tested in Chrome: 13.5 s including the 3 s countdown |
+| Spoken "call 112" after a long drop. The audio was being closed just before that line and any beat | Fixed, tested in Chrome: line played, audio stays open |
+| Reconnecting note no longer shown beside "Connection lost" | Fixed, code change only |
+| App opens from the saved copy after 4 s on a hung network; a host's holding page can never replace it in the cache | Tested in Chrome: 4.3 s. Render's own wake page was not seen, so the holding page was simulated |
+
+**Exit criteria (team to complete):**
+- [ ] Approve the push
+- [ ] Phone test steps 21-24: hear the beat, the waiting steps, and a drop during CPR
+
+### Phase 11 — First instruction speed (Nov 1) · **BUILT, waiting for team review, not pushed**
+**Goal:** cut R20 without touching triage safety.
+
+| Item | Status |
+|---|---|
+| Silence trimmed from every stored line as it loads, and from the six lines the phone plays itself. No new audio, no credits | Tested. Ayu speaks before the first instruction: Hinglish 4.48 to 3.61 s, Hindi 5.12 to 4.25 s, English 3.68 to 2.99 s. **Not yet heard on a phone** |
+| Step pauses raised from 2.0 to 2.3 s, so the pace the team approved by ear stays the same | Calculated from a mean 0.34 s trimmed per line, not re-heard |
+
+**Exit criteria (team to complete):**
+- [ ] Approve the push, together with Phase 10
+- [ ] Phone test step 25: no clipped words. Read "first instruction" on the dashboard for one voice run
+
+### Possible next build work
+Not started. Each stays inside the agreed Summary.
+- **More home-care cards.** Summary Tier 1 says 6-8; there are 5.
+- **False alarm path.** Summary 7.5 offers Normal mode (I24 deferred it until Normal existed).
 
 **Cut order if late:** Tier 3, emergency contact, Medical ID, interrupt polish, extra protocols. Keep CPR, chest pain, stroke/collapse.
 
@@ -345,7 +381,8 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 | `server/src/voice/gateway.ts` | Per-session bridge between browser, Prisma and Timbre. A session is an SOS case, or Voice Check when the lab is on |
 | `server/src/cases/store.ts` | In-memory cases, event timeline, change notifications |
 | `server/src/dialogue/` | `sosMachine.ts` (SOS conversation), `triageRules.ts` (severity and protocol), `ruleExtract.ts` (Hindi/Hinglish rules), `lines.ts` |
-| `server/src/protocols/` | One JSON per protocol; `index.ts` validates at startup. `server/scripts/make-protocols.mjs` wrote the placeholders and never overwrites |
+| `server/src/protocols/` | One JSON per protocol; `index.ts` validates at startup. `waiting/steps.json` holds the waiting steps and which protocols each fits. `server/scripts/make-protocols.mjs` wrote the placeholders and never overwrites |
+| `apps/web/src/audio/metronome.ts` | The CPR beat: one looped click, no timers |
 | `server/src/adapters/llm.ts`, `prompts/extraction.ts` | Gemini extraction and the validator |
 | `server/scripts/` | Also `triage-scenarios.ts` (`npm run eval:triage -w server`, add `-- --rules` for rules only) and `gemini-check.ts` (compare models) |
 | `server/src/dialogue/normal*.ts`, `server/src/homecare/`, `routes/normal.ts`, `apps/web/src/pages/Normal.tsx` | Normal mode. `normalContent.ts` holds the question list; `normalRules.ts` the warning signs; `server/scripts/make-home-care.mjs` wrote the placeholders and never overwrites. Voice Check moved to `/voice-check` (lab only) |
@@ -401,6 +438,13 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I31 | 10-31 | Replaced by I35 after team feedback. Normal questions started as a fixed list only | Safe, but felt built only for fixed cases |
 | I35 | 11-01 | Gemini may phrase everyday follow-ups, which must pass `checkQuestion` (one short question; no medicine, instruction or diagnosis wording). Warning-sign questions stay fixed. Failure falls back to the fixed list | Team decision D15. Generated lines use live Timbre, so they cost credits and start slower |
 | I44 | 11-01 | **Team overrode the doctor-review rule** (Summary 9.8, Dev Guide 0.3): real steps ship with status `sourced`, condensed from published guidance, each file listing sources, with no "Reviewed by" label and no medicines. The word "prototype" is removed from the app at the team's request. **Kept on purpose:** "Simulated", "Not a medical device · does not replace emergency services", and an honest "published guidance, not doctor-reviewed" tag, because the site and repo are public and the rules ban misleading demos | Team decision. The assistant declined to remove those labels |
+| I45 | 11-01 | Team instruction: the assistant works on the product only, and the team handles registration, posts, video, trials and submission | Team decision |
+| I46 | 11-01 | Waiting steps are spoken from a fixed file, one per 45-second cycle, 20 s after the last re-check. Each lists the protocols it fits, so CPR, choking and bleeding callers only hear what a helper can do, and "do not move them" never reaches a protocol that moves the person | Summary 6.5 and 7.4. I44 removed the reason they were held back. A file keeps the LLM out of it |
+| I47 | 11-01 | CPR beat at 110 per minute, a looped click on the phone, starting at a new step after "push fast". It keeps running under speech and questions | 100-120 is the target, and Hwang 2020 used 110 for dispatcher-assisted CPR. Live Prisma test: 12 s of clicks produced no speech or text, and answers over clicks were transcribed correctly with no added delay, at worst case with no echo cancellation. So the planned mic filter was dropped |
+| I48 | 11-01 | Encouragement during CPR repeats after the waiting list runs out | Hwang 2020: metronome plus encouragement held the rate near 110 better than metronome alone. Ayu says it about every 45 s, not the study's 30 s |
+| I49 | 11-01 | SOS keeps its audio open after the connection ends for good. Only leaving the screen closes it | Otherwise the beat and the spoken 112 line die exactly when they matter |
+| I50 | 11-01 | Stored audio is trimmed when it loads, so the repo's audio files stay as generated. `gen-audio` trims the phone's own copies | Saves about 0.9 s with no change to words or triage, and opens the mic sooner after Ayu stops |
+| I51 | 11-01 | **Rejected:** ending the caller's turn early with `commit` after a short answer, which could save about 1 s. Lowering `PRISMA_MIN_SILENCE_MS` was rejected for the same reason. Dropping "Kya woh" from the questions was also rejected | A panicked "haan... nahi nahi" cut after "haan" would mark an unresponsive person as responsive. Synthetic speech cannot show this risk, so it needs real callers first. A shorter question that gets misheard costs far more than the half second saved |
 | I40 | 11-01 | ER brief is built from case fields in code, with no LLM step, and shows "unknown" for anything not stated. Stricter than the guide, which let the LLM fill slots | The hospital reads it under pressure, so it can never contain words the caller did not say |
 | I41 | 11-01 | Timeline entries use their own feed, separate from case updates | So a new transcript line reaches the dashboard without waking the voice session |
 | I43 | 11-01 | In triage, a reply clearly about the other question answers that question, and the current one is asked again | Stream test: "हाँ, साँस ले रहा है" was read as a yes to "are they responding", marking an unresponsive person as responsive |
@@ -473,9 +517,10 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R16 | **Closed 10-31:** the spoken area was correct on the team's iPhone. The earlier wrong pin stays unexplained; it may have been an AI test case with simulated coordinates. AI live tests must not add simulated cases to the team's dashboard without saying so | Closed | Read-back with voice correction catches any bad fix during a call |
 | R17 | Hindi and English pass end to end in Chrome with buttons and typing (11-01, 10/10). A Samsung Android phone passed a short check in Hinglish (11-01): voice, interrupting and layout. Hindi or English by voice on a real phone is untested | Low-Medium | User trials |
 | R23 | **Gemini free tier allows 15 requests per minute** (measured 11-01), shared by all users. Each thing a caller says is one request. Over the limit it returns 429 in about 0.4 s and Ayu uses rules and fixed questions, so calls stay safe but lose Gemini's help. Several judges at once could hit this. Daily limit not measured | Medium | Accept for one user at a time; consider a paid tier for demo week |
-| R18 | **First aid and home care are live without any clinical review** (team decision 11-01, I44). Steps were condensed from published guidance with AI help, translations are unchecked, and triage rules and warning signs are unreviewed. A real person could rely on them | **High** | App and write-up say so plainly. A qualified reviewer can still approve it through the sheet |
+| R18 | **First aid and home care are live without any clinical review** (team decision 11-01, I44). Steps were condensed from published guidance with AI help, translations are unchecked, and triage rules and warning signs are unreviewed. Waiting steps and the CPR beat (Phase 10) are also unreviewed. A real person could rely on them | **High** | App and write-up say so plainly. A qualified reviewer can still approve it through the sheet |
+| R24 | CPR beat untested on a real phone: it may be too quiet on speaker, or too loud under Ayu, and echo on a real speaker differs from the Prisma test, which fed clicks in directly | Medium | Phone test steps 21-22. `VOLUME` is in `metronome.ts` |
 | R19 | Barge-in works on iPhone XR on speaker, in a quiet setting, with no self-interruption (10-31). Android and noise are untested; the threshold (`BARGE_RMS` in `voiceClient.ts`) may need tuning there. The opening line and protocol steps cannot be interrupted | Low-Medium | Check on Android and in the noisy tests |
-| R20 | First instruction takes 11-16 s by voice on a real phone, against about 3 s with buttons. Calculated breakdown, not traced per call: Ayu speaking 7.1 s, silence detection 1.6 s, Prisma about 0.8 s, and the rest is the caller responding. Technology is the smaller part. Interrupting Ayu already shortens it | **High** | See D13 and D14; judges will see this number |
+| R20 | First instruction took 11-16 s by voice on a real phone (10-31), against about 3 s with buttons. Not re-measured since. Ayu's speech before it went from 7.1 s to 4.5 s (shorter lines) to 3.6 s (trimmed, not deployed). Calculated, not traced: silence detection 1.6 s, Prisma about 1 s, and the rest is the caller responding. Interrupting Ayu already shortens it | **High** | Measure on a phone after the push. Further cuts trade against safety (I51); judges will see this number |
 | R22 | Voice "felt half" on iPhone after the audio fix. **Closed 10-31:** mic now starts during the countdown and lines queue (`5706235`). Team retest on iPhone: every word heard, normal volume | Closed | Cause not isolated; both fixes shipped together |
 | R21 | Voice answers work in a quiet setting; ASR errors and noise may still produce wrong yes/no readings | **High** | Noisy clips, Phase 8 |
 | R11 | Hindi and Hinglish copy is unreviewed draft | Low | Phase 7 |
@@ -578,10 +623,31 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - The pre-arrival brief from real speech was not reported.
 - Live typed check found Gemini repeating a question with a misspelling ("bhuhaar"). Fixed with an overlap check, not yet deployed. `npm test`: 226 of 226.
 
+**2026-11-01, Phase 10 (local production build, real Gnani and Gemini, Chrome, forced failures through a relay)**
+- `npm run typecheck`, `npm run build`: pass. `npm test`: 241 of 241 (server 225, web 16). One run timed out on the first gateway test under load (5 s); it did not repeat in later full runs, and that test does not touch this work.
+- The drop bug was reproduced by a failing test before the fix.
+- Failure run 15/15: all steps heard in order after a drop, then the 112 line; beat at 110.0/min; first waiting step; beat through a re-check; long drop keeps the screen, spoken 112 line and beat; leaving stops it; breathing returning stops it; hung SOS start ends in Call 112 at 13.5 s.
+- That run's slow-network check passed in 0.1 s, too fast to be real: it had reused an open connection. Redone with connections cut first, 4/4: 4.3 s, and the holding page came through and did not replace the saved app.
+- Regression on the final build: three-screen 11/11, E1-E5 rules only 5/5.
+- Prisma live, clicks mixed into the audio at level 0.25 (no echo cancellation): clicks alone gave 0 speech starts and no text; a sentence and a one-word answer over clicks were transcribed correctly, with no extra delay against the same sentence without clicks.
+- 29 new lines generated with Timbre, about 4 MB. 36 spoken and 80 on-screen lines in the refreshed wording sheet.
+- **Not tested:** the beat on a real phone speaker, waiting steps heard by a person, Gemini-on triage scenarios after this change, Render's real wake page.
+
+**2026-11-01, Phase 11 (local production build)**
+- Measured across all 314 stored lines: mean 0.12 s silence before and 0.22 s after, longest 0.51 s after.
+- `npm run typecheck`: pass. `npm test`: 247 of 247 (server 231, web 16).
+- Prisma heard 14 trimmed and untrimmed lines in Hindi and English: 12 identical, 2 differing only in spelling (वह/वो, गेट/gate). No word lost. Hinglish lines use the same Hindi-script audio path but were not in this check.
+- Failure run 15/15, slow network 4/4, offline 5/5.
+- Three-screen: **10/11 once, then 11/11 five times in a row.** The failing check was not captured, so the cause is unknown. It may be the live Nominatim lookup or a timing check under load.
+- The offline script's two failures were stale checks (old cache name, the removed word "Prototype"), corrected in the script.
+- **Not tested:** how trimmed lines sound to a person, first instruction time on a phone.
+
 ---
 
 ## 13. Changelog
 
+- **2026-11-01** Built Phase 11: trimmed silence from stored audio, about 0.9 s faster to the first instruction.
+- **2026-11-01** Team asked the assistant to work on the product only. Built Phase 10: waiting steps, CPR beat and encouragement, and fixes for four ways an SOS could silently fail. Cleared stale doctor-review and placeholder wording from this file.
 - **2026-10-31** Created PLAN.md. Read live Gnani docs and challenge page; recorded differences. Built Phase 1 foundation on mocks. Copied source docs to `docs/`.
 - **2026-10-31** First live Gnani runs. Fixed the Prisma streaming language header. Smoke test 5/5. R1 largely cleared.
 - **2026-10-31** Team confirmed real voice works and approved Phase 2. Built SOS flow, case store, live dashboard, public-link guards and `render.yaml`.

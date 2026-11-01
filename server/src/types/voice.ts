@@ -14,6 +14,8 @@ export interface SosState {
   placeholder: boolean;
   /** Taken from published guidance, and not reviewed by a doctor. */
   sourced: boolean;
+  /** The phone plays the compression beat. It is local audio, so it survives a lost connection. */
+  rhythm: boolean;
   dispatchStatus: Case["dispatch"]["status"];
   etaMinutes: number | null;
   ambulanceId: string | null;

@@ -12,6 +12,17 @@ export interface ProtocolStep {
   text: LocalizedText;
   pauseAfterMs: number;
   interruptible: boolean;
+  /** The phone's compression beat starts with this step. */
+  startsRhythm?: boolean;
+}
+
+/** Said between re-checks while the ambulance is on its way. */
+export interface WaitingStep {
+  id: string;
+  text: LocalizedText;
+  protocols: ProtocolId[];
+  /** Said again once the list runs out. */
+  repeat?: boolean;
 }
 
 export interface Protocol {
@@ -26,10 +37,12 @@ export interface Protocol {
   steps: ProtocolStep[];
   doNot: string[];
   callEmergencyLine: boolean;
+  waiting: WaitingStep[];
 }
 
 const LANGS: Lang[] = ["en", "hi", "hinglish"];
 const MAX_WORDS_PER_STEP = 25;
+const WAITING_FILE = resolve(import.meta.dirname, "../../src/protocols/waiting/steps.json");
 
 const hasAllLangs = (value: unknown): value is LocalizedText =>
   typeof value === "object" && value !== null &&
@@ -61,18 +74,41 @@ export function validateProtocol(raw: any, fileId: string): string[] {
   return problems;
 }
 
+export function validateWaitingSteps(raw: any): string[] {
+  const problems: string[] = [];
+  if (raw?.status === "reviewed" && !raw.reviewedBy) problems.push("reviewed waiting steps need reviewedBy");
+  if (!raw?.basis) problems.push("waiting steps need a basis");
+  if (!Array.isArray(raw?.steps) || raw.steps.length === 0) return [...problems, "needs at least one waiting step"];
+  raw.steps.forEach((step: any) => {
+    const label = `waiting step ${step?.id}`;
+    if (!hasAllLangs(step?.text)) problems.push(`${label} needs en, hi and hinglish`);
+    else if (step.text.en.split(/\s+/).length > MAX_WORDS_PER_STEP) problems.push(`${label} is too long`);
+    if (!Array.isArray(step?.protocols) || step.protocols.length === 0) problems.push(`${label} needs protocols`);
+    else if (!step.protocols.every((id: ProtocolId) => PROTOCOL_IDS.includes(id))) problems.push(`${label} has an unknown protocol`);
+  });
+  return problems;
+}
+
+function loadWaitingSteps(): WaitingStep[] {
+  const raw = JSON.parse(readFileSync(WAITING_FILE, "utf8"));
+  const problems = validateWaitingSteps(raw);
+  if (problems.length) throw new Error(`Invalid waiting steps: ${problems.join("; ")}`);
+  return raw.steps;
+}
+
 /** Fails fast: the server must not start with a missing or invalid protocol. */
 export function loadProtocols(dir = resolve(import.meta.dirname, "../../src/protocols")) {
   const protocols = new Map<ProtocolId, Protocol>();
+  const waiting = loadWaitingSteps();
   for (const file of readdirSync(dir).filter((name) => name.endsWith(".json"))) {
     const id = file.replace(".json", "");
     const raw = JSON.parse(readFileSync(resolve(dir, file), "utf8"));
     const problems = validateProtocol(raw, id);
     if (problems.length) throw new Error(`Invalid protocol ${file}: ${problems.join("; ")}`);
-    protocols.set(raw.id, raw);
+    protocols.set(raw.id, { ...raw, waiting: waiting.filter((step) => step.protocols.includes(raw.id)) });
   }
   const missing = PROTOCOL_IDS.filter((id) => !protocols.has(id));
   if (missing.length) throw new Error(`Missing protocols: ${missing.join(", ")}`);
-  speakHindiFor([...protocols.values()].flatMap((protocol) => protocol.steps.map((step) => step.text)));
+  speakHindiFor([...[...protocols.values()].flatMap((protocol) => protocol.steps.map((step) => step.text)), ...waiting.map((step) => step.text)]);
   return protocols;
 }

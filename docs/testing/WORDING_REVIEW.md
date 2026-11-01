@@ -45,7 +45,7 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 35 | Is there any blood in your stool? | क्या मल में खून आ रहा है? | Kya potty mein khoon aa raha hai? | |
 | 36 | Do you have diabetes or any heart condition? | क्या आपको डायबिटीज़ या दिल की कोई बीमारी है? | Kya aapko diabetes ya dil ki koi bimari hai? | |
 
-## Text on screen (79)
+## Text on screen (80)
 
 | # | English meaning | Hindi | Hinglish | Your change |
 |---|---|---|---|---|
@@ -107,26 +107,27 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 56 | Not sure | पता नहीं | Pata nahi | |
 | 57 | pending medical review | चिकित्सा समीक्षा बाकी | medical review baaki | |
 | 58 | published first aid guidance · not doctor-reviewed | प्रकाशित प्राथमिक उपचार मार्गदर्शन · डॉक्टर द्वारा जाँचा नहीं गया | published first aid guidance · doctor review nahi hua | |
-| 59 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
-| 60 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. First aid and home care come from published guidance and have not been reviewed by a doctor. Ayu is not a medical device and does not replace emergency services. Ambulance dispatch is simulated. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai. | |
-| 61 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
-| 62 | Language | भाषा | Bhasha | |
-| 63 | Back | वापस | Wapas | |
-| 64 | Voice check | आवाज़ जाँच | Voice check | |
-| 65 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
-| 66 | Stop | रोकें | Rokein | |
-| 67 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
-| 68 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
-| 69 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
-| 70 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
-| 71 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
-| 72 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
-| 73 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
-| 74 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
-| 75 | Speak | बोलें | Bolein | |
-| 76 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
-| 77 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
-| 78 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
-| 79 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
+| 59 | Push with the beat | ताल के साथ दबाइए | Taal ke saath dabaiye | |
+| 60 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
+| 61 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. First aid and home care come from published guidance and have not been reviewed by a doctor. Ayu is not a medical device and does not replace emergency services. Ambulance dispatch is simulated. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai. | |
+| 62 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
+| 63 | Language | भाषा | Bhasha | |
+| 64 | Back | वापस | Wapas | |
+| 65 | Voice check | आवाज़ जाँच | Voice check | |
+| 66 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
+| 67 | Stop | रोकें | Rokein | |
+| 68 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
+| 69 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
+| 70 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
+| 71 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
+| 72 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
+| 73 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
+| 74 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
+| 75 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
+| 76 | Speak | बोलें | Bolein | |
+| 77 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
+| 78 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
+| 79 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
+| 80 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
 
 Reviewed by: ____________________   Date: __________

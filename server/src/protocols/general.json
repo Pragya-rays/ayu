@@ -23,7 +23,7 @@
         "hi": "उनके साथ रहिए और उनकी सांस देखते रहिए।",
         "hinglish": "Unke saath rahiye aur unki saans dekhte rahiye."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     },
     {
@@ -33,7 +33,7 @@
         "hi": "कुछ भी बदले तो मुझे तुरंत बताइए।",
         "hinglish": "Kuch bhi badle to mujhe turant batayein."
       },
-      "pauseAfterMs": 2000,
+      "pauseAfterMs": 2300,
       "interruptible": true
     }
   ],

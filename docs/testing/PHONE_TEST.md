@@ -10,7 +10,7 @@ One sitting of about 20 minutes covers everything. Repeat on an Android phone if
 |---|---|---|---|
 | 1 | Tap SOS, and allow mic and location | Countdown, then Ayu speaks at once | |
 | 2 | Say "Mere papa gir gaye hain, jawab nahi de rahe" | Your words appear | |
-| 3 | Say "Nahi" to breathing | RED, CPR, "medical review baaki" | |
+| 3 | Say "Nahi" to breathing | RED, CPR, "published first aid guidance" tag | |
 | 4 | Listen to Ayu read your area | The area is right | |
 | 5 | Say "Haan" | "Location confirm" | |
 | 6 | Tap Meri location share karein | Share sheet opens. Close it | |
@@ -28,6 +28,11 @@ One sitting of about 20 minutes covers everything. Repeat on an Android phone if
 | 18 | Turn on Airplane Mode, reload, and tap SOS | App opens and says to call 112 | |
 | 19 | Turn off Airplane Mode | | |
 | 20 | Deny the mic in a new SOS | Clear warning, and Yes/No buttons still work | |
+| 21 | Start an SOS and answer Nahi, Nahi, on speaker | After "Is taal ke saath dabaiye" a steady click starts, with a pulsing dot. You can hear it, and it is quieter than Ayu | |
+| 22 | Let the beat run and answer Ayu by voice | Ayu hears you and is not cut off by the click | |
+| 23 | Say "Haan" to the location, then wait 20 seconds | Ayu says one thing to do, such as asking someone to open the door. Words sound right | |
+| 24 | During the CPR steps, turn on Airplane Mode for 3 seconds, then off | The beat keeps going. Ayu repeats the step it was on and finishes the rest | |
+| 25 | Run one SOS by voice and listen closely. Then read "first instruction" on the dashboard | No word sounds cut off at the start or end. Write down the seconds | |
 
 **Also note:** did SOS feel fast enough? Did any word sound wrong? Did the screen stay awake?
 

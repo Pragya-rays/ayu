@@ -1,0 +1,97 @@
+{
+  "status": "sourced",
+  "basis": "Fixed list from Project Summary 7.4, kept to practical steps. Food, water, clothing and timing lines repeat what the protocol files already say. The encouragement line follows Hwang BN et al., Medicine 2020;99(42):e22728, https://pmc.ncbi.nlm.nih.gov/articles/PMC7571937. Not reviewed by a doctor.",
+  "steps": [
+    {
+      "id": "door",
+      "text": {
+        "en": "If someone is with you, ask them to unlock the door and switch on the lights.",
+        "hi": "कोई साथ हो तो उनसे दरवाज़ा खुलवाइए और लाइट जलवाइए।",
+        "hinglish": "Koi saath ho to unse darwaza khulwaiye aur light jalwaiye."
+      },
+      "protocols": ["cpr", "chest_pain_conscious", "stroke", "recovery_stroke_collapse", "choking", "severe_bleeding", "general"]
+    },
+    {
+      "id": "gate",
+      "text": {
+        "en": "Send someone to the gate or main road to guide the ambulance.",
+        "hi": "किसी को गेट या मुख्य सड़क पर भेजिए ताकि वो एम्बुलेंस को रास्ता दिखाए।",
+        "hinglish": "Kisi ko gate ya main road par bhejiye taaki woh ambulance ko rasta dikhaye."
+      },
+      "protocols": ["cpr", "chest_pain_conscious", "stroke", "recovery_stroke_collapse", "choking", "severe_bleeding", "general"]
+    },
+    {
+      "id": "keep_pushing",
+      "text": {
+        "en": "You are doing well. Keep pushing.",
+        "hi": "आप बहुत अच्छा कर रहे हैं। दबाते रहिए।",
+        "hinglish": "Aap bahut achha kar rahe hain. Dabate rahiye."
+      },
+      "protocols": ["cpr"],
+      "repeat": true
+    },
+    {
+      "id": "no_food",
+      "text": {
+        "en": "Do not give food, water or medicine.",
+        "hi": "खाना, पानी या दवा मत दीजिए।",
+        "hinglish": "Khana, paani ya dawa mat dijiye."
+      },
+      "protocols": ["chest_pain_conscious", "severe_bleeding", "general"]
+    },
+    {
+      "id": "no_move",
+      "text": {
+        "en": "Do not move them unless they are in danger.",
+        "hi": "जब तक ख़तरा न हो, उन्हें मत हिलाइए।",
+        "hinglish": "Jab tak khatra na ho, unhe mat hilaiye."
+      },
+      "protocols": ["stroke", "general"]
+    },
+    {
+      "id": "clothes",
+      "text": {
+        "en": "Loosen tight clothing around the neck and chest.",
+        "hi": "गर्दन और छाती के आसपास के तंग कपड़े ढीले कीजिए।",
+        "hinglish": "Gardan aur chhati ke aaspaas ke tang kapde dheele kijiye."
+      },
+      "protocols": ["stroke", "recovery_stroke_collapse", "general"]
+    },
+    {
+      "id": "crowd",
+      "text": {
+        "en": "Ask people to step back and give them space.",
+        "hi": "लोगों से कहिए कि पीछे हटें और जगह दें।",
+        "hinglish": "Logon se kahiye ki peeche hatein aur jagah dein."
+      },
+      "protocols": ["cpr", "chest_pain_conscious", "stroke", "recovery_stroke_collapse", "choking", "severe_bleeding", "general"]
+    },
+    {
+      "id": "speaker",
+      "text": {
+        "en": "Keep your phone on speaker and stay with them.",
+        "hi": "फ़ोन स्पीकर पर रखिए और उनके साथ रहिए।",
+        "hinglish": "Phone speaker par rakhiye aur unke saath rahiye."
+      },
+      "protocols": ["chest_pain_conscious", "stroke", "recovery_stroke_collapse", "choking", "severe_bleeding", "general"]
+    },
+    {
+      "id": "medicines",
+      "text": {
+        "en": "Keep their medicines, ID and reports ready for the ambulance team.",
+        "hi": "उनकी दवाइयाँ, पहचान पत्र और रिपोर्ट एम्बुलेंस टीम के लिए तैयार रखिए।",
+        "hinglish": "Unki dawaiyan, ID aur reports ambulance team ke liye taiyaar rakhiye."
+      },
+      "protocols": ["chest_pain_conscious", "stroke", "recovery_stroke_collapse", "general"]
+    },
+    {
+      "id": "time",
+      "text": {
+        "en": "Note the time this started. The hospital will ask.",
+        "hi": "याद रखिए यह कब शुरू हुआ। अस्पताल पूछेगा।",
+        "hinglish": "Yaad rakhiye yeh kab shuru hua. Hospital poochhega."
+      },
+      "protocols": ["chest_pain_conscious", "recovery_stroke_collapse", "severe_bleeding", "general"]
+    }
+  ]
+}

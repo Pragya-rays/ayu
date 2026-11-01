@@ -64,6 +64,7 @@ const en = {
   notSure: "Not sure",
   sosPendingReview: "pending medical review",
   sosGuidance: "published first aid guidance · not doctor-reviewed",
+  sosBeat: "Push with the beat",
   dashProtocol: "Protocol",
   dashResponding: "Responding",
   dashBreathing: "Breathing normally",
@@ -210,6 +211,7 @@ const hi: Record<StringKey, string> = {
   notSure: "पता नहीं",
   sosPendingReview: "चिकित्सा समीक्षा बाकी",
   sosGuidance: "प्रकाशित प्राथमिक उपचार मार्गदर्शन · डॉक्टर द्वारा जाँचा नहीं गया",
+  sosBeat: "ताल के साथ दबाइए",
   consentTitle: "शुरू करने से पहले",
   consentBody:
     "आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है।",
@@ -289,6 +291,7 @@ const hinglish: Record<StringKey, string> = {
   notSure: "Pata nahi",
   sosPendingReview: "medical review baaki",
   sosGuidance: "published first aid guidance · doctor review nahi hua",
+  sosBeat: "Taal ke saath dabaiye",
   consentTitle: "Shuru karne se pehle",
   consentBody:
     "Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai.",

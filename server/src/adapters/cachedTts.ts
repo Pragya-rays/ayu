@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Lang } from "../types/voice.js";
+import { trimSilence } from "./pcmTrim.js";
 import type { TTSAdapter, TtsEvents, TtsHandle } from "./types.js";
 
 const CHUNK_BYTES = 9600; // 200 ms at 24 kHz, 16-bit
@@ -58,7 +59,7 @@ export class CachedTts implements TTSAdapter {
     if (readFileSync(manifestPath, "utf8").trim() !== JSON.stringify(voice)) return 0;
     const files = readdirSync(dir).filter((file) => file.endsWith(".pcm"));
     for (const file of files) {
-      const pcm = readFileSync(resolve(dir, file));
+      const pcm = trimSilence(readFileSync(resolve(dir, file)), voice.sampleRate);
       const chunks: string[] = [];
       for (let offset = 0; offset < pcm.length; offset += CHUNK_BYTES) {
         chunks.push(pcm.subarray(offset, offset + CHUNK_BYTES).toString("base64"));

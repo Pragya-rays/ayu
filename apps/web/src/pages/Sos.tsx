@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang, SosState } from "../../../../server/src/types/voice";
+import { startMetronome } from "../audio/metronome";
 import { fetchLocalLine, playLocalLine, requestMic } from "../audio/voiceClient";
 import { shareOrCopy } from "../audio/share";
 import { useVoice } from "../hooks/useVoice";
@@ -9,6 +10,8 @@ import type { MedicalId } from "./MedicalId";
 const COUNTDOWN_SECONDS = 3;
 const GPS_TIMEOUT_MS = 8000;
 const ACCURACY_GAIN = 0.8;
+// A caller told help is on the way must not wait on a request that is going nowhere.
+const POST_TIMEOUT_MS = 10000;
 
 type Stage = "arming" | "active" | "failed";
 type GpsState = "waiting" | "ok" | "failed";
@@ -23,13 +26,20 @@ interface Props {
 }
 
 async function post(path: string, body?: unknown) {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
-  return response.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), POST_TIMEOUT_MS);
+  try {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function useWakeLock(enabled: boolean) {
@@ -67,8 +77,15 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
   const offlineSpoken = useRef(false);
   const mic = useRef<Promise<MediaStream> | null>(null);
   const { start: startVoice, stop: stopVoice } = voice;
+  const rhythm = voice.sosState?.rhythm ?? false;
 
   useWakeLock(stage === "active");
+
+  // Keeps going through a lost connection, because the compressions must not stop.
+  useEffect(() => {
+    if (!rhythm || audio.state === "closed") return;
+    return startMetronome(audio);
+  }, [audio, rhythm]);
 
   /** Sends a position only when it is meaningfully better than the last one sent. */
   const sendPosition = useCallback((id: string) => {
@@ -228,7 +245,8 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
             {sosState.sourced && <span className="simulated"> · {t("sosGuidance")}</span>}
           </p>
         )}
-        {voice.reconnecting && <p className="sos-note" role="status">{t("sosReconnecting")}</p>}
+        {rhythm && <p className="sos-beat">{t("sosBeat")}</p>}
+        {stage === "active" && voice.reconnecting && <p className="sos-note" role="status">{t("sosReconnecting")}</p>}
         {gps === "failed" && <p className="sos-note">{t("sosNoGps")}</p>}
         {voice.error?.code === "mic_denied" && <p className="sos-note" role="alert">{t("sosMicDenied")}</p>}
         {stage === "active" && (

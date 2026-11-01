@@ -59,6 +59,34 @@ describe("TimbreAdapter", () => {
     expect(handlers.onEnd).not.toHaveBeenCalled();
   });
 
+  it("fails instead of waiting forever when Timbre goes silent", async () => {
+    const server = await fakeServer(() => undefined);
+    cleanup = server.close;
+    const handlers = events();
+    new TimbreAdapter({ ...options, url: server.url, stallMs: 50 }).synthesize({ text: "x", lang: "en" }, handlers);
+    await waitFor(() => vi.mocked(handlers.onError).mock.calls.length === 1);
+    expect(handlers.onError).toHaveBeenCalledWith({ code: "timbre_timeout", message: "Timbre stopped responding" });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(handlers.onError).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not time out while audio keeps arriving", async () => {
+    const server = await fakeServer((socket) => {
+      socket.on("message", () => {
+        const chunks = setInterval(() => socket.send(JSON.stringify({ type: "audio", data: { audio: "AAA=" } })), 20);
+        setTimeout(() => {
+          clearInterval(chunks);
+          socket.send(JSON.stringify({ type: "complete", data: {} }));
+        }, 150);
+      });
+    });
+    cleanup = server.close;
+    const handlers = events();
+    new TimbreAdapter({ ...options, url: server.url, stallMs: 60 }).synthesize({ text: "x", lang: "en" }, handlers);
+    await waitFor(() => vi.mocked(handlers.onEnd).mock.calls.length === 1);
+    expect(handlers.onError).not.toHaveBeenCalled();
+  });
+
   it("stays silent after cancel", async () => {
     const server = await fakeServer((socket) => {
       socket.on("message", () => socket.send(JSON.stringify({ type: "audio", data: { audio: "AAA=" } })));
