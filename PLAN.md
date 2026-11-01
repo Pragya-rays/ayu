@@ -14,8 +14,7 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | **Current phase** | All buildable work for Phases 6-9 is done. Phases 1-5 validated on iPhone XR in quiet conditions; Phase 6 awaits the team's test. What remains needs people (sections 7 and 10) |
 | **Phase state** | Deployed 11-01 (`4fdb66e`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of the triage fix, stream scorecard and testing kits. Then phone test, medical review, video, Post 3 with the video by about Nov 7, submit by Nov 9. **The team chose on 11-01 to register later: required before submitting, do by about Nov 5.** Whether Post 1 or the wording sheet went out is unconfirmed |
-| **REMINDER 2** | **Final phone test is postponed: the team's phone is unavailable (11-01).** Remind them when the phone is back, and before any further phone-dependent work. Covers Phase 6 brief, transcript, driver buttons, shorter SOS lines, and Airplane Mode |
+| **Next action** | Live version is `8dd6ad3`, shown at `/api/health`. Phone test passed on iPhone 11-01. Team approves the push of the repeated-question fix. Then medical review, video, Post 3 with the video by about Nov 7, submit by Nov 9. **The team chose on 11-01 to register later: required before submitting, do by about Nov 5.** Whether Post 1 or the wording sheet went out is unconfirmed |
 | **REMINDER** | **Medical review is parked at the team's request (11-01). Raise it again at the end of every phase, and no later than Phase 7 (Nov 5).** Until then every script and card stays a placeholder. Sheet: `docs/medical-review/REVIEW_SHEET.md`. Also open: whether the team member is medically qualified (D9) |
 | **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
 
@@ -284,8 +283,8 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 
 **Exit criteria (team to complete):**
 - [x] Approve the push (deployed 11-01)
-- [ ] Run one SOS by voice, and check the brief and transcript on the laptop
-- [ ] Open `/driver` on a second device and accept from there
+- [x] Run one SOS by voice, and check the transcript on the laptop (11-01). The brief's text from real speech was not reported
+- [x] Run the driver view, in a laptop tab, and see the phone update (11-01). Not yet tried on a separate phone
 
 ### Phase 7 — Safety, Resilience, Polish · **BUILD WORK DONE, content waiting on people**
 The team asked on 11-01 to build straight through, then returned to the usual pace the same day: the deadline stays Nov 10, one phase at a time with team review. Work below was built during that push.
@@ -571,6 +570,12 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 
 **2026-11-01, Phase 7 Medical ID and share**
 - `npm test`: 222 of 222 (server 210, web 12). Chrome 7/7, three-screen 11/11. The browser test found Share did nothing if the share sheet failed; fixed with a copy fallback, applied to Normal mode too.
+
+**2026-11-01, final phone test on iPhone, parts 1 and 2 (live `8dd6ad3`)**
+- Team reported working: speech and transcript, area read-back, share sheet, driver buttons updating the phone, shorter SOS lines feel faster, Medical ID shown and deleted, 112 warning with no acceptance, everyday chat. Nothing reported wrong. Opening line kept as it is.
+- Part 3 passed: interrupting on speaker, add to home screen, Airplane Mode says to call 112, mic refused shows a warning and buttons work. All on iPhone, quiet setting.
+- The pre-arrival brief from real speech was not reported.
+- Live typed check found Gemini repeating a question with a misspelling ("bhuhaar"). Fixed with an overlap check, not yet deployed. `npm test`: 226 of 226.
 
 ---
 

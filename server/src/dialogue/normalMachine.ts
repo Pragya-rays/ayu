@@ -13,6 +13,7 @@ const SILENCE_PROMPT_MS = 10000;
 const MAX_QUESTIONS = 6;
 const MAX_ATTEMPTS = 2;
 const CONTEXT_LINES = 10;
+const REPEAT_OVERLAP = 0.7;
 
 export interface NormalIo {
   say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean; spoken?: string }): Promise<void>;
@@ -199,11 +200,19 @@ export class NormalMachine {
     if (this.question === asking) this.armSilence();
   }
 
-  /** Skips a suggestion that merely repeats something already asked. */
+  /** Skips a suggestion that repeats an earlier question, even if reworded or misspelled. */
   private takeSuggestion() {
     const suggestion = this.suggested;
     this.suggested = null;
-    return suggestion && !this.conversation.includes(`Ayu: ${suggestion.text}`) ? suggestion : null;
+    if (!suggestion) return null;
+    const words = (line: string) => new Set(line.toLowerCase().replace(/^ayu: /, "").match(/[\p{L}\p{M}]+/gu) ?? []);
+    const asked = this.conversation.filter((line) => line.startsWith("Ayu: ")).map(words);
+    const fresh = words(suggestion.text);
+    const repeats = asked.some((earlier) => {
+      const shared = [...fresh].filter((word) => earlier.has(word)).length;
+      return shared / Math.min(fresh.size, earlier.size) >= REPEAT_OVERLAP;
+    });
+    return repeats ? null : suggestion;
   }
 
   private async offerSos() {

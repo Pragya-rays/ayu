@@ -218,8 +218,9 @@ describe("Gemini follow-up questions", () => {
   });
 
   it("mixes fitted questions between warning-sign questions, and still asks every warning question", async () => {
+    const fitted = ["Dhoop mein kitni der rahe?", "Paani kitna piya tha?", "Neend kaisi aayi thi?", "Khana kab khaya?", "Ghar par koi hai?", "Kaam kya karte hain?"];
     let turn = 0;
-    const classify = async () => withQuestion(`Sawaal number ${++turn}?`);
+    const classify = async () => withQuestion(fitted[turn++ % fitted.length]!);
     const spoken: string[] = [];
     const machine = new NormalMachine(LANG, { classifier: { classify }, cards }, {
       async say(text) {
@@ -234,8 +235,8 @@ describe("Gemini follow-up questions", () => {
     const fixed = (id: keyof typeof QUESTIONS) => spoken.indexOf(QUESTIONS[id].text[LANG]);
     expect(fixed("sudden")).toBeGreaterThan(-1);
     expect(fixed("faint")).toBeGreaterThan(fixed("sudden"));
-    expect(spoken.slice(fixed("sudden"), fixed("faint")).some((line) => line.startsWith("Sawaal"))).toBe(true);
-    const isQuestion = (line: string) => line.startsWith("Sawaal") || Object.values(QUESTIONS).some((question) => question.text[LANG] === line);
+    expect(spoken.slice(fixed("sudden"), fixed("faint")).some((line) => fitted.includes(line))).toBe(true);
+    const isQuestion = (line: string) => fitted.includes(line) || Object.values(QUESTIONS).some((question) => question.text[LANG] === line);
     expect(spoken.filter(isQuestion).length).toBeLessThanOrEqual(6);
   });
 
@@ -287,6 +288,25 @@ describe("Gemini follow-up questions", () => {
     await machine.onInput("dhoop ke baad sir dard hai");
     for (const reply of ["do ghante", "nahi", "nahi", "nahi", "nahi"]) await machine.onInput(reply);
     expect(spoken.filter((line) => line === "Dhoop mein kitni der rahe the?")).toHaveLength(1);
+  });
+
+  it("skips a reworded or misspelled repeat, but keeps a new question", async () => {
+    const questions = ["Kya aapko khansi ke sath bukhar bhi hai?", "Kya aapko khansi ke sath bhuhaar bhi hai?", "Khansi sukhi hai ya balgam wali?"];
+    let turn = 0;
+    const spoken: string[] = [];
+    const classify = async () => withQuestion(questions[Math.min(turn++, 2)]!);
+    const machine = new NormalMachine(LANG, { classifier: { classify }, cards }, {
+      async say(text) {
+        spoken.push(text);
+      },
+      publish() {},
+    });
+    await machine.begin();
+    await machine.onInput("do din se khansi hai");
+    for (const reply of ["do din", "nahi", "nahi", "nahi", "nahi"]) await machine.onInput(reply);
+    expect(spoken).toContain(questions[0]);
+    expect(spoken).not.toContain(questions[1]);
+    expect(spoken).toContain(questions[2]);
   });
 
   it("still finds a warning sign in the reply to a generated question", async () => {

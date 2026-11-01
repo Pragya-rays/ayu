@@ -71,7 +71,7 @@ We ran 40 synthetic calls through the live Prisma stream the app uses: five emer
 
 Full tables with every failure: [live stream](../../eval/results/scorecard-stream.md), [file mode](../../eval/results/scorecard-synthetic.md)
 
-On a real iPhone XR in a quiet room, we tested voice triage, location read-back, interrupting, ambulance flow and Normal mode. The opening line started 52-72 ms after the countdown once it was stored on the phone.
+On a real iPhone XR in a quiet room, we tested the full flow: voice triage, location read-back, interrupting on speaker, ambulance accept to arrival, the no-acceptance 112 warning, Medical ID, Normal mode, sharing location, Airplane Mode, and a refused microphone. All worked. The opening line started 52-72 ms after the countdown once it was stored on the phone.
 
 TODO: add results from real noisy recordings and people trying it.
 
