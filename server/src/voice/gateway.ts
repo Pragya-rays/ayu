@@ -103,7 +103,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       releaseLine();
     };
 
-    const speak = (text: string, speakLang: Lang, options: { cacheable?: boolean; interruptible?: boolean } = {}) => {
+    const speak = (text: string, speakLang: Lang, options: { cacheable?: boolean; interruptible?: boolean; spoken?: string } = {}) => {
       stopSpeaking();
       const ttsId = ++ttsCounter;
       const startedAt = performance.now();
@@ -114,7 +114,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       const finished = new Promise<void>((resolve) => {
         finishLine = resolve;
       });
-      const handle = deps.tts.synthesize({ text, lang: speakLang, cacheable: options.cacheable }, {
+      const handle = deps.tts.synthesize({ text, lang: speakLang, cacheable: options.cacheable, spoken: options.spoken }, {
         onAudio(data) {
           firstAudioMs ??= Math.round(performance.now() - startedAt);
           audioBytes += Buffer.byteLength(data, "base64");
@@ -216,7 +216,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
             startMachine(sosCase.id, Boolean(message.openingPlayed));
           } else if (isNormal) {
             normal = new NormalMachine(lang, { classifier: deps.llm, cards: deps.homeCare }, {
-              say: (text, { lang: lineLang, cacheable, interruptible }) => speak(text, lineLang, { cacheable, interruptible }),
+              say: (text, { lang: lineLang, cacheable, interruptible, spoken }) => speak(text, lineLang, { cacheable, interruptible, spoken }),
               publish: (state) => send({ type: "normal.state", ...state }),
             });
             void normal.begin();

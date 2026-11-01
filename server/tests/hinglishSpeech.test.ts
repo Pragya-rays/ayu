@@ -35,5 +35,7 @@ describe("Hinglish speech", () => {
     });
     expect(adapter.buildRequest("dard hai", "hinglish").text).toBe("दर्द है");
     expect(adapter.buildRequest("to the door", "en").text).toBe("to the door");
+    expect(adapter.buildRequest("Gale mein dard?", "hinglish", "गले में दर्द?").text).toBe("गले में दर्द?");
+    expect(adapter.buildRequest("Kya chakkar aa rahe hain?", "hinglish", "Kya चक्कर aa rahe hain?").text).toBe("क्या चक्कर आ रहे हैं?");
   });
 });

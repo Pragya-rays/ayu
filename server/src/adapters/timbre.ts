@@ -22,9 +22,11 @@ export class TimbreAdapter implements TTSAdapter {
     this.sampleRate = options.sampleRate;
   }
 
-  buildRequest(text: string, lang: Lang) {
+  buildRequest(text: string, lang: Lang, spoken?: string) {
+    // Gemini's spelling is often only part Devanagari, so the word list still runs over it.
+    const line = spoken ?? text;
     return {
-      text: lang === "hinglish" ? toSpokenHinglish(text) : text,
+      text: lang === "hinglish" ? toSpokenHinglish(line) : line,
       model: this.options.model,
       voice: this.options.voices[lang],
       language: LANGUAGE[lang],
@@ -39,7 +41,7 @@ export class TimbreAdapter implements TTSAdapter {
     };
   }
 
-  synthesize({ text, lang }: { text: string; lang: Lang }, events: TtsEvents): TtsHandle {
+  synthesize({ text, lang, spoken }: { text: string; lang: Lang; spoken?: string }, events: TtsEvents): TtsHandle {
     const socket = new WebSocket(this.options.url, { headers: { "X-API-Key-ID": this.options.apiKey } });
     let finished = false;
 
@@ -53,7 +55,7 @@ export class TimbreAdapter implements TTSAdapter {
       events.onError({ code, message });
     };
 
-    socket.on("open", () => socket.send(JSON.stringify(this.buildRequest(text, lang))));
+    socket.on("open", () => socket.send(JSON.stringify(this.buildRequest(text, lang, spoken))));
 
     socket.on("message", (raw) => {
       if (finished) return;

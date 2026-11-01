@@ -2,6 +2,8 @@
 // reads mixed Devanagari and Latin as Hinglish. So screens keep Latin Hinglish, and only the text
 // sent to Timbre is converted, word by word. English words and unknown words stay as they are.
 const WORDS: Record<string, string> = {
+  achha: "अच्छा", bhookh: "भूख", gale: "गले", ghar: "घर", jaise: "जैसे", ji: "जी", kamzori: "कमज़ोरी", kharash: "खराश",
+  khana: "खाना", kyun: "क्यों", lage: "लगे", neend: "नींद", peene: "पीने", pyaas: "प्यास", sujan: "सूजन", thakan: "थकान",
   aa: "आ", aaj: "आज", aakhri: "आख़िरी", aap: "आप", aapka: "आपका", aapke: "आपके", aapki: "आपकी", aapko: "आपको",
   aapne: "आपने", aaram: "आराम", ab: "अब", abhi: "अभी", achanak: "अचानक", apna: "अपना", aur: "और", ayu: "आयु",
   baad: "बाद", baanh: "बाँह", baar: "बार", badhe: "बढ़े", bahut: "बहुत", balgam: "बलगम", baat: "बात",

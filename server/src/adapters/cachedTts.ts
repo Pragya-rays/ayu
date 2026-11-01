@@ -27,7 +27,7 @@ export class CachedTts implements TTSAdapter {
     return this.inner.sampleRate;
   }
 
-  synthesize(request: { text: string; lang: Lang; cacheable?: boolean }, events: TtsEvents): TtsHandle {
+  synthesize(request: { text: string; lang: Lang; cacheable?: boolean; spoken?: string }, events: TtsEvents): TtsHandle {
     if (!request.cacheable) return this.inner.synthesize(request, events);
 
     const key = audioFileName(request.lang, request.text);

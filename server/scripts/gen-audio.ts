@@ -14,13 +14,17 @@ import type { Lang } from "../src/types/voice.js";
 const { apiKey } = config.gnani;
 if (!apiKey) throw new Error("Set GNANI_API_KEY in .env first");
 
-// Pass one language to regenerate only that one and keep the rest: npm run gen:audio -- hinglish
-const only = process.argv[2] as Lang | undefined;
+// Partial runs keep the rest and save credits. Regenerate one language: npm run gen:audio -w server -- hinglish
+// Or only lines with no audio yet: npm run gen:audio -w server -- missing
+const mode = process.argv[2];
+const only = mode === "missing" ? undefined : (mode as Lang | undefined);
+const partial = Boolean(mode);
 const LANGS: Lang[] = only ? [only] : ["en", "hi", "hinglish"];
 const stepLines = [...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text));
 const cardLines = [...loadHomeCare().values()].flatMap((card) => card.steps);
 const allLines = [...FIXED_LINES, ...NORMAL_FIXED_LINES, ...stepLines, ...cardLines];
-const lines = LANGS.flatMap((lang) => [...new Set(allLines.map((line) => line[lang]))].map((text) => ({ lang, text })));
+const lines = LANGS.flatMap((lang) => [...new Set(allLines.map((line) => line[lang]))].map((text) => ({ lang, text })))
+  .filter(({ lang, text }) => mode !== "missing" || !existsSync(resolve(AUDIO_DIR, audioFileName(lang, text))));
 
 const adapter = new TimbreAdapter({ url: config.gnani.ttsUrl, apiKey, ...config.timbre });
 const webAudioDir = resolve(import.meta.dirname, "../../apps/web/public/audio");
@@ -43,7 +47,7 @@ for (const { lang, text } of lines) {
   console.log(`${generated.length}/${lines.length} ${lang}: ${text}`);
 }
 
-if (!only && existsSync(AUDIO_DIR)) rmSync(AUDIO_DIR, { recursive: true });
+if (!partial && existsSync(AUDIO_DIR)) rmSync(AUDIO_DIR, { recursive: true });
 mkdirSync(AUDIO_DIR, { recursive: true });
 mkdirSync(webAudioDir, { recursive: true });
 for (const { lang, text, pcm } of generated) {

@@ -30,7 +30,7 @@ for (const { lang, lines } of CASES) {
   times.push(Math.round(performance.now() - started));
   const question = result?.question ?? null;
   if (question) accepted++;
-  console.log(`[${lang}] ${lines.at(-1)}\n   -> ${question ?? "(fixed list)"}  | issue ${result?.issueId ?? "-"} | flags ${result?.redFlags.join(", ") || "-"} | ${times.at(-1)} ms`);
+  console.log(`[${lang}] ${lines.at(-1)}\n   -> ${question ?? "(fixed list)"}${result?.spoken ? `\n   voice: ${result.spoken}` : ""}  | issue ${result?.issueId ?? "-"} | flags ${result?.redFlags.join(", ") || "-"} | ${times.at(-1)} ms`);
 }
 const sorted = [...times].sort((a, b) => a - b);
 console.log(`\n${accepted}/${CASES.length} questions passed the check; median ${sorted[Math.floor(sorted.length / 2)]} ms, worst ${sorted.at(-1)} ms`);

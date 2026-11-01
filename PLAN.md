@@ -14,7 +14,7 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | **Current phase** | Phase 5, Normal Mode. Phases 1-4 validated on iPhone XR in quiet conditions |
 | **Phase state** | Deployed 10-31 (`54cc5be`) at https://ayu-4801.onrender.com. A live typed Normal check reached the SOS prompt; it creates no dashboard case. Gemini follow-up questions and the Hinglish voice fix followed on 11-01 |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team retests Normal mode and pronunciation on the iPhone. Noisy clips and Android still outstanding |
+| **Next action** | Team approves the push, then retests Normal mode on the iPhone. Noisy clips and Android still outstanding |
 | **Blocked on** | Medical reviewer's qualification (D9), award and posting decisions (D3, D4) |
 
 ### If you are an AI agent resuming this project
@@ -261,8 +261,9 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 - [x] Approve the push (deployed 10-31)
 - [x] Try one everyday problem by voice on the iPhone and read the summary (10-31: heard correctly. Team says it feels built only for fixed cases, see D15)
 - [x] Mention jaw or chest pain and check the SOS prompt appears (10-31)
-- [ ] Share on a phone (10-31: not clearly reported)
-- [ ] Some Hindi words are mispronounced (10-31 team report; which words not yet known, see D16)
+- [x] Share on a phone (11-01, iPhone XR)
+- [ ] Pronunciation: "dard" and "takleef" fixed by sample B; "gale" was still wrong (11-01). Fix built, retest after push. English words sound natural
+- [ ] Conversation feels less fixed but still fixed, with a noticeable pause (11-01). Acknowledgements and mixed questions built, retest after push
 - [ ] Decide on shorter SOS lines (D14)
 
 ### Phase 6 — Dashboard Complete (Nov 5)
@@ -358,6 +359,8 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I15 | 10-31 | Dashboard password uses an HttpOnly cookie | Browser SSE cannot send custom headers |
 | I31 | 10-31 | Replaced by I35 after team feedback. Normal questions started as a fixed list only | Safe, but felt built only for fixed cases |
 | I35 | 11-01 | Gemini may phrase everyday follow-ups, which must pass `checkQuestion` (one short question; no medicine, instruction or diagnosis wording). Warning-sign questions stay fixed. Failure falls back to the fixed list | Team decision D15. Generated lines use live Timbre, so they cost credits and start slower |
+| I38 | 11-01 | Gemini also returns a Devanagari `spoken` version of each question, checked like the question and close to it in length. The word list then runs over it, because Gemini's spelling is often only part converted | Team found "gale" wrong: a list alone cannot cover everything Gemini says |
+| I39 | 11-01 | Stored "Achha" style acknowledgement plays as soon as someone finishes, except on a warning sign or an unclear warning reply. Fitted questions may also sit between warning-sign questions, within the limit of 6, and every warning question keeps its place | Team reported a pause and a fixed feel. Warning questions themselves stay fixed |
 | I37 | 11-01 | Hinglish stays in Latin on screen; `dialogue/hinglishSpeech.ts` converts words to Devanagari only in the text sent to Timbre. Applies to fixed lines, templates and Gemini questions. **New Hinglish words must go in its list**; a test fails if a fixed line is missed. Unlisted words in Gemini questions stay Latin, as before | Team chose sample B. One list covers everything, and Hinglish readers keep Latin text |
 | I36 | 11-01 | Gemini model changed to `gemini-3.5-flash-lite` with minimal thinking, replacing I17 | Median about 0.85 s, against 1-8 s with timeouts on default thinking. Extraction accuracy unchanged at 6/7, E1-E5 5/5 |
 | I32 | 10-31 | Warning-sign keywords outrank a parsed yes/no | "saans nahi aa rahi" looks like a "no" but is a warning sign |
@@ -505,6 +508,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - `npm test`: 201 of 201 (server 193, web 8). `npm run normal:check`: 10/11 questions passed on a clean run, median 849 ms, none gave advice; an injection attempt and two "which medicine" requests got ordinary follow-ups.
 - Extraction with the new model after cooldown: 6/7, median 967 ms; the miss is caught by rules. E1-E5 with Gemini: 5/5. A first run showed 0/7 only because the rate limit was exhausted; a passing E1-E5 there proved nothing about Gemini.
 - Live typed conversation: fitted question in about 1.5 s, then a fixed warning-sign question in about 1 s.
+- Second round after team feedback: `npm test` 211 of 211 (server 203, web 8). 111 stored lines. Live typed run: acknowledgement at once, question about 1.1-1.3 s after sending. With speech, add about 0.8 s silence detection and Prisma before that. Regression 9/9 with Gemini off.
 - Pronunciation: team picked sample B by ear. Hinglish audio regenerated (`npm run gen:audio -w server -- hinglish`). `npm test`: 205 of 205 (server 197, web 8).
 
 ---

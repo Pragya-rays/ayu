@@ -3,8 +3,8 @@ import type { HomeCareCard } from "../homecare/index.js";
 import type { NormalState, NormalSummary } from "../types/normal.js";
 import type { Lang } from "../types/voice.js";
 import {
-  ISSUE_QUESTIONS, NORMAL_CLOSING, NORMAL_GREETING, NORMAL_NO_MATCH, NORMAL_PROMPT, NORMAL_SAY_YES_NO, NORMAL_SEE_DOCTOR_NOW,
-  NORMAL_SERIOUS, QUESTIONS, type IssueId, type QuestionId,
+  ISSUE_QUESTIONS, NORMAL_ACKS, NORMAL_CLOSING, NORMAL_GREETING, NORMAL_NO_MATCH, NORMAL_PROMPT, NORMAL_SAY_YES_NO,
+  NORMAL_SEE_DOCTOR_NOW, NORMAL_SERIOUS, QUESTIONS, type IssueId, type QuestionId,
 } from "./normalContent.js";
 import { findIssue, findRedFlags } from "./normalRules.js";
 import { parseLocationAnswer } from "./ruleExtract.js";
@@ -15,7 +15,7 @@ const MAX_ATTEMPTS = 2;
 const CONTEXT_LINES = 10;
 
 export interface NormalIo {
-  say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean }): Promise<void>;
+  say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean; spoken?: string }): Promise<void>;
   publish(state: NormalState): void;
 }
 
@@ -33,7 +33,9 @@ export class NormalMachine {
   private stage: NormalState["stage"] = "greeting";
   private question: QuestionId | "open" | "followup" | null = null;
   private readonly conversation: string[] = [];
-  private suggested: string | null = null;
+  private suggested: { text: string; spoken?: string } | null = null;
+  private lastWasWarning = false;
+  private acks = 0;
   private plan: QuestionId[] = [];
   private asked = 0;
   private attempts = 0;
@@ -74,6 +76,11 @@ export class NormalMachine {
       const reply = fixedQuestion ? parseLocationAnswer(text) : null;
       const details = fixedQuestion;
       const saidYesToFlag = details?.redFlag && reply === "yes";
+      const unclearWarningReply = details?.redFlag && !reply;
+      // A warning sign goes straight to the SOS prompt, and an unclear reply to "yes or no".
+      if (!flags.length && !saidYesToFlag && !unclearWarningReply) {
+        await this.speak(NORMAL_ACKS[this.acks++ % NORMAL_ACKS.length]![this.lang]);
+      }
       // Keywords win over a parsed "no": "saans nahi aa rahi" is a warning sign, not a denial.
       flags.forEach((flag) => this.redFlags.add(flag));
       if (saidYesToFlag) this.redFlags.add(asked);
@@ -81,7 +88,7 @@ export class NormalMachine {
       const result = await classified;
       this.issue ??= result?.issueId ?? findIssue(text);
       result?.redFlags.forEach((flag) => this.redFlags.add(flag));
-      this.suggested = result?.question ?? null;
+      this.suggested = result?.question ? { text: result.question, spoken: result.spoken ?? undefined } : null;
 
       if (this.redFlags.size) return this.offerSos();
 
@@ -122,8 +129,8 @@ export class NormalMachine {
     return this.queue;
   }
 
-  private async speak(text: string, cacheable = true) {
-    if (!this.stopped) await this.io.say(text, { lang: this.lang, cacheable, interruptible: true });
+  private async speak(text: string, cacheable = true, spoken?: string) {
+    if (!this.stopped) await this.io.say(text, { lang: this.lang, cacheable, interruptible: true, spoken });
   }
 
   private armSilence() {
@@ -151,18 +158,44 @@ export class NormalMachine {
 
   private async nextQuestion(firstReply: boolean) {
     if (firstReply) this.plan = [...ISSUE_QUESTIONS[this.issue ?? "unknown"]];
-    const next = this.plan.shift();
+
+    // After a warning-sign question, a fitted follow-up keeps it sounding like a conversation.
+    // Every remaining warning-sign question keeps its place within the limit.
+    if (this.lastWasWarning && this.hasRoomForExtra()) {
+      const extra = this.takeSuggestion();
+      if (extra) return this.askGenerated(extra);
+    }
+
+    let next = this.plan.shift();
+    while (next && !QUESTIONS[next].redFlag && !this.hasRoomForExtra()) next = this.plan.shift();
     if (!next || this.asked >= MAX_QUESTIONS) return this.finish();
-    this.asked++;
-    this.attempts = 0;
+
     // Warning-sign questions are never reworded. An everyday one may use the checked suggestion.
     const generated = QUESTIONS[next].redFlag ? null : this.takeSuggestion();
-    this.question = generated ? "followup" : next;
+    if (generated) return this.askGenerated(generated);
+    this.question = next;
+    await this.ask(QUESTIONS[next].text[this.lang], true);
+    this.lastWasWarning = QUESTIONS[next].redFlag;
+  }
+
+  private hasRoomForExtra() {
+    const warningsLeft = this.plan.filter((id) => QUESTIONS[id].redFlag).length;
+    return this.asked + warningsLeft < MAX_QUESTIONS;
+  }
+
+  private async askGenerated(generated: { text: string; spoken?: string }) {
+    this.question = "followup";
+    this.lastWasWarning = false;
+    await this.ask(generated.text, false, generated.spoken);
+  }
+
+  private async ask(line: string, cacheable: boolean, spoken?: string) {
     const asking = this.question;
+    this.asked++;
+    this.attempts = 0;
     this.publish();
-    const line = generated ?? QUESTIONS[next].text[this.lang];
     this.conversation.push(`Ayu: ${line}`);
-    await this.speak(line, !generated);
+    await this.speak(line, cacheable, spoken);
     if (this.question === asking) this.armSilence();
   }
 
@@ -170,7 +203,7 @@ export class NormalMachine {
   private takeSuggestion() {
     const suggestion = this.suggested;
     this.suggested = null;
-    return suggestion && !this.conversation.includes(`Ayu: ${suggestion}`) ? suggestion : null;
+    return suggestion && !this.conversation.includes(`Ayu: ${suggestion.text}`) ? suggestion : null;
   }
 
   private async offerSos() {

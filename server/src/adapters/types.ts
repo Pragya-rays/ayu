@@ -34,5 +34,6 @@ export interface TtsHandle {
 
 export interface TTSAdapter {
   readonly sampleRate: number;
-  synthesize(request: { text: string; lang: Lang; cacheable?: boolean }, events: TtsEvents): TtsHandle;
+  /** `spoken` overrides what the voice reads when it differs from the text shown on screen. */
+  synthesize(request: { text: string; lang: Lang; cacheable?: boolean; spoken?: string }, events: TtsEvents): TtsHandle;
 }

@@ -45,6 +45,13 @@ export const NORMAL_PROMPT: Line = {
   hinglish: "Kya aap wahan hain? Aap apna jawab likh bhi sakte hain.",
 };
 
+/** Said the moment someone finishes, from stored audio, so no silence falls while Gemini works. */
+export const NORMAL_ACKS: Line[] = [
+  { en: "I see.", hi: "अच्छा।", hinglish: "Achha." },
+  { en: "Okay.", hi: "जी, अच्छा।", hinglish: "Ji, achha." },
+  { en: "Alright.", hi: "जी।", hinglish: "Ji." },
+];
+
 export const QUESTION_IDS = [
   "onset", "food", "medicine", "fever", "chest", "breath", "sudden", "faint", "stool_blood", "conditions",
 ] as const;
@@ -116,6 +123,7 @@ export const QUESTIONS: Record<QuestionId, NormalQuestion> = {
 
 export const NORMAL_FIXED_LINES = [
   NORMAL_GREETING, NORMAL_SERIOUS, NORMAL_SEE_DOCTOR_NOW, NORMAL_NO_MATCH, NORMAL_CLOSING, NORMAL_SAY_YES_NO, NORMAL_PROMPT,
+  ...NORMAL_ACKS,
   ...Object.values(QUESTIONS).map((question) => question.text),
 ];
 

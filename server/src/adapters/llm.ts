@@ -14,6 +14,8 @@ export interface NormalClassification {
   redFlags: string[];
   /** A checked follow-up question, or null to use the fixed list. */
   question: string | null;
+  /** The same question in Devanagari for Hinglish speech, or null to use the word list. */
+  spoken: string | null;
 }
 
 export interface NormalClassifier {
@@ -34,6 +36,7 @@ export class NoLLM implements LLMAdapter, NormalClassifier {
 const MAX_RED_FLAGS = 10;
 const MAX_QUESTION_WORDS = 20;
 const MAX_QUESTION_CHARS = 140;
+const MAX_SPOKEN_WORD_DIFFERENCE = 4;
 
 // A generated question is spoken aloud, so anything advice-like is refused and the fixed list
 // is used instead. These lean strict: losing a good question costs little.
@@ -62,13 +65,25 @@ export function checkQuestion(raw: unknown): string | null {
   return NOT_A_QUESTION.some((pattern) => pattern.test(question)) ? null : question;
 }
 
+/**
+ * The spelling Timbre reads must pass the same check, and be about as long as what is shown,
+ * so the voice cannot say something the screen does not.
+ */
+function checkSpoken(raw: unknown, question: string | null) {
+  const spoken = checkQuestion(raw);
+  if (!spoken || !question) return null;
+  const difference = Math.abs(spoken.split(/\s+/).length - question.split(/\s+/).length);
+  return difference <= MAX_SPOKEN_WORD_DIFFERENCE ? spoken : null;
+}
+
 /** Strict check of LLM output, as for extraction. A bad question alone just drops the question. */
 export function parseClassification(raw: unknown): NormalClassification | null {
   if (typeof raw !== "object" || raw === null) return null;
-  const { issueId, redFlags, question } = raw as Record<string, unknown>;
+  const { issueId, redFlags, question, spoken } = raw as Record<string, unknown>;
   if (issueId !== null && !ISSUE_IDS.includes(issueId as IssueId)) return null;
   if (!Array.isArray(redFlags) || redFlags.length > MAX_RED_FLAGS || !redFlags.every((flag) => typeof flag === "string")) return null;
-  return { issueId: issueId as IssueId | null, redFlags, question: checkQuestion(question) };
+  const checked = checkQuestion(question);
+  return { issueId: issueId as IssueId | null, redFlags, question: checked, spoken: checkSpoken(spoken, checked) };
 }
 
 const nullable = <T>(value: unknown, check: (item: unknown) => item is T): T | null | undefined =>
