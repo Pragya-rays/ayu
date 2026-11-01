@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Case, CaseEvent, Severity } from "../types/case.js";
 import type { Lang } from "../types/voice.js";
+import { buildBrief } from "./brief.js";
 
 type LocationInput = { lat: number; lng: number; accuracyM: number };
 type Listener = (updated: Case) => void;
@@ -12,6 +13,7 @@ export class CaseStore {
   private readonly cases = new Map<string, Case>();
   private readonly events = new Map<string, CaseEvent[]>();
   private readonly listeners = new Set<Listener>();
+  private readonly timelineListeners = new Set<(caseId: string) => void>();
 
   create(input: { lang: Lang; location?: LocationInput }): Case {
     const now = new Date().toISOString();
@@ -56,6 +58,15 @@ export class CaseStore {
 
   addEvent(caseId: string, type: CaseEvent["type"], payload: Record<string, unknown>) {
     this.events.get(caseId)?.push({ id: randomUUID(), caseId, at: new Date().toISOString(), type, payload });
+    for (const listener of this.timelineListeners) listener(caseId);
+  }
+
+  /** Separate from `subscribe`: timeline entries change nothing the voice session must react to. */
+  subscribeTimeline(listener: (caseId: string) => void) {
+    this.timelineListeners.add(listener);
+    return () => {
+      this.timelineListeners.delete(listener);
+    };
   }
 
   setLocation(id: string, location: LocationInput) {
@@ -189,6 +200,7 @@ export class CaseStore {
   }
 
   private notify(item: Case) {
+    item.brief = buildBrief(item);
     for (const listener of this.listeners) listener(item);
   }
 

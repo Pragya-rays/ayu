@@ -227,7 +227,34 @@ main.sos.arming { align-items: stretch; justify-content: center; text-align: cen
 .sos-disclaimer { margin: 0; font-size: 13px; opacity: 0.7; text-align: center; }
 
 /* Dashboard */
-.dashboard { max-width: 860px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+.dashboard { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+.dash-panes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (min-width: 900px) { .dash-panes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.case-row { cursor: pointer; }
+.case-row[data-selected="true"] { outline: 2px solid var(--green); }
+.case-detail { display: flex; flex-direction: column; gap: 16px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.case-detail h2 { margin: 0 0 8px; font-size: 16px; }
+.case-detail p { margin: 0; overflow-wrap: anywhere; }
+.brief { background: var(--green-tint); border-radius: var(--radius); padding: 12px 14px; }
+.brief p:first-of-type { font-size: 18px; font-weight: 600; }
+.transcript-list, .timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.transcript-list { max-height: 280px; overflow-y: auto; }
+.transcript-list li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; overflow-wrap: anywhere; }
+.transcript-list li[data-who="caller"] { font-weight: 500; }
+.timeline { max-height: 260px; overflow-y: auto; }
+.timeline li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; }
+
+/* Driver view */
+.driver { max-width: 480px; margin: 0 auto; padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
+.driver h1 { margin: 0; font-size: 24px; }
+.driver-card { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.driver-card p { margin: 0; overflow-wrap: anywhere; }
+.driver-address { font-size: 22px; font-weight: 600; line-height: 1.25; }
+.driver-place { font-size: 18px; }
+.driver-brief { background: var(--green-tint); border-radius: var(--radius); padding: 10px 12px; }
+.driver-actions { display: flex; flex-direction: column; gap: 8px; }
+.driver-map { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+
 .dashboard.login { max-width: 420px; }
 .dashboard h1 { margin: 0; font-size: 26px; }
 .dash-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }

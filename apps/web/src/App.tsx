@@ -3,6 +3,7 @@ import type { Lang } from "../../../server/src/types/voice";
 import { unlockAudio } from "./audio/voiceClient";
 import { strings, type StringKey } from "./i18n/strings";
 import { Dashboard } from "./pages/Dashboard";
+import { Driver } from "./pages/Driver";
 import { Normal } from "./pages/Normal";
 import { Sos } from "./pages/Sos";
 import { VoiceCheck } from "./pages/VoiceCheck";
@@ -125,5 +126,7 @@ function PhoneApp() {
 }
 
 export function App() {
-  return location.pathname === "/dashboard" ? <Dashboard /> : <PhoneApp />;
+  if (location.pathname === "/dashboard") return <Dashboard />;
+  if (location.pathname === "/driver") return <Driver />;
+  return <PhoneApp />;
 }

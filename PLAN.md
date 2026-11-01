@@ -11,11 +11,12 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | Phase 5, Normal Mode. Phases 1-4 validated on iPhone XR in quiet conditions |
-| **Phase state** | Deployed 10-31 (`54cc5be`) at https://ayu-4801.onrender.com. A live typed Normal check reached the SOS prompt; it creates no dashboard case. Gemini follow-up questions and the Hinglish voice fix followed on 11-01 |
+| **Current phase** | Phase 6, Dashboard Complete. Phases 1-5 validated on iPhone XR in quiet conditions |
+| **Phase state** | Built and tested locally on real services. **Not deployed; https://ayu-4801.onrender.com still runs Phase 5 (`63407e0`)** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push, then retests Normal mode on the iPhone. Noisy clips and Android still outstanding |
-| **Blocked on** | Medical reviewer's qualification (D9), award and posting decisions (D3, D4) |
+| **Next action** | Team approves the push of Phase 6, then tests it. Noisy clips and Android still outstanding |
+| **REMINDER** | **Medical review is parked at the team's request (11-01). Raise it again at the end of every phase, and no later than Phase 7 (Nov 5).** Until then every script and card stays a placeholder. Sheet: `docs/medical-review/REVIEW_SHEET.md`. Also open: whether the team member is medically qualified (D9) |
+| **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
 
 ### If you are an AI agent resuming this project
 1. Read this section, then sections 3, 4, 10 and 11, then the current phase in section 7.
@@ -266,9 +267,21 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 - [ ] Conversation feels less fixed but still fixed, with a noticeable pause (11-01). Acknowledgements and mixed questions built, retest after push
 - [ ] Decide on shorter SOS lines (D14)
 
-### Phase 6 — Dashboard Complete (Nov 5)
-**Goal:** convincing for the hospital side. Case detail, timeline, transcript, extracted fields, ER brief, accept and status actions, driver view.
-**Exit:** two-device demo stays in sync; brief is template-constrained.
+### Phase 6 — Dashboard Complete (Nov 5) · **IN REVIEW**
+**Goal:** convincing for the hospital side.
+
+| Item | Status |
+|---|---|
+| One-line ER brief, built only from confirmed fields, updates live | Tested in Chrome and unit tests. No prep hint: it needs a doctor-reviewed table |
+| Case detail: transcript and timeline, live | Tested in Chrome |
+| Driver view at `/driver`, same password: address, place, map link, brief, Accept / On the way / Arrived | Tested in Chrome at phone size. **Not tried on a real phone** |
+| Change on the driver view reaches dashboard and caller | Tested: about 0.37 s, locally |
+| Deployment | **Not deployed** |
+
+**Exit criteria (team to complete):**
+- [ ] Approve the push
+- [ ] Run one SOS by voice, and check the brief and transcript on the laptop
+- [ ] Open `/driver` on a second device and accept from there
 
 ### Phase 7 — Safety, Resilience, Polish (Nov 5 – 6)
 **Goal:** trustworthy and instant. Doctor review replaces placeholders and shows reviewer + sources; pre-generated Timbre audio for all fixed lines; service worker and offline SOS; Tier 2 items (metrics, Medical ID, emergency-contact link); native-speaker review of Hindi/Hinglish.
@@ -359,6 +372,9 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I15 | 10-31 | Dashboard password uses an HttpOnly cookie | Browser SSE cannot send custom headers |
 | I31 | 10-31 | Replaced by I35 after team feedback. Normal questions started as a fixed list only | Safe, but felt built only for fixed cases |
 | I35 | 11-01 | Gemini may phrase everyday follow-ups, which must pass `checkQuestion` (one short question; no medicine, instruction or diagnosis wording). Warning-sign questions stay fixed. Failure falls back to the fixed list | Team decision D15. Generated lines use live Timbre, so they cost credits and start slower |
+| I40 | 11-01 | ER brief is built from case fields in code, with no LLM step, and shows "unknown" for anything not stated. Stricter than the guide, which let the LLM fill slots | The hospital reads it under pressure, so it can never contain words the caller did not say |
+| I41 | 11-01 | Timeline entries use their own feed, separate from case updates | So a new transcript line reaches the dashboard without waking the voice session |
+| I42 | 11-01 | Driver view shares the dashboard password and shows only active calls | No new accounts, which are on the Cut list |
 | I38 | 11-01 | Gemini also returns a Devanagari `spoken` version of each question, checked like the question and close to it in length. The word list then runs over it, because Gemini's spelling is often only part converted | Team found "gale" wrong: a list alone cannot cover everything Gemini says |
 | I39 | 11-01 | Stored "Achha" style acknowledgement plays as soon as someone finishes, except on a warning sign or an unclear warning reply. Fitted questions may also sit between warning-sign questions, within the limit of 6, and every warning question keeps its place | Team reported a pause and a fixed feel. Warning questions themselves stay fixed |
 | I37 | 11-01 | Hinglish stays in Latin on screen; `dialogue/hinglishSpeech.ts` converts words to Devanagari only in the text sent to Timbre. Applies to fixed lines, templates and Gemini questions. **New Hinglish words must go in its list**; a test fails if a fixed line is missed. Unlisted words in Gemini questions stay Latin, as before | Team chose sample B. One list covers everything, and Hinglish readers keep Latin text |
@@ -401,7 +417,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | D12 | Render's free plan takes about a minute to wake after 15 idle minutes, which a judge may hit. Paid plan for demo week, or keep it awake some other way? | Decide before submission; check Render pricing then. No paid choice without team approval | Phase 9 |
 | D7 | Gemini model and key | **Decided 10-31:** `gemini-3.1-flash-lite` (I17), free-tier key in `.env`. Google's rate-limit page does not state whether free-tier data is used for training, so only scripted test calls may pass through it | Done |
 | D8 | Reverse geocoding provider | **Decided 10-31: OpenStreetMap Nominatim.** Policy: https://operations.osmfoundation.org/policies/nominatim/ (at most 1 request per second across the whole app, identifying User-Agent, cached results, visible attribution, must be switchable off, no personal data, no bulk or systematic use, no autocomplete). `GEOCODER=off` disables it. Public Nominatim has no uptime promise and the policy can change, so a real deployment needs a paid or self-hosted geocoder | Done |
-| D9 | Who reviews the medical content? | **Answered 10-31:** a team member volunteered. **Open:** their medical qualification. The Summary (section 9.8) requires a qualified doctor or medical person, and "Reviewed by" must be truthful. If not qualified, an outside reviewer is still needed | **Now** |
+| D9 | Who reviews the medical content? | Team member said on 11-01 they are qualified. **Open:** the Project Summary describes the team member as a B.Tech CS/DS student, so name, qualification and registration are needed before any "Reviewed by" label. The label is public and must be truthful. Review sheet is at `docs/medical-review/REVIEW_SHEET.md`, git-ignored, and nothing from it is in the app | **Now** |
 | D10 | Produce a 60-second cut for Demo Day Drop as well as the 2-3 minute plan? | Yes; one recording session can yield both | Phase 9 |
 | D11 | Evaluate some calls at 8 kHz to mimic telephony for Noise Canceller? (Not real telephony, which stays cut) | Yes, cheap to add in Phase 8 | Phase 8 |
 
@@ -511,6 +527,13 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - Second round after team feedback: `npm test` 211 of 211 (server 203, web 8). 111 stored lines. Live typed run: acknowledgement at once, question about 1.1-1.3 s after sending. With speech, add about 0.8 s silence detection and Prisma before that. Regression 9/9 with Gemini off.
 - Pronunciation: team picked sample B by ear. Hinglish audio regenerated (`npm run gen:audio -w server -- hinglish`). `npm test`: 205 of 205 (server 197, web 8).
 
+**2026-11-01, Phase 5 validated (team, iPhone XR, voice)**
+- "gale" now correct, acknowledgement present, pause better, conversation accepted. Quiet setting only.
+
+**2026-11-01, Phase 6 (local production build, real Gnani and Gemini)**
+- `npm test`: 217 of 217 (server 209, web 8). Three-screen Chrome run (caller, dashboard, driver): 11/11, no page errors. Sync about 0.37 s. Buttons only, so the brief showed "complaint unknown".
+- **Not tested:** brief from real speech, driver view on a real phone, this build on Render.
+
 ---
 
 ## 13. Changelog
@@ -521,5 +544,6 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - **2026-10-31** Deployed Phase 2 to Render; iPhone XR test passed apart from the map pin (R16). Built Phase 3: Gemini extraction, triage rules, protocol engine with placeholders, SOS conversation, answer buttons.
 - **2026-10-31** Deployed Phase 3; voice flow passed on iPhone XR. Built pre-generated audio after the team reported late voice.
 - **2026-10-31** At the team's request, rewrote git history and force-pushed to remove a name from the first commit. Commit hashes changed; code unchanged.
+- **2026-11-01** Phase 5 validated on iPhone XR. Built Phase 6: ER brief, case detail, transcript, timeline, driver view. Medical review parked by the team.
 - **2026-10-31** Phase 4 validated on iPhone XR. Built Phase 5: Normal mode with fixed questions, warning signs, placeholder home-care cards and summary card. Fixed full-height SOS button.
 - **2026-10-31** Fixed iPhone audio (R22). Built Phase 4: Nominatim read-back, simulated dispatch, status and re-check loop, barge-in, reconnect.

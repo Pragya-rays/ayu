@@ -4,6 +4,9 @@ dist/
 .env.local
 CLAUDE.md
 .claude/
+
+# Unapproved medical drafts never go public
+docs/medical-review/
 *.log
 .DS_Store
 

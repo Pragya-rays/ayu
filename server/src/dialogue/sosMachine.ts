@@ -51,6 +51,7 @@ export class SosMachine {
   private io: SosIo | null;
   private ruleFacts: TriageFacts = {};
   private llmFacts: TriageFacts = {};
+  private details: Record<string, string> = {};
   private readonly skipped = new Set<TriageQuestion>();
   private readonly heard: string[] = [];
   private silenceTimer: NodeJS.Timeout | undefined;
@@ -471,6 +472,9 @@ export class SosMachine {
       }),
       symptoms: result.symptoms,
     };
+    const details = { age: result.age, sex: result.sex, onset: result.onsetText };
+    const known = Object.entries(details).filter((entry): entry is [string, string] => Boolean(entry[1]));
+    this.details = { ...this.details, ...Object.fromEntries(known) };
   }
 
   private saveFacts() {
@@ -479,6 +483,7 @@ export class SosMachine {
       responsive: facts.responsive ?? undefined,
       breathingNormally: facts.breathingNormally ?? undefined,
       emergencyType: facts.emergencyType ?? undefined,
+      extra: this.details,
     });
   }
 

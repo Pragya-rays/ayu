@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { Case } from "../../../../server/src/types/case";
-import { strings } from "../i18n/strings";
+import type { Case, CaseEvent } from "../../../../server/src/types/case";
+import { caseAction, useCases } from "../hooks/useCases";
+import { eventLabels, strings } from "../i18n/strings";
 
 const t = strings.en;
 
@@ -10,19 +11,42 @@ function timeSince(iso: string, now: number) {
   return minutes ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
 }
 
+const clockTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 const yesNo = (value: boolean | undefined) => (value === undefined ? t.dashUnknown : value ? t.yes : t.no);
 
-function CaseRow({ item, now }: { item: Case; now: number }) {
+export function DashboardLogin({ onLogin, failed }: { onLogin(secret: string): void; failed: boolean }) {
+  const [secret, setSecret] = useState("");
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    onLogin(secret);
+  };
+  return (
+    <main className="dashboard login">
+      <h1>{t.dashTitle}</h1>
+      <form className="field" onSubmit={submit}>
+        <input
+          type="password"
+          aria-label={t.dashPassword}
+          placeholder={t.dashPassword}
+          value={secret}
+          onChange={(event) => setSecret(event.target.value)}
+        />
+        <button className="button ink small">{t.dashSignIn}</button>
+      </form>
+      {failed && <p className="error" role="alert">{t.dashWrongPassword}</p>}
+    </main>
+  );
+}
+
+function CaseRow({ item, now, selected, onSelect }: { item: Case; now: number; selected: boolean; onSelect(): void }) {
   const { location } = item;
   const waiting = item.dispatch.status === "requested" || item.dispatch.status === "unacknowledged";
-  const act = (action: "accept" | "status", body: object) =>
-    fetch(`/api/cases/${item.id}/${action}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }).catch(() => undefined);
+  const act = (action: "accept" | "status", body: object) => (event: React.MouseEvent) => {
+    event.stopPropagation();
+    void caseAction(item.id, action, body);
+  };
   return (
-    <li className="case-row" data-closed={Boolean(item.closedAt)}>
+    <li className="case-row" data-closed={Boolean(item.closedAt)} data-selected={selected} onClick={onSelect}>
       <div className="case-head">
         <span className="chip" data-severity={item.severity ?? "none"}>{item.severity ?? t.dashTriagePending}</span>
         <span className="mono">{timeSince(item.createdAt, now)}</span>
@@ -32,7 +56,12 @@ function CaseRow({ item, now }: { item: Case; now: number }) {
       {location?.addressText && <p><strong>{location.addressText}</strong></p>}
       {location?.lat != null && location.lng != null ? (
         <p>
-          <a href={`https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}#map=17/${location.lat}/${location.lng}`} target="_blank" rel="noreferrer">
+          <a
+            href={`https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}#map=17/${location.lat}/${location.lng}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(event) => event.stopPropagation()}
+          >
             {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
           </a>
           <span className="mono"> · ±{Math.round(location.accuracyM ?? 0)} m</span>
@@ -64,78 +93,79 @@ function CaseRow({ item, now }: { item: Case; now: number }) {
       </p>
       {!item.closedAt && item.dispatch.status !== "arrived" && (
         <div className="case-actions">
-          {waiting && <button className="button ink small" onClick={() => act("accept", {})}>{t.dashAccept}</button>}
+          {waiting && <button className="button ink small" onClick={act("accept", {})}>{t.dashAccept}</button>}
           {!waiting && item.dispatch.status !== "en_route" && (
-            <button className="button plain small" onClick={() => act("status", { status: "en_route" })}>{t.dashOnWay}</button>
+            <button className="button plain small" onClick={act("status", { status: "en_route" })}>{t.dashOnWay}</button>
           )}
-          {!waiting && <button className="button plain small" onClick={() => act("status", { status: "arrived" })}>{t.dashArrived}</button>}
+          {!waiting && <button className="button plain small" onClick={act("status", { status: "arrived" })}>{t.dashArrived}</button>}
         </div>
       )}
     </li>
   );
 }
 
-export function Dashboard() {
-  const [authed, setAuthed] = useState<boolean | null>(null);
-  const [secret, setSecret] = useState("");
-  const [loginError, setLoginError] = useState(false);
-  const [cases, setCases] = useState<Case[]>([]);
-  const [connected, setConnected] = useState(false);
-  const [now, setNow] = useState(Date.now());
+function CaseDetail({ item, tick }: { item: Case; tick: number }) {
+  const [timeline, setTimeline] = useState<CaseEvent[]>([]);
 
   useEffect(() => {
-    fetch("/api/cases").then((response) => setAuthed(response.ok), () => setAuthed(false));
-  }, []);
-
-  useEffect(() => {
-    if (!authed) return;
-    const source = new EventSource("/api/cases/stream");
-    source.onopen = () => setConnected(true);
-    source.onerror = () => setConnected(false);
-    source.addEventListener("snapshot", (event) => setCases(JSON.parse(event.data) as Case[]));
-    source.addEventListener("case", (event) => {
-      const updated = JSON.parse(event.data) as Case;
-      setCases((current) => [updated, ...current.filter((item) => item.id !== updated.id)]
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
-    });
-    const clock = setInterval(() => setNow(Date.now()), 1000);
+    let stale = false;
+    fetch(`/api/cases/${item.id}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((detail: { timeline: CaseEvent[] } | null) => {
+        if (detail && !stale) setTimeline(detail.timeline);
+      })
+      .catch(() => undefined);
     return () => {
-      source.close();
-      clearInterval(clock);
+      stale = true;
     };
-  }, [authed]);
+  }, [item.id, tick]);
 
-  const login = async (event: FormEvent) => {
-    event.preventDefault();
-    const response = await fetch("/api/dashboard/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret }),
-    }).catch(() => null);
-    setLoginError(!response?.ok);
-    if (response?.ok) setAuthed(true);
-  };
+  const transcript = timeline.filter((entry) => entry.type === "user_utterance" || entry.type === "ayu_utterance");
+  const { extra } = item.triage;
+  const onset = extra?.onset;
+
+  return (
+    <aside className="case-detail">
+      <section className="brief" aria-live="polite">
+        <h2>{t.dashBrief}</h2>
+        <p>{item.brief}</p>
+        {onset && <p className="mono">{t.dashOnset}: {onset}</p>}
+      </section>
+      <section>
+        <h2>{t.dashTranscript}</h2>
+        {transcript.length === 0 && <p className="mono">{t.dashNoSpeech}</p>}
+        <ul className="transcript-list">
+          {transcript.map((entry) => (
+            <li key={entry.id} data-who={entry.type === "user_utterance" ? "caller" : "ayu"}>
+              <span className="mono">{entry.type === "user_utterance" ? t.dashCaller : t.brand}</span>
+              <span>{String(entry.payload.text ?? "")}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h2>{t.dashTimeline}</h2>
+        <ol className="timeline">
+          {timeline.filter((entry) => !transcript.includes(entry)).map((entry) => (
+            <li key={entry.id}>
+              <span className="mono">{clockTime(entry.at)}</span>
+              <span>{eventLabels[entry.type]}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </aside>
+  );
+}
+
+export function Dashboard() {
+  const { authed, login, loginError, cases, connected, now, timelineTick } = useCases();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (authed === null) return null;
+  if (!authed) return <DashboardLogin onLogin={login} failed={loginError} />;
 
-  if (!authed) {
-    return (
-      <main className="dashboard login">
-        <h1>{t.dashTitle}</h1>
-        <form className="field" onSubmit={login}>
-          <input
-            type="password"
-            aria-label={t.dashPassword}
-            placeholder={t.dashPassword}
-            value={secret}
-            onChange={(event) => setSecret(event.target.value)}
-          />
-          <button className="button ink small">{t.dashSignIn}</button>
-        </form>
-        {loginError && <p className="error" role="alert">{t.dashWrongPassword}</p>}
-      </main>
-    );
-  }
+  const selected = cases.find((item) => item.id === selectedId) ?? cases[0];
 
   return (
     <main className="dashboard">
@@ -147,9 +177,14 @@ export function Dashboard() {
       {cases.length === 0 ? (
         <p className="mono">{t.dashEmpty}</p>
       ) : (
-        <ul className="case-list">
-          {cases.map((item) => <CaseRow key={item.id} item={item} now={now} />)}
-        </ul>
+        <div className="dash-panes">
+          <ul className="case-list">
+            {cases.map((item) => (
+              <CaseRow key={item.id} item={item} now={now} selected={item.id === selected?.id} onSelect={() => setSelectedId(item.id)} />
+            ))}
+          </ul>
+          {selected && <CaseDetail item={selected} tick={timelineTick.caseId === selected.id ? timelineTick.tick : 0} />}
+        </div>
       )}
       <p className="mono">{t.dashOsm}</p>
     </main>

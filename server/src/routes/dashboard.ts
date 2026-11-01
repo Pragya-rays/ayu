@@ -87,11 +87,13 @@ export function registerDashboardRoutes(
 
     write("snapshot", cases.list());
     const unsubscribe = cases.subscribe((updated) => write("case", updated));
+    const unsubscribeTimeline = cases.subscribeTimeline((caseId) => write("timeline", { caseId }));
     const heartbeat = setInterval(() => stream.write(": ping\n\n"), HEARTBEAT_MS);
 
     request.raw.on("close", () => {
       clearInterval(heartbeat);
       unsubscribe();
+      unsubscribeTimeline();
     });
   });
 }

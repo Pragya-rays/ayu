@@ -1,4 +1,5 @@
 import { SOS_OPENING } from "../../../../server/src/dialogue/lines";
+import type { CaseEvent } from "../../../../server/src/types/case";
 import type { Lang } from "../../../../server/src/types/voice";
 
 // Hindi and Hinglish are drafts until a native speaker reviews them (PLAN.md, Phase 7).
@@ -66,6 +67,16 @@ const en = {
   dashLocationConfirming: "Confirming with caller",
   dashSpokenPlace: "Caller said",
   dashOsm: "Area names © OpenStreetMap contributors",
+  dashBrief: "Pre-arrival brief",
+  dashOnset: "Started",
+  dashTranscript: "Transcript",
+  dashNoSpeech: "No speech yet.",
+  dashCaller: "caller",
+  dashTimeline: "Timeline",
+  driverTitle: "Ayu driver",
+  driverEmpty: "No active calls.",
+  driverNoAddress: "No address yet",
+  driverOpenMap: "Open map",
   dashTitle: "Ayu dispatch",
   dashPassword: "Dashboard password",
   dashSignIn: "Sign in",
@@ -104,6 +115,27 @@ const en = {
 };
 
 export type StringKey = keyof typeof en;
+
+/** Hospital staff read the dashboard in English. */
+export const eventLabels: Record<CaseEvent["type"], string> = {
+  sos_tap: "SOS started",
+  countdown_cancel: "Countdown cancelled",
+  gps_captured: "GPS received",
+  location_confirmed: "Caller confirmed location",
+  location_updated: "Caller updated location",
+  dispatch_requested: "Ambulance requested (simulated)",
+  dispatch_accepted: "Ambulance accepted (simulated)",
+  status_update: "Ambulance status changed (simulated)",
+  triage_answer: "Triage answer recorded",
+  protocol_selected: "Protocol selected",
+  instruction_spoken: "Instruction spoken",
+  recheck: "Re-check answered",
+  severity_changed: "Severity set",
+  user_utterance: "Caller spoke",
+  ayu_utterance: "Ayu spoke",
+  error: "Error",
+  closed: "Case closed",
+};
 
 const hi: Record<StringKey, string> = {
   ...en,
