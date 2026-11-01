@@ -12,9 +12,9 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 | | |
 |---|---|
 | **Current phase** | All buildable work for Phases 6-9 is done. Phases 1-5 validated on iPhone XR in quiet conditions; Phase 6 awaits the team's test. What remains needs people (sections 7 and 10) |
-| **Phase state** | Deployed 11-01 (`5ee2d00`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
+| **Phase state** | Deployed 11-01 (`4fdb66e`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of Medical ID and Share. Live version is `ef13e5d`. Then first post (D4), phone test, medical review, video last, submit |
+| **Next action** | Team approves the push of the triage fix, stream scorecard and testing kits. Then phone test, medical review, video, Post 3 with the video by about Nov 7, submit by Nov 9. **The team chose on 11-01 to register later: required before submitting, do by about Nov 5.** Whether Post 1 or the wording sheet went out is unconfirmed |
 | **REMINDER 2** | **Final phone test is postponed: the team's phone is unavailable (11-01).** Remind them when the phone is back, and before any further phone-dependent work. Covers Phase 6 brief, transcript, driver buttons, shorter SOS lines, and Airplane Mode |
 | **REMINDER** | **Medical review is parked at the team's request (11-01). Raise it again at the end of every phase, and no later than Phase 7 (Nov 5).** Until then every script and card stays a placeholder. Sheet: `docs/medical-review/REVIEW_SHEET.md`. Also open: whether the team member is medically qualified (D9) |
 | **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
@@ -110,6 +110,8 @@ These differ from or add to the Project Summary.
 - **Internship shortlisting is driven by verified post engagement.** The published steps are engagement check, eligibility check, then "eligible projects with the strongest verified engagement", then interviews. Purchased votes, bots and engagement exchanges are excluded.
 - **Mandatory submission items:** working app shown in a public video; project title, problem, target users, Gnani models used, each member's contribution; a demo video; a public LinkedIn or X post **live before submission**, tagging Gnani AI with `#GreatIndianAIInternshipChallenge` and `#GnaniAI`; one nominated link per platform.
 - **Authenticity (read 11-01):** "plagiarism and misleading demos aren't allowed". The FAQ advises synthetic data and no real phone numbers, account numbers, Aadhaar, PAN or recorded calls. No rule on AI coding tools was found, and each member is interviewed individually.
+- **Steps in the page's order (read 11-01):** Register, Build, Post your demo, Submit. No separate registration deadline is stated, and the page does not say late registration is allowed. Projects can change after registering. The teammate is added during registration and accepts terms separately. Credits come from registering, to the primary registrant's account.
+- **The required post is a demo video** ("Post your demo: publish a video on LinkedIn or X"). So video comes before the final post, not after everything; leave days for engagement before Nov 10.
 - **Eligibility:** enrolled at an Indian college, 18+. Both teammates must qualify; teammate must accept terms.
 - **Evon v3.3 is not on the API platform**, so Gnani's own LLM is not available to us that way. Gemini stays (Open Question 3 is effectively answered).
 - Prisma v3.0 and Timbre v3.0 are listed as newer releases. Using them is allowed; name each model used in the submission.
@@ -306,9 +308,11 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 |---|---|
 | Synthetic scorecard, `npm run eval:synthetic -w server`, in `eval/results/scorecard-synthetic.md` | Done, 40 calls plus 16 short answers |
 | Hindi and English end to end in Chrome | Done, 10/10 |
-| 15-20 consented real noisy calls | **Waiting on the team** |
-| 5-10 people trying it, one genuine quote | **Waiting on the team** |
-| Android and real-device QA checklist | **Waiting on the team** |
+| Live-stream version of the scorecard, whole calls with answers, `-- --stream` | Done 11-01, `eval/results/scorecard-stream.md`: script 39/40, landmark 40/40, number 8/8, short answers 16/16, median Prisma about 0.5 s. Failure fixed (I43), not re-run |
+| 15-20 consented real noisy calls | Guide ready in `docs/testing/REAL_CALLS.md`. **Waiting on the team** |
+| 5-10 people trying it, one genuine quote | Kit ready in `docs/testing/USER_TRIAL.md`. **Waiting on the team** |
+| Android and real-device QA checklist | One 20-step list in `docs/testing/PHONE_TEST.md`. **Waiting on the team** |
+| Native-speaker wording check | Sheet in `docs/testing/WORDING_REVIEW.md`; rerun `npm run export:wording -w server` after wording changes. **Waiting on the team** |
 
 ### Phase 9 — Submission · **DRAFTS DONE, publishing waiting on the team**
 
@@ -399,6 +403,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I35 | 11-01 | Gemini may phrase everyday follow-ups, which must pass `checkQuestion` (one short question; no medicine, instruction or diagnosis wording). Warning-sign questions stay fixed. Failure falls back to the fixed list | Team decision D15. Generated lines use live Timbre, so they cost credits and start slower |
 | I40 | 11-01 | ER brief is built from case fields in code, with no LLM step, and shows "unknown" for anything not stated. Stricter than the guide, which let the LLM fill slots | The hospital reads it under pressure, so it can never contain words the caller did not say |
 | I41 | 11-01 | Timeline entries use their own feed, separate from case updates | So a new transcript line reaches the dashboard without waking the voice session |
+| I43 | 11-01 | In triage, a reply clearly about the other question answers that question, and the current one is asked again | Stream test: "हाँ, साँस ले रहा है" was read as a yes to "are they responding", marking an unresponsive person as responsive |
 | I42 | 11-01 | Driver view shares the dashboard password and shows only active calls | No new accounts, which are on the Cut list |
 | I38 | 11-01 | Gemini also returns a Devanagari `spoken` version of each question, checked like the question and close to it in length. The word list then runs over it, because Gemini's spelling is often only part converted | Team found "gale" wrong: a list alone cannot cover everything Gemini says |
 | I39 | 11-01 | Stored "Achha" style acknowledgement plays as soon as someone finishes, except on a warning sign or an unclear warning reply. Fitted questions may also sit between warning-sign questions, within the limit of 6, and every warning question keeps its place | Team reported a pause and a fixed feel. Warning questions themselves stay fixed |
@@ -429,7 +434,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 
 | # | Question | Recommendation | Needed by |
 |---|---|---|---|
-| D1 | Team and key | **Decided 11-01:** team of two at SRMCE, Lucknow, both registered. Aryan Pandey did the UI, Pragya the backend. Key held in `.env` | Done |
+| D1 | Team and key | Team of two at SRMCEM, Lucknow. Aryan Pandey did the UI, Pragya the backend. Key held in `.env`. **Corrected 11-01: the team has NOT registered yet** and plans to after building. Must register before submitting | Now |
 | D2 | Which HTTPS host? | **Decided 10-31: Render.** Confirm plan limits (idle sleep, persistent disk) at setup; these affect demos and D6 | Set up in Phase 2 |
 | D3 | Target award. **Decided 11-01, team deferred to the recommendation:** Real Deal first; Two-Person Army and Mixed Vibes also fit. The page does not say entrants choose, and does not define Tier 2 or 3 towns, so Small Town, Big Build is unconfirmed for SRMCE, Lucknow | Done |
 | D4 | **Post early, not on Nov 9.** Shortlisting depends on verified engagement, and the plan leaves almost no time for it | Build-in-public post around Phase 2-3, final post Nov 8-9. Authentic reach only | By Nov 3 |

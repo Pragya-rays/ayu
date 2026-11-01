@@ -55,21 +55,21 @@ Phone (PWA) to a Node server over WebSocket. The server proxies Prisma and Timbr
 
 ## Results
 
-We ran 40 synthetic calls: five emergencies, two Timbre voices, and four conditions (clean, fan noise, street noise, and 8 kHz phone quality with street noise).
+We ran 40 synthetic calls through the live Prisma stream the app uses: five emergencies, two Timbre voices, and four conditions (clean, fan noise, street noise, and 8 kHz phone quality with street noise). Every sentence and answer in each call passed through the noise, at real-time pace.
 
 | Measure | Result |
 |---|---|
-| Correct script chosen | 40/40 |
-| Landmark kept | 38/40 |
+| Correct script chosen | 39/40 |
+| Landmark kept | 40/40 |
 | Phone number kept | 8/8 |
 | "Haan" and "nahi" read correctly | 16/16 |
-| Median Prisma time | about 0.7 s |
+| Median Prisma time after speech ended | about 0.5 s |
 
-**The two failures:** under noise, "Aminabad" came back as "अमीना बाद". The location read-back exists to catch exactly this.
+**The one failure found a real bug.** Noise swallowed a caller's answer, Ayu asked again, and the next reply was "हाँ, साँस ले रहा है" (yes, he's breathing). Ayu took that "yes" as the answer to "are they responding?", marking an unresponsive person as responsive. We fixed it so a reply is matched to what it is about, and added tests. An earlier file-based run also showed "Aminabad" split into "अमीना बाद" under noise, which is the kind of error the location read-back exists to catch.
 
-**Read these numbers with care.** The speech and noise were generated, so they are cleaner than a real panicked caller. Audio went to Prisma as files, not through the live stream the app uses. Only each call's first sentence passed through noise, because follow-up answers were fed as text. Choosing the script also depends on our rules, not only on Prisma.
+**Read these numbers with care.** The speech and noise were generated, so they are cleaner than a real panicked caller, with no real microphone or room. Phone quality was simulated. Choosing the script also depends on our rules, not only on Prisma. These results were recorded before the fix above.
 
-Full table with every failure: [eval/results/scorecard-synthetic.md](../../eval/results/scorecard-synthetic.md)
+Full tables with every failure: [live stream](../../eval/results/scorecard-stream.md), [file mode](../../eval/results/scorecard-synthetic.md)
 
 On a real iPhone XR in a quiet room, we tested voice triage, location read-back, interrupting, ambulance flow and Normal mode. The opening line started 52-72 ms after the countdown once it was stored on the phone.
 

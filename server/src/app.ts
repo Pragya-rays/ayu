@@ -24,7 +24,8 @@ export async function buildApp(deps: AppDeps) {
   await app.register(fastifyWebsocket, { options: { maxPayload: 64 * 1024 } });
 
   const llm = deps.llm instanceof NoLLM ? "rules" : "gemini";
-  app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab, llm }));
+  const version = process.env.RENDER_GIT_COMMIT?.slice(0, 7); // set by Render on each deploy
+  app.get("/api/health", async () => ({ ok: true, voiceMode: deps.voiceMode, voiceLab: deps.voiceLab, llm, version }));
   registerVoiceGateway(app, deps);
   registerSosRoutes(app, deps);
   registerNormalRoutes(app, deps.normalSessions);

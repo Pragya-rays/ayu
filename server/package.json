@@ -16,6 +16,7 @@
     "eval:triage": "tsx scripts/triage-scenarios.ts",
     "eval:synthetic": "tsx scripts/eval-synthetic.ts",
     "normal:check": "tsx scripts/normal-check.ts",
+    "export:wording": "tsx scripts/export-wording.ts",
     "voice:samples": "tsx scripts/voice-samples.ts"
   },
   "dependencies": {

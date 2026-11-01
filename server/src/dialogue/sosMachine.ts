@@ -10,7 +10,7 @@ import {
   etaUpdate, LOCATION_UPDATED, locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL, SAY_AGAIN,
   SOS_OPENING,
 } from "./lines.js";
-import { extractFacts, parseAnswer, parseLocationAnswer } from "./ruleExtract.js";
+import { extractFacts, parseAnswer, parseLocationAnswer, replyTopic } from "./ruleExtract.js";
 import { higherSeverity, triage, type TriageResult } from "./triageRules.js";
 
 const SILENCE_PROMPT_MS = 8000;
@@ -274,6 +274,16 @@ export class SosMachine {
 
   private async handleTriageReply(asked: SosQuestion, text: string, extraction: Promise<Extraction | null>) {
     const triageQuestion = asked as TriageQuestion;
+    // A reply about the other question answers that one, and this one is then asked again.
+    const topic = replyTopic(text);
+    if (topic && topic !== triageQuestion) {
+      const offTopic = parseAnswer(topic, text);
+      if (offTopic && offTopic !== "unsure") {
+        void extraction.then((result) => this.afterExtraction(result));
+        await this.acceptAnswer(topic, offTopic, "voice");
+        return;
+      }
+    }
     const answer = parseAnswer(triageQuestion, text);
     if (answer) {
       void extraction.then((result) => this.afterExtraction(result));

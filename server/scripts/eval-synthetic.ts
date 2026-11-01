@@ -1,9 +1,12 @@
 // Scorecard from SYNTHETIC calls: Timbre speech mixed with generated noise, sent through real Prisma,
 // Gemini and the SOS machine. It measures the pipeline, not real panicked callers. Spends credits.
 // Usage: npm run eval:synthetic -w server   Writes eval/results/scorecard-synthetic.md
+// Add -- --stream to send whole calls, answers included, through the live Prisma stream the app uses.
+// That runs in real time, so it takes about 15 minutes. Writes eval/results/scorecard-stream.md
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { GeminiAdapter, NoLLM } from "../src/adapters/llm.js";
+import { PrismaAdapter } from "../src/adapters/prisma.js";
 import { CaseStore } from "../src/cases/store.js";
 import { config } from "../src/config.js";
 import { parseAnswer } from "../src/dialogue/ruleExtract.js";
@@ -15,6 +18,11 @@ if (!apiKey || !config.gemini.apiKey) throw new Error("Set GNANI_API_KEY and GEM
 
 const RATE = 16000;
 const GEMINI_GAP_MS = 4500; // free tier allows 15 requests a minute
+const STREAM = process.argv.includes("--stream");
+const FRAME_BYTES = 1024;
+const FRAME_MS = 32;
+const TRAILING_SILENCE_MS = 1200;
+const TRANSCRIPT_WAIT_MS = 2500;
 
 const SCENARIOS = [
   { id: "E1", text: "मेरे दोस्त को अचानक तेज़ सिर दर्द हुआ और वो गिर गया, हम हज़रतगंज चौराहे के पास हैं", answers: ["नहीं जवाब नहीं दे रहा", "हाँ सांस ले रहा है"], protocol: "recovery_stroke_collapse", landmark: /हज़रतगंज|हजरतगंज|hazratganj/i },
@@ -118,6 +126,64 @@ async function transcribe(wav: Buffer) {
   return { text: response.ok ? body.transcript ?? "" : `ERROR ${response.status}`, ms: Math.round(performance.now() - started) };
 }
 
+/** Real-time 16 kHz PCM. Phone quality is kept by averaging to 8 kHz, then holding each sample. */
+function toStreamPcm(samples: Float64Array, rate: number) {
+  const step = RATE / rate;
+  const pcm = Buffer.alloc(samples.length * 2);
+  for (let i = 0; i < samples.length; i++) {
+    const start = i - (i % step);
+    let sum = 0;
+    for (let j = 0; j < step; j++) sum += samples[start + j] ?? 0;
+    pcm.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(sum / step))), i * 2);
+  }
+  return pcm;
+}
+
+/** Sends one utterance at real-time pace, as a phone does, with the app's own Prisma settings. */
+function transcribeStream(samples: Float64Array, rate: number) {
+  const adapter = new PrismaAdapter({ url: config.gnani.sttUrl, apiKey, ...config.prisma });
+  const pcm = Buffer.concat([toStreamPcm(samples, rate), Buffer.alloc((TRAILING_SILENCE_MS / 1000) * RATE * 2)]);
+  const texts: string[] = [];
+  const started = performance.now();
+  let latency = 0;
+  return new Promise<{ text: string; ms: number }>((done) => {
+    let offset = 0;
+    let pump: NodeJS.Timeout | undefined;
+    let finished = false;
+    const finish = (error?: string) => {
+      if (finished) return;
+      finished = true;
+      clearInterval(pump);
+      clearTimeout(limit);
+      session.close();
+      done({ text: error ? `ERROR ${error}` : texts.join(" ").trim(), ms: latency || Math.round(performance.now() - started) });
+    };
+    const limit = setTimeout(() => finish(), (pcm.length / 2 / RATE) * 1000 + 10000);
+    const session = adapter.open({ lang: "hinglish" }, {
+      onReady() {
+        pump = setInterval(() => {
+          session.sendAudio(pcm.subarray(offset, offset + FRAME_BYTES));
+          offset += FRAME_BYTES;
+          if (offset >= pcm.length) {
+            clearInterval(pump);
+            setTimeout(() => finish(), TRANSCRIPT_WAIT_MS);
+          }
+        }, FRAME_MS);
+      },
+      onSpeechStart() {},
+      onProcessing() {},
+      onTranscript({ text, latencyMs }) {
+        if (text.trim()) texts.push(text.trim());
+        latency = latencyMs ?? latency;
+      },
+      onError({ code, message, fatal }) {
+        if (fatal) finish(`${code} ${message}`);
+      },
+      onClose() {},
+    });
+  });
+}
+
 const NUMBER_WORDS: Record<string, string> = {
   "शून्य": "0", "ज़ीरो": "0", "जीरो": "0", "एक": "1", "दो": "2", "तीन": "3", "चार": "4", "पाँच": "5", "पांच": "5",
   "छह": "6", "छः": "6", "छे": "6", "सात": "7", "आठ": "8", "नौ": "9", zero: "0", one: "1", two: "2", three: "3", four: "4",
@@ -140,11 +206,35 @@ async function runMachine(transcript: string, answers: string[]) {
   });
   await machine.begin();
   await machine.onUtterance(transcript);
-  for (const answer of answers) await machine.onUtterance(answer);
+  for (const answer of answers) {
+    if (answer.trim()) await machine.onUtterance(answer);
+    else await machine.onEmptyTranscript();
+  }
   await new Promise((done) => setTimeout(done, 1500));
   await machine.onUtterance("");
   machine.stop();
   return sos;
+}
+
+const clips = new Map<string, Float64Array>();
+async function spokenClip(text: string, voice: { voice: string; language: string }) {
+  const key = `${voice.voice}:${text}`;
+  const known = clips.get(key);
+  if (known) return known;
+  const speech = await speak(text, voice);
+  clips.set(key, speech);
+  return speech;
+}
+
+const hear = (speech: Float64Array, condition: (typeof CONDITIONS)[number]) => {
+  const noisy = condition.apply(speech);
+  return STREAM ? transcribeStream(noisy, condition.rate) : transcribe(toWav(noisy, condition.rate));
+};
+
+async function sequentially<T, R>(items: T[], run: (item: T) => Promise<R>) {
+  const results: R[] = [];
+  for (const item of items) results.push(await run(item));
+  return results;
 }
 
 const protocols = loadProtocols();
@@ -156,10 +246,14 @@ const shortTally: Record<string, { total: number; correct: number }> = {};
 
 for (const voice of VOICES) {
   for (const scenario of SCENARIOS) {
-    const speech = await speak(scenario.text, voice);
+    const speech = await spokenClip(scenario.text, voice);
     for (const condition of CONDITIONS) {
-      const { text, ms } = await transcribe(toWav(condition.apply(speech), condition.rate));
-      const sos = await runMachine(text, scenario.answers);
+      const { text, ms } = await hear(speech, condition);
+      // In stream mode the answers go through the same noise and the same live path.
+      const answers = STREAM
+        ? await sequentially(scenario.answers, async (answer) => (await hear(await spokenClip(answer, voice), condition)).text)
+        : scenario.answers;
+      const sos = await runMachine(text, answers);
       const protocolOk = sos.protocolId === scenario.protocol;
       const landmarkOk = scenario.landmark.test(text);
       const numberOk = scenario.number ? digitsIn(text).includes(scenario.number) : null;
@@ -176,16 +270,17 @@ for (const voice of VOICES) {
       console.log(`${passed ? "PASS" : "MISS"} ${scenario.id} ${voice.voice} ${condition.name}: ${sos.protocolId} | ${text}`);
       if (!passed) {
         const why = [!protocolOk && `protocol ${sos.protocolId} instead of ${scenario.protocol}`, !landmarkOk && "landmark lost", numberOk === false && "number wrong"].filter(Boolean).join("; ");
-        failures.push(`| ${scenario.id} | ${voice.voice} | ${condition.name} | ${why} | ${text.replaceAll("|", "/")} |`);
+        const heard = STREAM ? `${text} // answers: ${answers.join(" / ") || "none"}` : text;
+        failures.push(`| ${scenario.id} | ${voice.voice} | ${condition.name} | ${why} | ${heard.replaceAll("|", "/")} |`);
       }
       callRows.push(`| ${scenario.id} | ${voice.voice} | ${condition.name} | ${sos.protocolId} | ${protocolOk ? "yes" : "no"} | ${landmarkOk ? "yes" : "no"} |`);
       await new Promise((done) => setTimeout(done, GEMINI_GAP_MS));
     }
   }
   for (const word of SHORT_WORDS) {
-    const speech = await speak(word.text, voice);
+    const speech = await spokenClip(word.text, voice);
     for (const condition of CONDITIONS) {
-      const { text } = await transcribe(toWav(condition.apply(speech), condition.rate));
+      const { text } = await hear(speech, condition);
       const row = (shortTally[condition.name] ??= { total: 0, correct: 0 });
       row.total++;
       const correct = parseAnswer("responsive", text) === word.expected;
@@ -202,7 +297,9 @@ const lines = [
   "",
   `**Generated ${new Date().toISOString().slice(0, 10)}. These are SYNTHETIC calls, not real people.** Speech came from two Timbre voices, and the noise was generated by script. Real panicked callers will perform worse, so treat this as a pipeline check, not as proof of field accuracy.`,
   "",
-  `Pipeline: Timbre speech, generated noise, Prisma ${config.prisma.model} (${config.prisma.format}), Gemini ${config.gemini.model}, then Ayu's triage rules. Follow-up answers were fed as text, so only the first sentence and the short-word test passed through noise. Audio was sent to Prisma as files, not through the live stream the app uses. The landmark list given to Prisma held only one of these five places, Gomti Nagar.`,
+  `Pipeline: Timbre speech, generated noise, Prisma ${config.prisma.model} (${config.prisma.format}), Gemini ${config.gemini.model}, then Ayu's triage rules. ${STREAM
+    ? "Whole calls, including every answer, went through noise and the live Prisma stream the app uses, at real-time pace with the app's own settings. Phone quality was simulated by reducing audio to 8 kHz. A microphone and a real room were not involved."
+    : "Follow-up answers were fed as text, so only the first sentence and the short-word test passed through noise. Audio was sent to Prisma as files, not through the live stream the app uses."} The landmark list given to Prisma held only one of these five places, Gomti Nagar.`,
   "",
   "## Results",
   "",
@@ -228,6 +325,6 @@ const lines = [
   ...callRows,
   "",
 ];
-writeFileSync(resolve(import.meta.dirname, "../../eval/results/scorecard-synthetic.md"), lines.join("\n"));
+writeFileSync(resolve(import.meta.dirname, `../../eval/results/${STREAM ? "scorecard-stream" : "scorecard-synthetic"}.md`), lines.join("\n"));
 console.log(`\nDone. ${failures.length} failures.`);
 process.exit(0);

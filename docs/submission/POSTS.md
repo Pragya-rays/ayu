@@ -2,19 +2,19 @@
 
 The challenge needs a public LinkedIn or X post, live before you submit, tagging Gnani AI with both hashtags. Shortlisting looks at real engagement, so post early. Engagement must be genuine: no bought likes or engagement swaps.
 
-Replace the bracketed parts, and add a short screen recording. A video will do more than text.
+Replace the bracketed parts. **The post you nominate must include your demo video**, so that is Post 3. Posts 1 and 2 are optional extras that build interest with a screenshot. Leave a few days between Post 3 and submitting.
 
 ## Post 1: building in public (now)
 
 At 2 AM, in a panic, explaining an address to a stranger is hard. In Hinglish, with a TV in the background, it's harder.
 
-I'm building Ayu for the Great Indian AI Internship Challenge: a voice health assistant for that moment.
+We're building Ayu for the Great Indian AI Internship Challenge: a voice health assistant for that moment.
 
-One tap shares your location and raises an ambulance request. Then it talks you through what to do, in Hindi or Hinglish, while the hospital sees a live case.
+One tap shares your location and raises an ambulance request. Then it asks what happened and stays with you by voice, in Hindi or Hinglish, while the hospital sees a live case.
 
 It runs on @Gnani AI's Prisma for speech recognition and Timbre for the voice.
 
-It's a prototype, the ambulance side is simulated, and first aid still needs a doctor's review. Here's the voice working: [video]
+It's a prototype, the ambulance side is simulated, and first aid still needs a doctor's review. [screenshot]
 
 What would you want from an app like this at 2 AM?
 

@@ -15,6 +15,18 @@ const BREATHING_TOPIC = ["saans", "sans", "सांस", "साँस", "breat
 const RESPONDING_TOPIC = ["jawab", "जवाब", "bol rahe", "bol raha", "bol rahi", "बोल रहे", "बोल रहा", "बोल रही", "सुन रहा", "सुन रहे", "sun raha", "sun rahe", "baat kar", "बात कर", "responding", "hosh", "होश"];
 const MAX_BARE_REPLY_WORDS = 4;
 
+/**
+ * Which question a reply is really about, if it clearly says. "हाँ, साँस ले रहा है" while being
+ * asked about responding is an answer about breathing, not a yes to the question asked.
+ */
+export function replyTopic(utterance: string): TriageQuestion | null {
+  const text = utterance.toLowerCase();
+  const breathing = hasPhrase(text, BREATHING_TOPIC);
+  const responding = hasPhrase(text, RESPONDING_TOPIC);
+  if (breathing === responding) return null;
+  return breathing ? "breathing" : "responsive";
+}
+
 const LOCATION_YES = ["sahi", "सही", "correct", "right", "theek", "ठीक"];
 const LOCATION_NO = ["galat", "गलत", "wrong", "incorrect"];
 

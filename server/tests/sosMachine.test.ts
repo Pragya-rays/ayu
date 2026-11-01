@@ -72,6 +72,37 @@ describe("SosMachine", () => {
     expect(cases.eventsFor(sos.id).map((event) => event.payload.text)).toContain(SOS_OPENING[LANG]);
   });
 
+  it("does not take a reply about breathing as a yes to 'are they responding'", async () => {
+    const { machine, spoken, sos } = setup();
+    await machine.begin();
+    await machine.onEmptyTranscript(); // noise swallowed the first answer
+    await machine.onUtterance("हाँ, साँस ले रहा है।");
+    expect(sos.triage.breathingNormally).toBe(true);
+    expect(sos.triage.responsive).toBeUndefined();
+    expect(spoken.at(-1)).toBe(ASK_RESPONSIVE[LANG]);
+    await machine.onUtterance("नहीं");
+    expect(sos).toMatchObject({ severity: "RED", protocolId: "recovery_stroke_collapse" });
+  });
+
+  it("does not take a reply about responding as a yes to 'are they breathing'", async () => {
+    const { machine, spoken, sos } = setup();
+    await machine.begin();
+    await machine.onAnswer("unsure");
+    expect(spoken.at(-1)).toBe(ASK_BREATHING[LANG]);
+    await machine.onUtterance("जवाब नहीं दे रहे");
+    expect(sos.triage.responsive).toBe(false);
+    expect(sos.triage.breathingNormally).toBeUndefined();
+    expect(spoken.filter((line) => line === ASK_BREATHING[LANG])).toHaveLength(2);
+  });
+
+  it("still takes a reply that mentions the question asked", async () => {
+    const { machine, sos } = setup();
+    await machine.begin();
+    await machine.onAnswer("no");
+    await machine.onUtterance("हाँ साँस ले रहे हैं");
+    expect(sos).toMatchObject({ protocolId: "recovery_stroke_collapse" });
+  });
+
   it("works entirely from buttons, with no speech", async () => {
     const { machine, sos } = setup();
     await machine.begin();
