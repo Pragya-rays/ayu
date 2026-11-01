@@ -11,10 +11,10 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | Phase 6, Dashboard Complete. Phases 1-5 validated on iPhone XR in quiet conditions |
-| **Phase state** | Built and tested locally on real services. **Not deployed; https://ayu-4801.onrender.com still runs Phase 5 (`63407e0`)** |
+| **Current phase** | All buildable work for Phases 6-9 is done. Phases 1-5 validated on iPhone XR in quiet conditions; Phase 6 awaits the team's test. What remains needs people (sections 7 and 10) |
+| **Phase state** | Deployed 11-01 (`5ee2d00`) at https://ayu-4801.onrender.com. Health, `/driver` and access checks pass; no live SOS was run, to keep the team's dashboard clean. **Waiting for team testing** |
 | **Real Gnani API tested?** | **Yes.** Smoke test 5/5, real voice on laptop Chrome (quiet room), SOS opening line in a browser run. SOS listening with real speech, noise and phones are not tested. See sections 6 and 12 |
-| **Next action** | Team approves the push of Phase 6, then tests it. Noisy clips and Android still outstanding |
+| **Next action** | Team approves one push of the batched work, then tests Phase 6 and the shorter lines on the iPhone |
 | **REMINDER** | **Medical review is parked at the team's request (11-01). Raise it again at the end of every phase, and no later than Phase 7 (Nov 5).** Until then every script and card stays a placeholder. Sheet: `docs/medical-review/REVIEW_SHEET.md`. Also open: whether the team member is medically qualified (D9) |
 | **Blocked on** | Parked: medical reviewer's qualification (D9). award and posting decisions (D3, D4) |
 
@@ -276,23 +276,45 @@ Dates follow the summary timeline, shifted to today. Each phase ends with a team
 | Case detail: transcript and timeline, live | Tested in Chrome |
 | Driver view at `/driver`, same password: address, place, map link, brief, Accept / On the way / Arrived | Tested in Chrome at phone size. **Not tried on a real phone** |
 | Change on the driver view reaches dashboard and caller | Tested: about 0.37 s, locally |
-| Deployment | **Not deployed** |
+| Deployment | Deployed 11-01 |
 
 **Exit criteria (team to complete):**
-- [ ] Approve the push
+- [x] Approve the push (deployed 11-01)
 - [ ] Run one SOS by voice, and check the brief and transcript on the laptop
 - [ ] Open `/driver` on a second device and accept from there
 
-### Phase 7 — Safety, Resilience, Polish (Nov 5 – 6)
-**Goal:** trustworthy and instant. Doctor review replaces placeholders and shows reviewer + sources; pre-generated Timbre audio for all fixed lines; service worker and offline SOS; Tier 2 items (metrics, Medical ID, emergency-contact link); native-speaker review of Hindi/Hinglish.
-**Exit:** airplane-mode SOS plays guidance; no placeholder text ships.
+### Phase 7 — Safety, Resilience, Polish · **BUILD WORK DONE, content waiting on people**
+The team asked on 11-01 to build straight through and finish by Nov 2, so remaining build work is batched into one push.
 
-### Phase 8 — Evaluation (Nov 7 – 8)
-**Goal:** honest proof. 15-20 consented scripted calls across noise, language and speaker; scorecard with failures and fixes; 5-10 user trials; real-device QA checklist; fix top failures.
-**Exit:** `eval/results/scorecard.md` exists with real numbers.
+| Item | Status |
+|---|---|
+| Pre-generated Timbre audio for all fixed lines | Done, 114 lines |
+| Shorter SOS lines (D14), decided by the assistant on the team's request to keep moving | Built, not yet heard on a phone |
+| Service worker: app opens offline, spoken and written "call 112", never claims help was sent | Tested in Chrome, 5/5. **Not tried on a real phone.** Offline triage is not built |
+| Medical ID and emergency contact link | **Cut** under the plan's cut order, to protect testing time |
+| Doctor review, replacing placeholders | **Waiting on the team (parked)** |
+| Native-speaker review of Hindi and Hinglish | **Waiting on the team** |
 
-### Phase 9 — Submission (Nov 9; Nov 10 is buffer)
-**Goal:** a complete entry. Final deployment, 60-second demo plus longer walkthrough if useful, write-up with simulated-vs-real table and limitations, members' contributions, nominated public posts, backup recording, submit.
+**Exit, still open:** no placeholder text ships.
+
+### Phase 8 — Evaluation · **SYNTHETIC PART DONE, real calls waiting on the team**
+
+| Item | Status |
+|---|---|
+| Synthetic scorecard, `npm run eval:synthetic -w server`, in `eval/results/scorecard-synthetic.md` | Done, 40 calls plus 16 short answers |
+| Hindi and English end to end in Chrome | Done, 10/10 |
+| 15-20 consented real noisy calls | **Waiting on the team** |
+| 5-10 people trying it, one genuine quote | **Waiting on the team** |
+| Android and real-device QA checklist | **Waiting on the team** |
+
+### Phase 9 — Submission · **DRAFTS DONE, publishing waiting on the team**
+
+| Item | Status |
+|---|---|
+| Write-up, demo script, post drafts in `docs/submission/` | Drafted. Write-up has TODOs for names, contributions and medical status |
+| Demo video, 60-second cut and backup recording | **Waiting on the team** |
+| Public posts, live before submission | **Waiting on the team** |
+| Submit through the form | **Waiting on the team**; the assistant cannot submit |
 
 **Cut order if late:** Tier 3, emergency contact, Medical ID, interrupt polish, extra protocols. Keep CPR, chest pain, stroke/collapse.
 
@@ -441,7 +463,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R14 | Dashboard cases disappear on server restart or Render sleep | Low-Medium | Accepted for now (I10); see D12 |
 | R15 | Gnani key appeared in an AI session | Closed | Replaced 10-31 |
 | R16 | **Closed 10-31:** the spoken area was correct on the team's iPhone. The earlier wrong pin stays unexplained; it may have been an AI test case with simulated coordinates. AI live tests must not add simulated cases to the team's dashboard without saying so | Closed | Read-back with voice correction catches any bad fix during a call |
-| R17 | Android and Hindi/English SOS lines not tested on real devices | Medium | Check during Phase 3 testing |
+| R17 | Hindi and English pass end to end in Chrome with buttons and typing (11-01, 10/10). Android, and Hindi or English by voice on a real phone, are untested | Medium | Phase 8 |
 | R23 | **Gemini free tier allows 15 requests per minute** (measured 11-01), shared by all users. Each thing a caller says is one request. Over the limit it returns 429 in about 0.4 s and Ayu uses rules and fixed questions, so calls stay safe but lose Gemini's help. Several judges at once could hit this. Daily limit not measured | Medium | Accept for one user at a time; consider a paid tier for demo week |
 | R18 | **Ayu gives no real first aid or home-care advice yet.** Every protocol and card is a "pending medical review" line. Triage rules, warning signs and waiting tips are unreviewed too | **High** | Needs a qualified reviewer (D9). No AI may write this content |
 | R19 | Barge-in works on iPhone XR on speaker, in a quiet setting, with no self-interruption (10-31). Android and noise are untested; the threshold (`BARGE_RMS` in `voiceClient.ts`) may need tuning there. The opening line and protocol steps cannot be interrupted | Low-Medium | Check on Android and in the noisy tests |
@@ -534,6 +556,11 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - `npm test`: 217 of 217 (server 209, web 8). Three-screen Chrome run (caller, dashboard, driver): 11/11, no page errors. Sync about 0.37 s. Buttons only, so the brief showed "complaint unknown".
 - **Not tested:** brief from real speech, driver view on a real phone, this build on Render.
 
+**2026-11-01, Phases 7 to 9 build work (local build, real services)**
+- Offline in Chrome: 5/5 (app opens, says to call 112, never claims help was sent). Three-screen 11/11 with shorter lines. Hindi and English end to end 10/10.
+- Synthetic scorecard: correct script 40/40, landmark 38/40, number 8/8, short answers 16/16, median Prisma about 0.7 s. Real failures: "Aminabad" split by noise, twice. The first run showed 0/8 for numbers because of a bug in the scorer, not Prisma; re-scored from the same transcripts, with no new calls.
+- Limits: synthetic speech and noise; file mode, not the live stream; only the first sentence passed through noise.
+
 ---
 
 ## 13. Changelog
@@ -544,6 +571,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - **2026-10-31** Deployed Phase 2 to Render; iPhone XR test passed apart from the map pin (R16). Built Phase 3: Gemini extraction, triage rules, protocol engine with placeholders, SOS conversation, answer buttons.
 - **2026-10-31** Deployed Phase 3; voice flow passed on iPhone XR. Built pre-generated audio after the team reported late voice.
 - **2026-10-31** At the team's request, rewrote git history and force-pushed to remove a name from the first commit. Commit hashes changed; code unchanged.
+- **2026-11-01** Team asked to finish by Nov 2. Shortened SOS lines, added offline support, cut Medical ID and emergency contact, built the synthetic scorecard, drafted the write-up, demo script and posts.
 - **2026-11-01** Phase 5 validated on iPhone XR. Built Phase 6: ER brief, case detail, transcript, timeline, driver view. Medical review parked by the team.
 - **2026-10-31** Phase 4 validated on iPhone XR. Built Phase 5: Normal mode with fixed questions, warning signs, placeholder home-care cards and summary card. Fixed full-height SOS button.
 - **2026-10-31** Fixed iPhone audio (R22). Built Phase 4: Nominatim read-back, simulated dispatch, status and re-check loop, barge-in, reconnect.

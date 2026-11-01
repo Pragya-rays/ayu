@@ -59,6 +59,8 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   const voiceStarted = useRef(false);
   const exiting = useRef(false);
   const openingAudio = useRef<ArrayBuffer | null>(null);
+  const offlineAudio = useRef<ArrayBuffer | null>(null);
+  const offlineSpoken = useRef(false);
   const mic = useRef<Promise<MediaStream> | null>(null);
   const { start: startVoice, stop: stopVoice } = voice;
 
@@ -77,6 +79,9 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   useEffect(() => {
     void fetchLocalLine(`/audio/opening-${lang}.pcm`).then((pcm) => {
       openingAudio.current = pcm;
+    });
+    void fetchLocalLine(`/audio/offline-${lang}.pcm`).then((pcm) => {
+      offlineAudio.current = pcm;
     });
     if (mic.current) return;
     mic.current = requestMic();
@@ -105,7 +110,8 @@ export function Sos({ lang, t, audio, onExit }: Props) {
     const activatedAt = performance.now();
     setStage("active");
     void audio.resume();
-    const pcm = openingAudio.current;
+    // With no network, nothing can be sent, so Ayu must not say help is being sent.
+    const pcm = navigator.onLine ? openingAudio.current : null;
     const localOpening = pcm
       ? { finished: playLocalLine(audio, pcm), startedAfterMs: performance.now() - activatedAt }
       : undefined;
@@ -138,6 +144,13 @@ export function Sos({ lang, t, audio, onExit }: Props) {
   useEffect(() => {
     if (voice.error?.fatal) setStage("failed");
   }, [voice.error]);
+
+  useEffect(() => {
+    if (stage !== "failed" || offlineSpoken.current || !offlineAudio.current || audio.state === "closed") return;
+    offlineSpoken.current = true;
+    void audio.resume();
+    void playLocalLine(audio, offlineAudio.current).catch(() => undefined);
+  }, [audio, stage]);
 
   useEffect(() => {
     if (voice.status !== "idle") voiceStarted.current = true;

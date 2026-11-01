@@ -14,6 +14,7 @@
     "gen:audio": "tsx scripts/gen-audio.ts",
     "gemini:check": "tsx scripts/gemini-check.ts",
     "eval:triage": "tsx scripts/triage-scenarios.ts",
+    "eval:synthetic": "tsx scripts/eval-synthetic.ts",
     "normal:check": "tsx scripts/normal-check.ts",
     "voice:samples": "tsx scripts/voice-samples.ts"
   },

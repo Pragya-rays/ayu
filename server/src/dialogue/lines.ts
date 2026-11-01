@@ -2,22 +2,30 @@ import type { Lang } from "../types/voice.js";
 
 // Fixed spoken lines. Copy is from Dev Guide 12.8; Hindi and Hinglish await native-speaker review.
 // Never say "dispatched" here: that is reserved for after acceptance (Phase 4).
+// Kept short on purpose: this speech is most of the time before the first instruction.
 export const SOS_OPENING: Record<Lang, string> = {
-  en: "Help is being sent. I'm with you.",
-  hi: "मदद भेजी जा रही है। मैं आपके साथ हूँ।",
-  hinglish: "Madad bheji ja rahi hai. Main aapke saath hoon.",
+  en: "Help is being sent.",
+  hi: "मदद भेजी जा रही है।",
+  hinglish: "Madad bheji ja rahi hai.",
 };
 
 export const ASK_RESPONSIVE: Record<Lang, string> = {
-  en: "Is the person responding to you?",
-  hi: "क्या वो आपकी बात का जवाब दे रहे हैं?",
-  hinglish: "Kya woh aapki baat ka jawab de rahe hain?",
+  en: "Are they responding?",
+  hi: "क्या वो जवाब दे रहे हैं?",
+  hinglish: "Kya woh jawab de rahe hain?",
 };
 
 export const ASK_BREATHING: Record<Lang, string> = {
-  en: "Is the person breathing normally?",
-  hi: "क्या वो सामान्य रूप से सांस ले रहे हैं?",
-  hinglish: "Kya woh normal tareeke se saans le rahe hain?",
+  en: "Are they breathing normally?",
+  hi: "क्या वो सामान्य सांस ले रहे हैं?",
+  hinglish: "Kya woh normal saans le rahe hain?",
+};
+
+/** Played from the phone's own copy when the server cannot be reached. */
+export const CONNECTION_LOST: Record<Lang, string> = {
+  en: "Connection lost. Please call 112 now.",
+  hi: "कनेक्शन टूट गया। कृपया अभी 112 पर कॉल करें।",
+  hinglish: "Connection toot gaya. Kripya abhi 112 par call karein.",
 };
 
 export const SAY_AGAIN: Record<Lang, string> = {
@@ -117,6 +125,6 @@ export const etaUpdate = (lang: Lang, minutes: number) => ({
 })[lang];
 
 export const FIXED_LINES = [
-  SOS_OPENING, ASK_RESPONSIVE, ASK_BREATHING, SAY_AGAIN, ARE_YOU_THERE, CALL_112, NO_ACK, PRE_ACK, ASK_LANDMARK,
+  SOS_OPENING, ASK_RESPONSIVE, ASK_BREATHING, SAY_AGAIN, ARE_YOU_THERE, CALL_112, CONNECTION_LOST, NO_ACK, PRE_ACK, ASK_LANDMARK,
   ASK_ADDRESS, LOCATION_UPDATED, ALMOST_THERE, ARRIVED, RECHECK_STILL, RECHECK_STARTED,
 ];
