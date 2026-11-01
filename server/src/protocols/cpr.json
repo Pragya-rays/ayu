@@ -25,7 +25,7 @@
         "hi": "उन्हें सख़्त ज़मीन पर पीठ के बल सीधा लिटाइए।",
         "hinglish": "Unhe sakht zameen par peeth ke bal seedha litayein."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -35,7 +35,7 @@
         "hi": "उनके पास घुटनों पर बैठिए।",
         "hinglish": "Unke paas ghutnon par baithiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -45,7 +45,7 @@
         "hi": "एक हाथ की हथेली का निचला हिस्सा छाती के बीच में रखिए।",
         "hinglish": "Ek haath ki hatheli ka nichla hissa chhati ke beech mein rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -55,7 +55,7 @@
         "hi": "दूसरा हाथ उसके ऊपर रखिए। बाँहें सीधी रखिए।",
         "hinglish": "Doosra haath uske upar rakhiye. Baanhein seedhi rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -65,7 +65,7 @@
         "hi": "ज़ोर से लगभग 5 सेंटीमीटर नीचे दबाइए।",
         "hinglish": "Zor se lagbhag 5 centimetre neeche dabaiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -75,7 +75,7 @@
         "hi": "हर बार दबाने के बाद छाती को पूरा ऊपर आने दीजिए।",
         "hinglish": "Har baar dabane ke baad chhati ko poora upar aane dijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -85,7 +85,7 @@
         "hi": "तेज़ दबाइए, हर सेकंड में लगभग दो बार। रुकिए मत।",
         "hinglish": "Tez dabaiye, har second mein lagbhag do baar. Rukiye mat."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -95,7 +95,7 @@
         "hi": "कोई साथ हो तो हर 2 मिनट में बदल लीजिए।",
         "hinglish": "Koi saath ho to har 2 minute mein badal lijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -105,7 +105,7 @@
         "hi": "तभी रुकिए जब वो हिलें या सांस लें, या मदद आ जाए।",
         "hinglish": "Tabhi rukiye jab woh hilein ya saans lein, ya madad aa jaye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     }
   ],

@@ -25,7 +25,7 @@
         "hi": "अगर वो खांस या बोल सकते हैं, उन्हें खांसते रहने को कहिए।",
         "hinglish": "Agar woh khaans ya bol sakte hain, unhe khaanste rehne ko kahiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -35,7 +35,7 @@
         "hi": "अगर नहीं, तो उन्हें आगे झुकाइए।",
         "hinglish": "Agar nahi, to unhe aage jhukaiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -45,7 +45,7 @@
         "hi": "कंधों के बीच 5 बार ज़ोर से थपकी दीजिए।",
         "hinglish": "Kandhon ke beech 5 baar zor se thapki dijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -55,7 +55,7 @@
         "hi": "उनके पीछे खड़े होइए। मुट्ठी नाभि के ऊपर रखिए।",
         "hinglish": "Unke peeche khade hoiye. Mutthi naabhi ke upar rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -65,7 +65,7 @@
         "hi": "मुट्ठी को दूसरे हाथ से पकड़िए। 5 बार तेज़ी से अंदर और ऊपर खींचिए।",
         "hinglish": "Mutthi ko doosre haath se pakdiye. 5 baar tezi se andar aur upar kheenchiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -75,7 +75,7 @@
         "hi": "निकलने तक 5 थपकी और 5 खिंचाव दोहराइए।",
         "hinglish": "Nikalne tak 5 thapki aur 5 khinchav dohraiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     },
     {
@@ -85,7 +85,7 @@
         "hi": "अगर वो जवाब देना बंद करें, मुझे तुरंत बताइए।",
         "hinglish": "Agar woh jawab dena band karein, mujhe turant batayein."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": false
     }
   ],

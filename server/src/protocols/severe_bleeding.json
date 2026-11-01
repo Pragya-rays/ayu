@@ -24,7 +24,7 @@
         "hi": "साफ़ कपड़े से घाव पर ज़ोर से दबाइए।",
         "hinglish": "Saaf kapde se ghaav par zor se dabaiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -34,7 +34,7 @@
         "hi": "दबाते रहिए। देखने के लिए कपड़ा मत हटाइए।",
         "hinglish": "Dabaate rahiye. Dekhne ke liye kapda mat hataiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -44,7 +44,7 @@
         "hi": "खून बाहर आए तो ऊपर एक और कपड़ा रखिए।",
         "hinglish": "Khoon bahar aaye to upar ek aur kapda rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -54,7 +54,7 @@
         "hi": "घाव में कुछ फँसा हो तो निकालिए मत। उसके आसपास दबाइए।",
         "hinglish": "Ghaav mein kuch phansa ho to nikaliye mat. Uske aaspaas dabaiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -64,7 +64,7 @@
         "hi": "उन्हें लिटाइए, और हो सके तो पैर ऊपर कीजिए।",
         "hinglish": "Unhe litayein, aur ho sake to pair upar kijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -74,7 +74,7 @@
         "hi": "उनसे बात करते रहिए।",
         "hinglish": "Unse baat karte rahiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     }
   ],

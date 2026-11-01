@@ -25,7 +25,7 @@
         "hi": "उनके पास घुटनों पर बैठिए और उनके पैर सीधे कीजिए।",
         "hinglish": "Unke paas ghutnon par baithiye aur unke pair seedhe kijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -35,7 +35,7 @@
         "hi": "आपकी तरफ़ वाली बाँह को बगल में फैलाइए, हथेली ऊपर।",
         "hinglish": "Aapki taraf wali baanh ko bagal mein phailaiye, hatheli upar."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -45,7 +45,7 @@
         "hi": "उनका दूसरा हाथ आपकी तरफ़ वाले गाल पर लाकर पकड़े रखिए।",
         "hinglish": "Unka doosra haath aapki taraf wale gaal par la kar pakde rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -55,7 +55,7 @@
         "hi": "दूसरे हाथ से दूर वाला घुटना ऊपर मोड़िए।",
         "hinglish": "Doosre haath se door wala ghutna upar modiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -65,7 +65,7 @@
         "hi": "हाथ गाल पर ही रखिए। घुटना खींचकर उन्हें अपनी तरफ़ करवट दिलाइए।",
         "hinglish": "Haath gaal par hi rakhiye. Ghutna kheench kar unhe apni taraf karwat dilaiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -75,7 +75,7 @@
         "hi": "सांस का रास्ता खुला रखने के लिए सिर धीरे से पीछे कीजिए।",
         "hinglish": "Saans ka raasta khula rakhne ke liye sir dheere se peeche kijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -85,7 +85,7 @@
         "hi": "खाना, पानी या दवा मत दीजिए।",
         "hinglish": "Khana, paani ya dawa mat dijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -95,7 +95,7 @@
         "hi": "उनकी सांस देखते रहिए। बदले तो मुझे बताइए।",
         "hinglish": "Unki saans dekhte rahiye. Badle to mujhe batayein."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     }
   ],

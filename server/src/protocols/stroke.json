@@ -23,7 +23,7 @@
         "hi": "उनके साथ रहिए और उन्हें शांत रखिए।",
         "hinglish": "Unke saath rahiye aur unhe shaant rakhiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -33,7 +33,7 @@
         "hi": "खाना, पानी या दवा मत दीजिए।",
         "hinglish": "Khana, paani ya dawa mat dijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -43,7 +43,7 @@
         "hi": "ध्यान रखिए कि यह कब शुरू हुआ।",
         "hinglish": "Dhyan rakhiye ki yeh kab shuru hua."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     },
     {
@@ -53,7 +53,7 @@
         "hi": "उन्हें ख़ुद गाड़ी से मत ले जाइए। मदद का इंतज़ार कीजिए।",
         "hinglish": "Unhe khud gaadi se mat le jaiye. Madad ka intezaar kijiye."
       },
-      "pauseAfterMs": 800,
+      "pauseAfterMs": 2000,
       "interruptible": true
     }
   ],
