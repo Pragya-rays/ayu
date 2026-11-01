@@ -45,7 +45,7 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 35 | Is there any blood in your stool? | क्या मल में खून आ रहा है? | Kya potty mein khoon aa raha hai? | |
 | 36 | Do you have diabetes or any heart condition? | क्या आपको डायबिटीज़ या दिल की कोई बीमारी है? | Kya aapko diabetes ya dil ki koi bimari hai? | |
 
-## Text on screen (78)
+## Text on screen (79)
 
 | # | English meaning | Hindi | Hinglish | Your change |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 4 | Add Medical ID (optional) | मेडिकल आईडी जोड़ें (वैकल्पिक) | Medical ID add karein (optional) | |
 | 5 | Medical ID saved. Edit | मेडिकल आईडी सेव है। बदलें | Medical ID save hai. Badlein | |
 | 6 | Medical ID | मेडिकल आईडी | Medical ID | |
-| 7 | Optional. Saved only on this phone, and shared with responders only if you start an SOS. This is a prototype, so please use made-up details. | वैकल्पिक। केवल इस फ़ोन पर सेव होती है, और SOS शुरू करने पर ही बचाव दल को मिलती है। यह प्रोटोटाइप है, इसलिए कृपया काल्पनिक जानकारी भरें। | Optional. Sirf is phone par save hoti hai, aur SOS shuru karne par hi responders ko milti hai. Yeh prototype hai, isliye kripya kaalpanik details bharein. | |
+| 7 | Optional. Saved only on this phone, and shared with responders only if you start an SOS. Please use made-up details while testing. | वैकल्पिक। केवल इस फ़ोन पर सेव होती है, और SOS शुरू करने पर ही बचाव दल को मिलती है। जाँच के दौरान कृपया काल्पनिक जानकारी भरें। | Optional. Sirf is phone par save hoti hai, aur SOS shuru karne par hi responders ko milti hai. Testing ke dauraan kripya kaalpanik details bharein. | |
 | 8 | Allergies | एलर्जी | Allergy | |
 | 9 | Conditions | बीमारियाँ | Bimariyan | |
 | 10 | Current medicines | चल रही दवाइयाँ | Chal rahi dawaiyan | |
@@ -80,7 +80,7 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 29 | Not now | अभी नहीं | Abhi nahi | |
 | 30 | Or type here | या यहाँ लिखें | Ya yahan likhein | |
 | 31 | Send | भेजें | Bhejein | |
-| 32 | Prototype · not a medical device | प्रोटोटाइप · चिकित्सा उपकरण नहीं | Prototype · not a medical device | |
+| 32 | Not a medical device · does not replace emergency services | चिकित्सा उपकरण नहीं · आपातकालीन सेवाओं की जगह नहीं लेता | Not a medical device · does not replace emergency services | |
 | 33 | Cancel | रद्द करें | Cancel karein | |
 | 34 | Sending help in | मदद भेजी जा रही है | Madad bheji ja rahi hai | |
 | 35 | Help is being sent. | मदद भेजी जा रही है। | Madad bheji ja rahi hai. | |
@@ -106,26 +106,27 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 55 | No | नहीं | Nahi | |
 | 56 | Not sure | पता नहीं | Pata nahi | |
 | 57 | pending medical review | चिकित्सा समीक्षा बाकी | medical review baaki | |
-| 58 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
-| 59 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. This is a prototype: it is not a medical device and does not replace emergency services. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। यह एक प्रोटोटाइप है: यह चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. Yeh prototype hai: medical device nahi hai aur emergency services ki jagah nahi leta. | |
-| 60 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
-| 61 | Language | भाषा | Bhasha | |
-| 62 | Back | वापस | Wapas | |
-| 63 | Voice check | आवाज़ जाँच | Voice check | |
-| 64 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
-| 65 | Stop | रोकें | Rokein | |
-| 66 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
-| 67 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
-| 68 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
-| 69 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
-| 70 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
-| 71 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
-| 72 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
-| 73 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
-| 74 | Speak | बोलें | Bolein | |
-| 75 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
-| 76 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
-| 77 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
-| 78 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
+| 58 | published first aid guidance · not doctor-reviewed | प्रकाशित प्राथमिक उपचार मार्गदर्शन · डॉक्टर द्वारा जाँचा नहीं गया | published first aid guidance · doctor review nahi hua | |
+| 59 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
+| 60 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. First aid and home care come from published guidance and have not been reviewed by a doctor. Ayu is not a medical device and does not replace emergency services. Ambulance dispatch is simulated. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai. | |
+| 61 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
+| 62 | Language | भाषा | Bhasha | |
+| 63 | Back | वापस | Wapas | |
+| 64 | Voice check | आवाज़ जाँच | Voice check | |
+| 65 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
+| 66 | Stop | रोकें | Rokein | |
+| 67 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
+| 68 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
+| 69 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
+| 70 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
+| 71 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
+| 72 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
+| 73 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
+| 74 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
+| 75 | Speak | बोलें | Bolein | |
+| 76 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
+| 77 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
+| 78 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
+| 79 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
 
 Reviewed by: ____________________   Date: __________

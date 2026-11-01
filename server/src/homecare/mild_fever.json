@@ -5,17 +5,40 @@
     "hi": "हल्का बुखार",
     "hinglish": "Halka bukhar"
   },
-  "status": "placeholder",
+  "status": "sourced",
   "commonCauses": [],
   "steps": [
     {
-      "en": "Home care steps for this are waiting for medical review. If you feel worse, please see a doctor.",
-      "hi": "इसके घरेलू देखभाल के चरण अभी चिकित्सा समीक्षा में हैं। तकलीफ़ बढ़े तो कृपया डॉक्टर को दिखाएँ।",
-      "hinglish": "Iske home care steps abhi medical review mein hain. Takleef badhe to kripya doctor ko dikhayein."
+      "en": "Get plenty of rest.",
+      "hi": "ख़ूब आराम कीजिए।",
+      "hinglish": "Khoob aaram kijiye."
+    },
+    {
+      "en": "Drink plenty of fluids, preferably water.",
+      "hi": "ख़ूब पानी और तरल चीज़ें पीजिए।",
+      "hinglish": "Khoob paani aur liquid cheezein peejiye."
+    },
+    {
+      "en": "Stay at home until it settles.",
+      "hi": "ठीक होने तक घर पर रहिए।",
+      "hinglish": "Theek hone tak ghar par rahiye."
     }
   ],
-  "seeDoctorIf": [],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO"
+  "seeDoctorIf": [
+    {
+      "en": "It is not getting better, or is getting worse.",
+      "hi": "बुखार ठीक न हो या बढ़ता जाए।",
+      "hinglish": "Bukhar theek na ho ya badhta jaye."
+    },
+    {
+      "en": "It is very high or will not come down.",
+      "hi": "बहुत तेज़ हो या उतर न रहा हो।",
+      "hinglish": "Bahut tez ho ya utar na raha ho."
+    }
+  ],
+  "sources": [
+    "NHS, fever in adults. https://www.nhs.uk/conditions/fever-in-adults/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": ""
 }

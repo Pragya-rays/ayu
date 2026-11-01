@@ -6,23 +6,35 @@
     "hinglish": "General guidance"
   },
   "severity": "AMBER",
-  "status": "placeholder",
+  "status": "sourced",
   "triggers": [
     "default"
   ],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO",
+  "sources": [
+    "WHO Community First Aid Response pocket guide. https://cdn.who.int/media/docs/default-source/integrated-health-services-(ihs)/csy/cfar-pocketguide.pdf"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": "",
   "steps": [
     {
       "id": "s1",
       "text": {
-        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
-        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
-        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+        "en": "Stay with them and keep watching their breathing.",
+        "hi": "उनके साथ रहिए और उनकी सांस देखते रहिए।",
+        "hinglish": "Unke saath rahiye aur unki saans dekhte rahiye."
       },
-      "pauseAfterMs": 1500,
-      "interruptible": false
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s2",
+      "text": {
+        "en": "Tell me straight away if anything changes.",
+        "hi": "कुछ भी बदले तो मुझे तुरंत बताइए।",
+        "hinglish": "Kuch bhi badle to mujhe turant batayein."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
     }
   ],
   "doNot": [],

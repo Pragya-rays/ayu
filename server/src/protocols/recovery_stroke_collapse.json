@@ -6,24 +6,97 @@
     "hinglish": "Behosh, saans chal rahi hai"
   },
   "severity": "RED",
-  "status": "placeholder",
+  "status": "sourced",
   "triggers": [
     "responsive=false",
     "breathingNormally=true"
   ],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO",
+  "sources": [
+    "St John Ambulance, recovery position. https://www.sja.org.uk/first-aid-advice/recovery-position/",
+    "Ahmed SM et al. Compression-only life support. Indian J Anaesth 2017;61:867-73. https://pmc.ncbi.nlm.nih.gov/articles/5702999/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": "",
   "steps": [
     {
       "id": "s1",
       "text": {
-        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
-        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
-        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+        "en": "Kneel beside them and straighten their legs.",
+        "hi": "उनके पास घुटनों पर बैठिए और उनके पैर सीधे कीजिए।",
+        "hinglish": "Unke paas ghutnon par baithiye aur unke pair seedhe kijiye."
       },
-      "pauseAfterMs": 1500,
-      "interruptible": false
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s2",
+      "text": {
+        "en": "Put the arm nearest you out at a right angle, palm up.",
+        "hi": "आपकी तरफ़ वाली बाँह को बगल में फैलाइए, हथेली ऊपर।",
+        "hinglish": "Aapki taraf wali baanh ko bagal mein phailaiye, hatheli upar."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s3",
+      "text": {
+        "en": "Bring their other hand to their cheek, nearest you, and hold it there.",
+        "hi": "उनका दूसरा हाथ आपकी तरफ़ वाले गाल पर लाकर पकड़े रखिए।",
+        "hinglish": "Unka doosra haath aapki taraf wale gaal par la kar pakde rakhiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s4",
+      "text": {
+        "en": "With your other hand, pull their far knee up.",
+        "hi": "दूसरे हाथ से दूर वाला घुटना ऊपर मोड़िए।",
+        "hinglish": "Doosre haath se door wala ghutna upar modiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s5",
+      "text": {
+        "en": "Keep the hand on the cheek. Pull the knee to roll them towards you.",
+        "hi": "हाथ गाल पर ही रखिए। घुटना खींचकर उन्हें अपनी तरफ़ करवट दिलाइए।",
+        "hinglish": "Haath gaal par hi rakhiye. Ghutna kheench kar unhe apni taraf karwat dilaiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s6",
+      "text": {
+        "en": "Tilt the head back gently to keep the airway open.",
+        "hi": "सांस का रास्ता खुला रखने के लिए सिर धीरे से पीछे कीजिए।",
+        "hinglish": "Saans ka raasta khula rakhne ke liye sir dheere se peeche kijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s7",
+      "text": {
+        "en": "Do not give food, water or medicine.",
+        "hi": "खाना, पानी या दवा मत दीजिए।",
+        "hinglish": "Khana, paani ya dawa mat dijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s8",
+      "text": {
+        "en": "Keep watching their breathing. Tell me if it changes.",
+        "hi": "उनकी सांस देखते रहिए। बदले तो मुझे बताइए।",
+        "hinglish": "Unki saans dekhte rahiye. Badle to mujhe batayein."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
     }
   ],
   "doNot": [],

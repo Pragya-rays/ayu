@@ -20,13 +20,20 @@ describe("Hinglish speech", () => {
     const lines = [
       ...FIXED_LINES.map((line) => line.hinglish),
       ...NORMAL_FIXED_LINES.map((line) => line.hinglish),
-      ...[...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text.hinglish)),
-      ...[...loadHomeCare().values()].flatMap((card) => card.steps.map((step) => step.hinglish)),
       dispatched("hinglish", 8), etaUpdate("hinglish", 5), locationConfirm("hinglish", ""), locationNear("hinglish", ""),
     ];
     const missed = lines.flatMap((line) => line.match(/[A-Za-z]+/g) ?? [])
       .filter((word) => !isConverted(word) && !ENGLISH_WORDS.has(word.toLowerCase()));
     expect([...new Set(missed)]).toEqual([]);
+  });
+
+  it("reads first-aid and home-care steps from their Hindi text", () => {
+    const steps = [
+      ...[...loadProtocols().values()].flatMap((protocol) => protocol.steps.map((step) => step.text)),
+      ...[...loadHomeCare().values()].flatMap((card) => card.steps),
+    ];
+    expect(steps.length).toBeGreaterThan(40);
+    for (const step of steps) expect(toSpokenHinglish(step.hinglish)).toBe(step.hi);
   });
 
   it("converts only what is sent to Timbre, and only for Hinglish", () => {

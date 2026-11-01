@@ -6,6 +6,8 @@ export interface NormalSummary {
   /** A warning sign appeared or went unanswered, so home care was withheld. */
   urgent: boolean;
   placeholder: boolean;
+  /** Taken from published guidance, and not reviewed by a doctor. */
+  sourced: boolean;
 }
 
 export interface NormalState {

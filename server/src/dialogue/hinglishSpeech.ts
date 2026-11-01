@@ -36,6 +36,13 @@ export const ENGLISH_WORDS = new Set([
 
 export const isConverted = (word: string) => word.toLowerCase() in WORDS;
 
+const WHOLE_LINES = new Map<string, string>();
+
+/** First-aid and home-care steps already exist in Devanagari, so Timbre reads that version directly. */
+export function speakHindiFor(lines: { hi: string; hinglish: string }[]) {
+  for (const line of lines) WHOLE_LINES.set(line.hinglish, line.hi);
+}
+
 export function toSpokenHinglish(text: string) {
-  return text.replace(/[A-Za-z]+/g, (word) => WORDS[word.toLowerCase()] ?? word);
+  return WHOLE_LINES.get(text) ?? text.replace(/[A-Za-z]+/g, (word) => WORDS[word.toLowerCase()] ?? word);
 }

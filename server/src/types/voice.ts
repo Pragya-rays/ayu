@@ -12,6 +12,8 @@ export interface SosState {
   protocolTitle: string | null;
   /** True until a protocol's wording has passed medical review. */
   placeholder: boolean;
+  /** Taken from published guidance, and not reviewed by a doctor. */
+  sourced: boolean;
   dispatchStatus: Case["dispatch"]["status"];
   etaMinutes: number | null;
   ambulanceId: string | null;

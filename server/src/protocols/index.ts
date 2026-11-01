@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { speakHindiFor } from "../dialogue/hinglishSpeech.js";
 import type { Severity } from "../types/case.js";
 import { PROTOCOL_IDS, type ProtocolId } from "../types/triage.js";
 import type { Lang } from "../types/voice.js";
@@ -17,7 +18,7 @@ export interface Protocol {
   id: ProtocolId;
   title: LocalizedText;
   severity: Severity;
-  status: "placeholder" | "reviewed";
+  status: "placeholder" | "sourced" | "reviewed";
   triggers: string[];
   sources: string[];
   reviewedBy: string;
@@ -41,7 +42,8 @@ export function validateProtocol(raw: any, fileId: string): string[] {
   if (!PROTOCOL_IDS.includes(raw?.id)) problems.push("unknown protocol id");
   if (!hasAllLangs(raw?.title)) problems.push("title needs en, hi and hinglish");
   if (!["RED", "AMBER", "GREEN"].includes(raw?.severity)) problems.push("invalid severity");
-  if (!["placeholder", "reviewed"].includes(raw?.status)) problems.push("invalid status");
+  if (!["placeholder", "sourced", "reviewed"].includes(raw?.status)) problems.push("invalid status");
+  if (raw?.status === "sourced" && (!Array.isArray(raw.sources) || raw.sources.length === 0)) problems.push("sourced protocol needs sources");
   if (!Array.isArray(raw?.steps) || raw.steps.length === 0) {
     problems.push("needs at least one step");
   } else {
@@ -71,5 +73,6 @@ export function loadProtocols(dir = resolve(import.meta.dirname, "../../src/prot
   }
   const missing = PROTOCOL_IDS.filter((id) => !protocols.has(id));
   if (missing.length) throw new Error(`Missing protocols: ${missing.join(", ")}`);
+  speakHindiFor([...protocols.values()].flatMap((protocol) => protocol.steps.map((step) => step.text)));
   return protocols;
 }

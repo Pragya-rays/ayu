@@ -14,7 +14,7 @@ One tap shares your location and raises an ambulance request. Then it asks what 
 
 It runs on @Gnani AI's Prisma for speech recognition and Timbre for the voice.
 
-It's a prototype, the ambulance side is simulated, and first aid still needs a doctor's review. [screenshot]
+The ambulance side is simulated, and the first aid comes from published guidance, not yet reviewed by a doctor. [screenshot]
 
 What would you want from an app like this at 2 AM?
 
@@ -45,7 +45,7 @@ Hindi and Hinglish voice health help:
 
 Built on @Gnani AI's Prisma and Timbre.
 
-What it isn't: a medical device. Ambulances are simulated, and it's a prototype. Our scorecard includes our failures: [link]
+What it isn't: a medical device. Ambulances are simulated, and a doctor has not reviewed the first aid yet. Our scorecard includes our failures: [link]
 
 Demo: [video]
 
@@ -53,4 +53,4 @@ Demo: [video]
 
 ## On X, shorter
 
-2 AM. Panic. Hinglish. Traffic noise. Ayu is a voice health assistant for that moment, built on @[Gnani handle] Prisma and Timbre. Prototype, ambulance simulated. [video] #GreatIndianAIInternshipChallenge #GnaniAI
+2 AM. Panic. Hinglish. Traffic noise. Ayu is a voice health assistant for that moment, built on @[Gnani handle] Prisma and Timbre. Ambulance simulated. [video] #GreatIndianAIInternshipChallenge #GnaniAI

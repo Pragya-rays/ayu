@@ -3,7 +3,7 @@
 **Live app:** https://ayu-4801.onrender.com · **Code:** https://github.com/Pragya-rays/ayu
 **Team of two:** Pragya and Aryan Pandey, SRMCE, Lucknow · **Gnani models used:** Prisma v3.0 (speech to text), Timbre v2.5 (text to speech)
 
-> Prototype, not a medical device. It does not replace emergency services. Ambulance dispatch is simulated.
+> Not a medical device. It does not replace emergency services. Ambulance dispatch is simulated. First aid and home care come from published guidance and have not been reviewed by a doctor.
 
 ## The problem
 
@@ -38,7 +38,7 @@ Phone (PWA) to a Node server over WebSocket. The server proxies Prisma and Timbr
 
 ## Safety decisions
 
-- **The AI does not write medical instructions.** SOS speech comes only from fixed lines and script files. Gemini's output must pass strict validation, and it can raise severity but never lower it.
+- **Gemini does not write medical instructions.** SOS speech comes only from fixed lines and script files, each listing its published sources. Gemini's output must pass strict validation, and it can raise severity but never lower it.
 - **Unknown never reads as good news.** An unclear or silent reply to a warning-sign question withholds home care and says to see a doctor.
 - **The ER brief comes from confirmed fields only**, and shows "unknown" for anything not stated.
 - **Ayu never says "dispatched" before someone accepts.**
@@ -73,14 +73,18 @@ Full tables with every failure: [live stream](../../eval/results/scorecard-strea
 
 On a real iPhone XR in a quiet room, we tested the full flow: voice triage, location read-back, interrupting on speaker, ambulance accept to arrival, the no-acceptance 112 warning, Medical ID, Normal mode, sharing location, Airplane Mode, and a refused microphone. All worked. The opening line started 52-72 ms after the countdown once it was stored on the phone.
 
-TODO: add results from real noisy recordings and people trying it.
+A team member also ran the five emergency scripts on the live app in noisy settings and reported that they worked. Results were not recorded call by call, so they are not scored here.
+
+**Early user feedback.** One tester, aged 24, rated ease of use 4.5 out of 5, found nothing confusing and said they trusted it. In their words: "good and impactable". One person is a very small sample.
+
+TODO: add results from more people trying it.
 
 ## Honest limitations
 
-- **First-aid content.** TODO update before submission. At the time of writing, every script and home-care card is a placeholder awaiting review by a qualified medical professional, so Ayu tells people to call 112 instead of giving first aid. Triage rules and warning signs are also unreviewed drafts.
+- **No clinical review.** First-aid steps and home care were condensed from published guidance (Indian COLS guideline, St John Ambulance, WHO, AHA, NHS) with AI help. No doctor has reviewed them, or the triage rules and warning signs. A clinician must approve all of it before anyone relies on it. Ayu gives no medicine advice, including aspirin.
 - **Time to first instruction** was 11-16 seconds by voice on a real phone before we shortened the lines, mostly because of speech and the caller's own response. It is still not fast enough for a real cardiac arrest.
 - **Noise testing above is synthetic.** Real panicked callers will do worse.
-- **Tested mainly on one iPhone, in quiet conditions.** Android is untested. TODO update.
+- **Limited device testing.** The full flow was tested on one iPhone XR, with a shorter check on one Samsung phone in Chrome. Other phones and older Android versions are untested.
 - **One-at-a-time scale.** Free tiers allow 15 Gemini requests a minute and Render's free plan sleeps when idle. Cases live in memory, so a restart ends active calls. Ayu falls back to rules if Gemini is unavailable.
 - **Offline support is limited.** With no network the app opens and says to call 112, but cannot run triage.
 - **Coverage.** Adults only, three languages, five everyday problems, and no support for other conditions.

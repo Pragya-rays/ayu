@@ -241,6 +241,7 @@ export class NormalMachine {
       seeDoctorIf: card ? card.seeDoctorIf.map((item) => item[this.lang]) : [],
       urgent,
       placeholder: card?.status === "placeholder",
+      sourced: card?.status === "sourced",
     };
     this.stage = "summary";
     this.publish();

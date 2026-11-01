@@ -6,23 +6,76 @@
     "hinglish": "Tez bleeding"
   },
   "severity": "RED",
-  "status": "placeholder",
+  "status": "sourced",
   "triggers": [
     "emergencyType=bleeding"
   ],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO",
+  "sources": [
+    "St John Ambulance, severe bleeding. https://www.sja.org.uk/first-aid-advice/severe-bleeding/",
+    "WHO Community First Aid Response pocket guide. https://cdn.who.int/media/docs/default-source/integrated-health-services-(ihs)/csy/cfar-pocketguide.pdf"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": "",
   "steps": [
     {
       "id": "s1",
       "text": {
-        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
-        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
-        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+        "en": "Press hard on the wound with a clean cloth.",
+        "hi": "साफ़ कपड़े से घाव पर ज़ोर से दबाइए।",
+        "hinglish": "Saaf kapde se ghaav par zor se dabaiye."
       },
-      "pauseAfterMs": 1500,
-      "interruptible": false
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s2",
+      "text": {
+        "en": "Keep pressing. Do not lift it to look.",
+        "hi": "दबाते रहिए। देखने के लिए कपड़ा मत हटाइए।",
+        "hinglish": "Dabaate rahiye. Dekhne ke liye kapda mat hataiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s3",
+      "text": {
+        "en": "If blood soaks through, add another cloth on top.",
+        "hi": "खून बाहर आए तो ऊपर एक और कपड़ा रखिए।",
+        "hinglish": "Khoon bahar aaye to upar ek aur kapda rakhiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s4",
+      "text": {
+        "en": "If something is stuck in the wound, leave it. Press around it.",
+        "hi": "घाव में कुछ फँसा हो तो निकालिए मत। उसके आसपास दबाइए।",
+        "hinglish": "Ghaav mein kuch phansa ho to nikaliye mat. Uske aaspaas dabaiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s5",
+      "text": {
+        "en": "Lay them down and raise their legs if you can.",
+        "hi": "उन्हें लिटाइए, और हो सके तो पैर ऊपर कीजिए।",
+        "hinglish": "Unhe litayein, aur ho sake to pair upar kijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s6",
+      "text": {
+        "en": "Keep talking to them.",
+        "hi": "उनसे बात करते रहिए।",
+        "hinglish": "Unse baat karte rahiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
     }
   ],
   "doNot": [],

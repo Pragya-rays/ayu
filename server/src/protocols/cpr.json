@@ -6,23 +6,106 @@
     "hinglish": "CPR"
   },
   "severity": "RED",
-  "status": "placeholder",
+  "status": "sourced",
   "triggers": [
     "responsive=false",
     "breathingNormally=false"
   ],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO",
+  "sources": [
+    "Ahmed SM et al. Compression-only life support. Indian J Anaesth 2017;61:867-73. https://pmc.ncbi.nlm.nih.gov/articles/5702999/",
+    "St John Ambulance, CPR. https://www.sja.org.uk/first-aid-advice/cpr/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": "",
   "steps": [
     {
       "id": "s1",
       "text": {
-        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
-        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
-        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+        "en": "Lay them flat on their back on a hard floor.",
+        "hi": "उन्हें सख़्त ज़मीन पर पीठ के बल सीधा लिटाइए।",
+        "hinglish": "Unhe sakht zameen par peeth ke bal seedha litayein."
       },
-      "pauseAfterMs": 1500,
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s2",
+      "text": {
+        "en": "Kneel beside them.",
+        "hi": "उनके पास घुटनों पर बैठिए।",
+        "hinglish": "Unke paas ghutnon par baithiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s3",
+      "text": {
+        "en": "Put the heel of one hand on the centre of the chest.",
+        "hi": "एक हाथ की हथेली का निचला हिस्सा छाती के बीच में रखिए।",
+        "hinglish": "Ek haath ki hatheli ka nichla hissa chhati ke beech mein rakhiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s4",
+      "text": {
+        "en": "Put your other hand on top. Keep your arms straight.",
+        "hi": "दूसरा हाथ उसके ऊपर रखिए। बाँहें सीधी रखिए।",
+        "hinglish": "Doosra haath uske upar rakhiye. Baanhein seedhi rakhiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s5",
+      "text": {
+        "en": "Push down hard, about 5 centimetres.",
+        "hi": "ज़ोर से लगभग 5 सेंटीमीटर नीचे दबाइए।",
+        "hinglish": "Zor se lagbhag 5 centimetre neeche dabaiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s6",
+      "text": {
+        "en": "Let the chest rise fully after each push.",
+        "hi": "हर बार दबाने के बाद छाती को पूरा ऊपर आने दीजिए।",
+        "hinglish": "Har baar dabane ke baad chhati ko poora upar aane dijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s7",
+      "text": {
+        "en": "Push fast, about two pushes every second. Do not stop.",
+        "hi": "तेज़ दबाइए, हर सेकंड में लगभग दो बार। रुकिए मत।",
+        "hinglish": "Tez dabaiye, har second mein lagbhag do baar. Rukiye mat."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s8",
+      "text": {
+        "en": "If someone is with you, swap every 2 minutes.",
+        "hi": "कोई साथ हो तो हर 2 मिनट में बदल लीजिए।",
+        "hinglish": "Koi saath ho to har 2 minute mein badal lijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": false
+    },
+    {
+      "id": "s9",
+      "text": {
+        "en": "Stop only if they move or breathe, or help takes over.",
+        "hi": "तभी रुकिए जब वो हिलें या सांस लें, या मदद आ जाए।",
+        "hinglish": "Tabhi rukiye jab woh hilein ya saans lein, ya madad aa jaye."
+      },
+      "pauseAfterMs": 800,
       "interruptible": false
     }
   ],

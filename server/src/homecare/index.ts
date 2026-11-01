@@ -1,12 +1,13 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { speakHindiFor } from "../dialogue/hinglishSpeech.js";
 import { ISSUE_IDS, type IssueId } from "../dialogue/normalContent.js";
 import type { LocalizedText } from "../protocols/index.js";
 
 export interface HomeCareCard {
   id: IssueId;
   title: LocalizedText;
-  status: "placeholder" | "reviewed";
+  status: "placeholder" | "sourced" | "reviewed";
   commonCauses: LocalizedText[];
   steps: LocalizedText[];
   seeDoctorIf: LocalizedText[];
@@ -21,7 +22,9 @@ export function validateCard(raw: any, fileId: string): string[] {
   const problems: string[] = [];
   if (raw?.id !== fileId || !ISSUE_IDS.includes(raw?.id)) problems.push("id does not match a known issue");
   if (!hasLangs(raw?.title)) problems.push("title needs en, hi and hinglish");
-  if (!["placeholder", "reviewed"].includes(raw?.status)) problems.push("invalid status");
+  if (!["placeholder", "sourced", "reviewed"].includes(raw?.status)) problems.push("invalid status");
+  if (raw?.status === "sourced" && (!Array.isArray(raw.sources) || raw.sources.length === 0)) problems.push("sourced card needs sources");
+  if (raw?.status === "sourced" && (!Array.isArray(raw.seeDoctorIf) || raw.seeDoctorIf.length === 0)) problems.push("sourced card needs seeDoctorIf");
   if (!Array.isArray(raw?.steps) || raw.steps.length === 0 || !raw.steps.every(hasLangs)) {
     problems.push("steps need en, hi and hinglish");
   }
@@ -46,5 +49,6 @@ export function loadHomeCare(dir = resolve(import.meta.dirname, "../../src/homec
   }
   const missing = ISSUE_IDS.filter((id) => !cards.has(id));
   if (missing.length) throw new Error(`Missing home-care cards: ${missing.join(", ")}`);
+  speakHindiFor([...cards.values()].flatMap((card) => card.steps));
   return cards;
 }

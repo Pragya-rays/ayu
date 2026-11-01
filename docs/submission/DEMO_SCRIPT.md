@@ -10,7 +10,7 @@ Two cuts from one recording session: **60 seconds** for the Demo Day Drop award,
 - Use a little real background noise, like a fan or TV. Noise is the point of Ayu.
 - **Never press Call on the 112 dialer.**
 - Use only your own voice, or someone who has agreed. Do not show your real location on camera: use the area name, or zoom past the coordinates.
-- If first aid is still a placeholder, show it honestly. Do not cut it to look finished.
+- Keep "Simulated" and "Not a medical device" visible. The rules ban misleading demos.
 
 ## 60-second cut
 
@@ -22,7 +22,7 @@ Two cuts from one recording session: **60 seconds** for the Demo Day Drop award,
 | 25-35 s | Dashboard, then driver view | Show the brief updating live. Click Accept. "The hospital sees this instantly." |
 | 35-43 s | Phone: area read-back, ETA | Let Ayu read the area and announce the ambulance |
 | 43-52 s | Normal mode: "pet mein jalan, jabde mein dard" | Show "Switch to SOS?" "It spots warning signs." |
-| 52-60 s | End card | "Built on Gnani Prisma and Timbre. Dispatch is simulated. First aid must be doctor-reviewed before real use." |
+| 52-60 s | End card | "Built on Gnani Prisma and Timbre. Dispatch is simulated. First aid comes from published guidance, and needs a doctor's review before real use." |
 
 ## Longer cut, 2 to 3 minutes
 

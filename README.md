@@ -2,7 +2,7 @@
 
 A Hindi, Hinglish and English voice health assistant, built on Gnani **Prisma** (speech to text) and **Timbre** (text to speech).
 
-**Prototype, not a medical device, and it does not replace emergency services. All dispatch is simulated.**
+**Not a medical device, and it does not replace emergency services. All dispatch is simulated.**
 
 **Live:** https://ayu-4801.onrender.com · dashboard at `/dashboard`, driver view at `/driver`
 
@@ -10,7 +10,7 @@ A Hindi, Hinglish and English voice health assistant, built on Gnani **Prisma** 
 - **Normal mode:** a short voice conversation for everyday problems that spots warning signs.
 - **Hospital side:** live cases, transcript, timeline and a one-line pre-arrival brief.
 
-First-aid and home-care content is a placeholder until a qualified medical professional reviews it.
+First-aid and home-care content comes from published guidance, listed in each file, and has not been reviewed by a doctor.
 
 [PLAN.md](PLAN.md) holds the status, decisions, verified API facts and test log. The write-up is in [docs/submission](docs/submission/WRITEUP.md).
 

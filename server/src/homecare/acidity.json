@@ -5,17 +5,50 @@
     "hi": "एसिडिटी",
     "hinglish": "Acidity"
   },
-  "status": "placeholder",
+  "status": "sourced",
   "commonCauses": [],
   "steps": [
     {
-      "en": "Home care steps for this are waiting for medical review. If you feel worse, please see a doctor.",
-      "hi": "इसके घरेलू देखभाल के चरण अभी चिकित्सा समीक्षा में हैं। तकलीफ़ बढ़े तो कृपया डॉक्टर को दिखाएँ।",
-      "hinglish": "Iske home care steps abhi medical review mein hain. Takleef badhe to kripya doctor ko dikhayein."
+      "en": "Eat smaller meals, more often.",
+      "hi": "कम मात्रा में, थोड़ी-थोड़ी देर में खाइए।",
+      "hinglish": "Thoda thoda, kam matra mein khayiye."
+    },
+    {
+      "en": "Avoid foods that set it off.",
+      "hi": "जिन चीज़ों से तकलीफ़ बढ़े, उनसे बचिए।",
+      "hinglish": "Jin cheezon se takleef badhe, unse bachiye."
+    },
+    {
+      "en": "Do not eat within 3 hours of sleeping.",
+      "hi": "सोने से 3 घंटे पहले तक मत खाइए।",
+      "hinglish": "Sone se 3 ghante pehle tak mat khayiye."
+    },
+    {
+      "en": "Avoid tight clothing around the waist.",
+      "hi": "कमर पर तंग कपड़े मत पहनिए।",
+      "hinglish": "Kamar par tang kapde mat pehniye."
     }
   ],
-  "seeDoctorIf": [],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO"
+  "seeDoctorIf": [
+    {
+      "en": "It happens on most days.",
+      "hi": "यह ज़्यादातर दिन होता है।",
+      "hinglish": "Yeh zyadatar din hota hai."
+    },
+    {
+      "en": "Food gets stuck in your throat.",
+      "hi": "खाना गले में अटकता है।",
+      "hinglish": "Khana gale mein atakta hai."
+    },
+    {
+      "en": "You keep vomiting or lose weight.",
+      "hi": "बार-बार उल्टी हो या वज़न घटे।",
+      "hinglish": "Baar baar ulti ho ya wazan ghate."
+    }
+  ],
+  "sources": [
+    "NHS, heartburn and acid reflux. https://www.nhs.uk/conditions/heartburn-and-acid-reflux/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": ""
 }

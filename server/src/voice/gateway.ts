@@ -146,6 +146,7 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
         send({ type: "tts.stop" });
       },
       publish: (state) => send({ type: "sos.state", ...state }),
+      pause: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     };
 
     const startMachine = (id: string, openingPlayed: boolean) => {

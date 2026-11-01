@@ -219,7 +219,7 @@ describe("SosMachine", () => {
     await machine.onAnswer("yes");
     await machine.onAnswer("yes");
     expect(spoken).not.toContain(CALL_112[LANG]);
-    expect(states.find((state) => state.stage === "protocol")).toMatchObject({ severity: "AMBER", placeholder: true });
+    expect(states.find((state) => state.stage === "protocol")).toMatchObject({ severity: "AMBER", sourced: true, placeholder: false });
   });
 
   it("stops speaking once stopped", async () => {

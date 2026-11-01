@@ -45,7 +45,7 @@ describe("Normal mode scenarios from the Dev Guide", () => {
     await machine.onInput("nahi"); // faint
     await machine.onInput("nahi"); // fever
     await machine.onInput("nahi"); // medicine
-    expect(summaryOf(states)).toMatchObject({ urgent: false, placeholder: true });
+    expect(summaryOf(states)).toMatchObject({ urgent: false, sourced: true, placeholder: false });
     expect(summaryOf(states)?.steps).toEqual(cards.get("heat_headache")!.steps.map((step) => step[LANG]));
   });
 
@@ -416,9 +416,10 @@ describe("home-care library", () => {
   });
 
   it("refuses a reviewed card without a reviewer, sources or see-a-doctor list", () => {
-    expect(validateCard({ ...acidity, status: "reviewed" }, "acidity")).toEqual(expect.arrayContaining([
+    expect(validateCard({ ...acidity, status: "reviewed", sources: [], seeDoctorIf: [] }, "acidity")).toEqual(expect.arrayContaining([
       "reviewed card needs reviewedBy", "reviewed card needs sources", "reviewed card needs seeDoctorIf",
     ]));
+    expect(validateCard({ ...acidity, sources: [] }, "acidity")).toContain("sourced card needs sources");
   });
 
   it("stops startup on a bad or missing file", () => {

@@ -48,6 +48,7 @@ function SummaryCard({ summary, t, onDone }: { summary: NormalSummary; t: Props[
         </>
       )}
       {summary.placeholder && <span className="badge">{t("sosPendingReview")}</span>}
+      {summary.sourced && <span className="badge">{t("sosGuidance")}</span>}
       <p className="mono">{t("disclaimer")}</p>
       <button className="button plain small" onClick={share}>{copied ? t("normalCopied") : t("normalShare")}</button>
       <button className="button ink" onClick={onDone}>{t("normalDone")}</button>

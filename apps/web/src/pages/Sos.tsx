@@ -225,6 +225,7 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
           <p className="protocol-title">
             {sosState.protocolTitle}
             {sosState.placeholder && <span className="simulated"> · {t("sosPendingReview")}</span>}
+            {sosState.sourced && <span className="simulated"> · {t("sosGuidance")}</span>}
           </p>
         )}
         {voice.reconnecting && <p className="sos-note" role="status">{t("sosReconnecting")}</p>}

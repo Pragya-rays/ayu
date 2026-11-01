@@ -6,24 +6,76 @@
     "hinglish": "Chest pain (hosh mein)"
   },
   "severity": "RED",
-  "status": "placeholder",
+  "status": "sourced",
   "triggers": [
     "emergencyType=cardiac",
     "responsive!=false"
   ],
-  "sources": [],
-  "reviewedBy": "TODO",
-  "reviewedAt": "TODO",
+  "sources": [
+    "NHS, heart attack. https://www.nhs.uk/conditions/heart-attack/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": "",
   "steps": [
     {
       "id": "s1",
       "text": {
-        "en": "First aid steps for this emergency are waiting for medical review. Stay on the line and call 112.",
-        "hi": "इस आपात स्थिति के प्राथमिक उपचार के चरण अभी चिकित्सा समीक्षा में हैं। लाइन पर रहें और 112 पर कॉल करें।",
-        "hinglish": "Is emergency ke first aid steps abhi medical review mein hain. Line par rahiye aur 112 par call kijiye."
+        "en": "Sit them on the floor with knees bent and back supported.",
+        "hi": "उन्हें ज़मीन पर बैठाइए, घुटने मोड़कर और पीठ को सहारा देकर।",
+        "hinglish": "Unhe zameen par baithaiye, ghutne mod kar aur peeth ko sahara de kar."
       },
-      "pauseAfterMs": 1500,
-      "interruptible": false
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s2",
+      "text": {
+        "en": "Keep them still and calm.",
+        "hi": "उन्हें शांत और स्थिर रखिए।",
+        "hinglish": "Unhe shaant aur sthir rakhiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s3",
+      "text": {
+        "en": "Loosen tight clothing around the neck and chest.",
+        "hi": "गर्दन और छाती के तंग कपड़े ढीले कीजिए।",
+        "hinglish": "Gardan aur chhati ke tang kapde dheele kijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s4",
+      "text": {
+        "en": "Do not give food or water.",
+        "hi": "खाना या पानी मत दीजिए।",
+        "hinglish": "Khana ya paani mat dijiye."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s5",
+      "text": {
+        "en": "Keep checking that they respond and breathe.",
+        "hi": "देखते रहिए कि वो जवाब दे रहे हैं और सांस ले रहे हैं।",
+        "hinglish": "Dekhte rahiye ki woh jawab de rahe hain aur saans le rahe hain."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
+    },
+    {
+      "id": "s6",
+      "text": {
+        "en": "If they stop responding or breathing, tell me at once.",
+        "hi": "अगर वो जवाब देना या सांस लेना बंद करें, मुझे तुरंत बताइए।",
+        "hinglish": "Agar woh jawab dena ya saans lena band karein, mujhe turant batayein."
+      },
+      "pauseAfterMs": 800,
+      "interruptible": true
     }
   ],
   "doNot": [],

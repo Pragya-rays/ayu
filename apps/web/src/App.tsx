@@ -45,7 +45,7 @@ function LanguageToggle({ lang, onChange, label }: { lang: Lang; onChange(lang: 
 
 function PhoneApp() {
   const [lang, setLang] = useState<Lang>((readStored("ayu.lang") as Lang | null) ?? "hinglish");
-  const [consented, setConsented] = useState(readStored("ayu.consentAt") !== null);
+  const [consented, setConsented] = useState(readStored("ayu.consent.v2") !== null);
   const [sosAudio, setSosAudio] = useState<AudioContext | null>(null);
   const [talkAudio, setTalkAudio] = useState<AudioContext | null>(null);
   const [voiceLab, setVoiceLab] = useState(false);
@@ -72,7 +72,7 @@ function PhoneApp() {
   }, []);
 
   const accept = () => {
-    writeStored("ayu.consentAt", new Date().toISOString());
+    writeStored("ayu.consent.v2", new Date().toISOString());
     setConsented(true);
   };
 

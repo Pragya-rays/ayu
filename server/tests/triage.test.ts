@@ -142,7 +142,7 @@ describe("protocol library", () => {
   const cpr = JSON.parse(readFileSync(resolve(import.meta.dirname, "../src/protocols/cpr.json"), "utf8"));
 
   it("refuses to mark an unreviewed protocol as reviewed", () => {
-    const problems = validateProtocol({ ...cpr, status: "reviewed" }, "cpr");
+    const problems = validateProtocol({ ...cpr, status: "reviewed", sources: [] }, "cpr");
     expect(problems).toEqual(expect.arrayContaining(["reviewed protocol needs reviewedBy", "reviewed protocol needs sources"]));
   });
 

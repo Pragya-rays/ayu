@@ -26,6 +26,7 @@ export interface SosIo {
   say(text: string, options: { lang: Lang; cacheable: boolean; interruptible: boolean }): Promise<void>;
   interrupt(): void;
   publish(state: SosState): void;
+  pause?(ms: number): Promise<void>;
 }
 
 export interface SosDeps {
@@ -343,6 +344,8 @@ export class SosMachine {
       if (index === 0 && first) cases.recordFirstInstruction(this.caseId);
       cases.addEvent(this.caseId, "instruction_spoken", { protocolId: protocol.id, stepId: step.id });
       await this.speak(step.text[this.lang], { interruptible: step.interruptible });
+      // A moment to act before the next step.
+      if (index < protocol.steps.length - 1) await this.io?.pause?.(step.pauseAfterMs);
     }
     if (severity === "RED" && protocol.callEmergencyLine && !this.lastSpokenRed) {
       this.lastSpokenRed = true;
@@ -506,6 +509,7 @@ export class SosMachine {
       severity: this.current?.severity ?? null,
       protocolTitle: protocol?.title[this.lang] ?? null,
       placeholder: protocol?.status === "placeholder",
+      sourced: protocol?.status === "sourced",
       dispatchStatus: item?.dispatch.status ?? "requested",
       etaMinutes: item?.dispatch.etaMinutes ?? null,
       ambulanceId: item?.dispatch.ambulanceId ?? null,
