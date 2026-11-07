@@ -3,10 +3,10 @@ import { coarse, NominatimGeocoder, parseAddress, type AddressResult } from "../
 import type { Extraction } from "../src/types/triage.js";
 import { CaseStore } from "../src/cases/store.js";
 import {
-  ALMOST_THERE, ARRIVED, ASK_ADDRESS, ASK_LANDMARK, ASK_RESPONSIVE, CALL_112, dispatched, etaUpdate, LOCATION_UPDATED,
-  locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL,
+  ALMOST_THERE, ARRIVED, ASK_ADDRESS, ASK_LANDMARK, ASK_RESPONSIVE, CALL_112, dispatched, etaUpdate, FALSE_ALARM_OFFER,
+  LOCATION_UPDATED, locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL,
 } from "../src/dialogue/lines.js";
-import { parseLocationAnswer } from "../src/dialogue/ruleExtract.js";
+import { parseLocationAnswer, saysFalseAlarm } from "../src/dialogue/ruleExtract.js";
 import { SosMachine, type SosIo } from "../src/dialogue/sosMachine.js";
 import { DispatchSimulator } from "../src/dispatch/simulator.js";
 import { loadProtocols } from "../src/protocols/index.js";
@@ -398,6 +398,65 @@ describe("reconnecting", () => {
     await vi.advanceTimersByTimeAsync(0);
     const recorded = context.cases.eventsFor(context.sos.id).filter((event) => event.type === "instruction_spoken");
     expect(recorded).toHaveLength(2);
+  });
+});
+
+describe("false alarm", () => {
+  it.each([
+    "galti se dab gaya", "गलती से दब गया", "pressed it by mistake", "sab theek hai", "सब ठीक है", "कुछ नहीं हुआ", "false alarm",
+    "I pressed it accidentally", "main theek hoon", "मैं ठीक हूँ", "I'm fine",
+  ])("hears %s", (text) => {
+    expect(saysFalseAlarm(text)).toBe(true);
+  });
+
+  it.each([
+    "sab theek nahi hai", "सब ठीक नहीं है", "galti se gir gaye", "accident ho gaya", "kuch nahi hua par saans nahi le rahe",
+    "sab theek tha phir behosh ho gaye", "theek hai", "haan", "nahi", "mujhe madad chahiye", "I am not fine",
+  ])("does not take %s as a false alarm", (text) => {
+    expect(saysFalseAlarm(text)).toBe(false);
+  });
+
+  it("offers the button but keeps dispatch and the question going, and voice cancels nothing", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onUtterance("galti se dab gaya");
+    expect(context.spoken.slice(-2)).toEqual([FALSE_ALARM_OFFER[LANG], ASK_RESPONSIVE[LANG]]);
+    expect(context.states.at(-1)).toMatchObject({ falseAlarm: true, question: "responsive", dispatchStatus: "requested" });
+    expect(context.sos.closedAt).toBeUndefined();
+    expect(context.cases.eventsFor(context.sos.id).map((event) => event.type)).toContain("false_alarm_reported");
+  });
+
+  it("offers once, and a repeat is handled as an ordinary reply", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onUtterance("galti se dab gaya");
+    await context.machine.onUtterance("sab theek hai");
+    expect(context.spoken.filter((line) => line === FALSE_ALARM_OFFER[LANG])).toHaveLength(1);
+  });
+
+  it("takes the offer back if the answers show a real emergency", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onUtterance("galti se dab gaya");
+    await context.machine.onAnswer("no");
+    await context.machine.onAnswer("no");
+    expect(context.sos.severity).toBe("RED");
+    expect(context.states.at(-1)?.falseAlarm).toBe(false);
+  });
+
+  it("does not offer on a case already RED", async () => {
+    const context = setup();
+    await toWaiting(context);
+    await context.machine.onUtterance("sab theek hai");
+    expect(context.spoken).not.toContain(FALSE_ALARM_OFFER[LANG]);
+    expect(context.states.at(-1)?.falseAlarm).toBe(false);
+  });
+
+  it("never lets a worsening patient wait behind the offer", async () => {
+    const context = setup();
+    await context.machine.begin();
+    await context.machine.onUtterance("sab theek tha phir saans band ho gayi");
+    expect(context.spoken).not.toContain(FALSE_ALARM_OFFER[LANG]);
   });
 });
 

@@ -7,10 +7,10 @@ import type { Extraction, ProtocolId, SosQuestion, TriageAnswer, TriageFacts, Tr
 import type { Lang, SosState } from "../types/voice.js";
 import {
   ALMOST_THERE, ARE_YOU_THERE, ARRIVED, ASK_ADDRESS, ASK_BREATHING, ASK_LANDMARK, ASK_RESPONSIVE, CALL_112, dispatched,
-  etaUpdate, LOCATION_UPDATED, locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL, SAY_AGAIN,
-  SOS_OPENING,
+  etaUpdate, FALSE_ALARM_OFFER, LOCATION_UPDATED, locationConfirm, locationNear, NO_ACK, PRE_ACK, RECHECK_STARTED, RECHECK_STILL,
+  SAY_AGAIN, SOS_OPENING,
 } from "./lines.js";
-import { extractFacts, parseAnswer, parseLocationAnswer, replyTopic } from "./ruleExtract.js";
+import { extractFacts, parseAnswer, parseLocationAnswer, replyTopic, saysFalseAlarm } from "./ruleExtract.js";
 import { higherSeverity, triage, type TriageResult } from "./triageRules.js";
 
 const SILENCE_PROMPT_MS = 8000;
@@ -63,6 +63,7 @@ export class SosMachine {
   private current: TriageResult | null = null;
   private steps: { protocol: Protocol; next: number; first: boolean } | null = null;
   private rhythm = false;
+  private falseAlarmOffered = false;
   private readonly saidWaiting = new Set<string>();
   private heldUpdates: { text: string; cacheable: boolean }[] = [];
   private lastDispatchStatus: Case["dispatch"]["status"] = "requested";
@@ -120,6 +121,11 @@ export class SosMachine {
         this.clearQuestion();
         await this.reassess();
         if (asked) await this.ask(asked);
+        return;
+      }
+      if (!this.falseAlarmOffered && this.current?.severity !== "RED" && saysFalseAlarm(text)) {
+        void extraction.then((result) => this.afterExtraction(result));
+        await this.offerFalseAlarm(asked);
         return;
       }
       if (asked === "location" || asked === "landmark") return this.handlePlaceReply(asked, text, extraction);
@@ -400,6 +406,19 @@ export class SosMachine {
     await this.ask("location");
   }
 
+  /**
+   * Summary 7.5. Dispatch and the conversation both carry on: someone can be wrong about a
+   * patient, or be pressed to say it is fine, so only the caller's own tap ends an SOS.
+   */
+  private async offerFalseAlarm(asked: SosQuestion | null) {
+    this.falseAlarmOffered = true;
+    this.clearSilenceTimer();
+    this.deps.cases.addEvent(this.caseId, "false_alarm_reported", {});
+    this.publish();
+    await this.speak(FALSE_ALARM_OFFER[this.lang]);
+    if (asked) await this.ask(asked);
+  }
+
   private async handlePlaceReply(asked: SosQuestion, text: string, extraction: Promise<Extraction | null>) {
     if (asked === "location") {
       const answer = parseLocationAnswer(text);
@@ -561,6 +580,7 @@ export class SosMachine {
       placeholder: protocol?.status === "placeholder",
       sourced: protocol?.status === "sourced",
       rhythm: this.rhythm,
+      falseAlarm: this.falseAlarmOffered && this.current?.severity !== "RED" && this.stage !== "arrived",
       dispatchStatus: item?.dispatch.status ?? "requested",
       etaMinutes: item?.dispatch.etaMinutes ?? null,
       ambulanceId: item?.dispatch.ambulanceId ?? null,

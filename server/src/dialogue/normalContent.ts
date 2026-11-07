@@ -53,7 +53,8 @@ export const NORMAL_ACKS: Line[] = [
 ];
 
 export const QUESTION_IDS = [
-  "onset", "food", "medicine", "fever", "chest", "breath", "sudden", "faint", "stool_blood", "conditions",
+  "onset", "food", "medicine", "fever", "chest", "breath", "sudden", "faint", "stool_blood", "conditions", "vomit_colour",
+  "swallow",
 ] as const;
 export type QuestionId = (typeof QUESTION_IDS)[number];
 
@@ -119,6 +120,16 @@ export const QUESTIONS: Record<QuestionId, NormalQuestion> = {
     yesNo: true,
     text: { en: "Do you have diabetes or any heart condition?", hi: "क्या आपको डायबिटीज़ या दिल की कोई बीमारी है?", hinglish: "Kya aapko diabetes ya dil ki koi bimari hai?" },
   },
+  vomit_colour: {
+    redFlag: true,
+    yesNo: true,
+    text: { en: "Is there blood in the vomit, or is it green or black?", hi: "क्या उल्टी में खून है, या वह हरी या काली है?", hinglish: "Kya ulti mein khoon hai, ya woh hari ya kaali hai?" },
+  },
+  swallow: {
+    redFlag: true,
+    yesNo: true,
+    text: { en: "Is it hard to swallow even water, or are you drooling?", hi: "क्या पानी निगलना भी मुश्किल है, या लार बह रही है?", hinglish: "Kya paani nigalna bhi mushkil hai, ya laar beh rahi hai?" },
+  },
 };
 
 export const NORMAL_FIXED_LINES = [
@@ -127,15 +138,20 @@ export const NORMAL_FIXED_LINES = [
   ...Object.values(QUESTIONS).map((question) => question.text),
 ];
 
-export const ISSUE_IDS = ["acidity", "heat_headache", "mild_fever", "cold_cough", "loose_motions"] as const;
+export const ISSUE_IDS = [
+  "acidity", "heat_headache", "mild_fever", "cold_cough", "loose_motions", "vomiting", "sore_throat", "constipation",
+] as const;
 export type IssueId = (typeof ISSUE_IDS)[number];
 
 /** Red-flag questions come early, so advice is never reached before they are answered. */
 export const ISSUE_QUESTIONS: Record<IssueId | "unknown", QuestionId[]> = {
-  acidity: ["onset", "chest", "breath", "food", "conditions"],
+  acidity: ["onset", "chest", "breath", "sudden", "food", "conditions"],
   heat_headache: ["onset", "sudden", "faint", "fever", "medicine"],
   mild_fever: ["onset", "breath", "faint", "medicine"],
   cold_cough: ["onset", "breath", "chest", "fever"],
   loose_motions: ["onset", "stool_blood", "fever", "faint", "medicine"],
+  vomiting: ["onset", "vomit_colour", "chest", "sudden", "faint"],
+  sore_throat: ["onset", "breath", "swallow", "fever"],
+  constipation: ["onset", "stool_blood", "sudden", "food"],
   unknown: ["onset", "chest", "breath", "faint"],
 };

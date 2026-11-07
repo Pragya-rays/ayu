@@ -100,6 +100,13 @@ export const RECHECK_STARTED: Record<Lang, string> = {
   hinglish: "Kya unhone normal tareeke se saans lena shuru kiya?",
 };
 
+/** Voice never cancels an SOS. Only the caller's own tap does, so help stays on its way until then. */
+export const FALSE_ALARM_OFFER: Record<Lang, string> = {
+  en: "If this was a mistake, tap the button on the screen. Until then, help stays on its way.",
+  hi: "अगर यह गलती से हुआ, तो स्क्रीन पर बटन दबाइए। तब तक मदद आती रहेगी।",
+  hinglish: "Agar yeh galti se hua, to screen par button dabaiye. Tab tak madad aati rahegi.",
+};
+
 export const locationConfirm = (lang: Lang, area: string) => ({
   en: `I have your location as ${area}. Is that correct?`,
   hi: `आपकी लोकेशन ${area} है। क्या यह सही है?`,
@@ -126,5 +133,5 @@ export const etaUpdate = (lang: Lang, minutes: number) => ({
 
 export const FIXED_LINES = [
   SOS_OPENING, ASK_RESPONSIVE, ASK_BREATHING, SAY_AGAIN, ARE_YOU_THERE, CALL_112, CONNECTION_LOST, NO_ACK, PRE_ACK, ASK_LANDMARK,
-  ASK_ADDRESS, LOCATION_UPDATED, ALMOST_THERE, ARRIVED, RECHECK_STILL, RECHECK_STARTED,
+  ASK_ADDRESS, LOCATION_UPDATED, ALMOST_THERE, ARRIVED, RECHECK_STILL, RECHECK_STARTED, FALSE_ALARM_OFFER,
 ];

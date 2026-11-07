@@ -16,6 +16,8 @@ export interface SosState {
   sourced: boolean;
   /** The phone plays the compression beat. It is local audio, so it survives a lost connection. */
   rhythm: boolean;
+  /** The caller said this is not an emergency, so the phone offers to cancel and talk to Ayu. */
+  falseAlarm: boolean;
   dispatchStatus: Case["dispatch"]["status"];
   etaMinutes: number | null;
   ambulanceId: string | null;

@@ -70,6 +70,24 @@ const TYPE_RULES: [EmergencyType, string[]][] = [
   ["collapse", ["gir gaye", "gir gaya", "gir gayi", "गिर गए", "गिर गया", "गिर गई", "collapsed", "behosh", "बेहोश"]],
 ];
 
+const FALSE_ALARM = [
+  /galti se (dab|press|click|lag|ho)/, /गलती से (दब|प्रेस|क्लिक|लग|हो)/, /galti ho/, /गलती हो/, /mistake/, /by accident/, /accidentally/,
+  /false alarm/, /फॉल्स अलार्म/, /sab (theek|thik)/, /सब ठीक/, /kuch nahi hua/, /कुछ नहीं हुआ/, /no emergency/, /koi emergency nahi/,
+  /कोई (इमरजेंसी|emergency) नहीं/, /main (theek|thik) hoon/, /मैं ठीक हू/, /i(?:'m| am) (fine|ok|okay)/,
+];
+const NOT_OKAY = /(theek|thik|ठीक|fine|ok|okay)\s*(nahi|nahin|नहीं|not)|not (fine|ok|okay)/;
+
+/**
+ * The caller says this is not an emergency. Only ever used to offer a cancel button, so a wrong
+ * reading costs a line of speech. Anything that also describes an emergency is not a false alarm.
+ */
+export function saysFalseAlarm(utterance: string) {
+  const text = utterance.toLowerCase();
+  if (!FALSE_ALARM.some((pattern) => pattern.test(text)) || NOT_OKAY.test(text)) return false;
+  const facts = extractFacts(text.replace(/by accident|accidentally/g, ""));
+  return !facts.emergencyType && facts.responsive === undefined && facts.breathingNormally === undefined;
+}
+
 /** Facts stated outright in an utterance. Anything not clearly stated is left out. */
 export function extractFacts(utterance: string): TriageFacts {
   const text = utterance.toLowerCase();

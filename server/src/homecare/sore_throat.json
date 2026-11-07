@@ -1,0 +1,64 @@
+{
+  "id": "sore_throat",
+  "title": {
+    "en": "Sore throat",
+    "hi": "गले में ख़राश",
+    "hinglish": "Gale mein kharash"
+  },
+  "status": "sourced",
+  "commonCauses": [],
+  "steps": [
+    {
+      "en": "Gargle with warm salty water, then spit it out.",
+      "hi": "गुनगुने नमक वाले पानी से गरारे कीजिए, फिर थूक दीजिए।",
+      "hinglish": "Gungune namak wale paani se garare kijiye, phir thook dijiye."
+    },
+    {
+      "en": "Half a teaspoon of salt in a glass of water is enough.",
+      "hi": "एक गिलास पानी में आधा चम्मच नमक काफ़ी है।",
+      "hinglish": "Ek glass paani mein aadha chammach namak kaafi hai."
+    },
+    {
+      "en": "Drink plenty of fluids, and rest.",
+      "hi": "ख़ूब तरल चीज़ें पीजिए और आराम कीजिए।",
+      "hinglish": "Khoob liquid cheezein peejiye aur aaram kijiye."
+    },
+    {
+      "en": "Eat cool or soft food.",
+      "hi": "ठंडा या नरम खाना खाइए।",
+      "hinglish": "Thanda ya naram khana khayiye."
+    },
+    {
+      "en": "Stay away from smoking and smoke.",
+      "hi": "धूम्रपान और धुएँ से दूर रहिए।",
+      "hinglish": "Smoking aur dhuen se door rahiye."
+    }
+  ],
+  "seeDoctorIf": [
+    {
+      "en": "It does not improve after a week.",
+      "hi": "एक हफ़्ते में ठीक न हो।",
+      "hinglish": "Ek hafte mein theek na ho."
+    },
+    {
+      "en": "You have a very high fever, or feel hot and shivery.",
+      "hi": "बहुत तेज़ बुखार हो, या गर्मी लगे और कंपकंपी हो।",
+      "hinglish": "Bahut tez bukhar ho, ya garmi lage aur kampkampi ho."
+    },
+    {
+      "en": "You have a lump in your mouth or neck.",
+      "hi": "मुँह या गर्दन में गाँठ हो।",
+      "hinglish": "Muh ya gardan mein gaanth ho."
+    },
+    {
+      "en": "A mouth ulcer lasts more than 3 weeks.",
+      "hi": "मुँह का छाला 3 हफ़्ते से ज़्यादा रहे।",
+      "hinglish": "Muh ka chhala 3 hafte se zyada rahe."
+    }
+  ],
+  "sources": [
+    "NHS, sore throat. https://www.nhs.uk/conditions/sore-throat/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

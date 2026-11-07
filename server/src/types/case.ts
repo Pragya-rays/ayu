@@ -62,6 +62,6 @@ export interface CaseEvent {
     | "sos_tap" | "countdown_cancel" | "gps_captured" | "location_confirmed" | "location_updated"
     | "dispatch_requested" | "dispatch_accepted" | "status_update" | "triage_answer"
     | "protocol_selected" | "instruction_spoken" | "recheck" | "severity_changed"
-    | "user_utterance" | "ayu_utterance" | "error" | "closed";
+    | "user_utterance" | "ayu_utterance" | "false_alarm_reported" | "error" | "closed";
   payload: Record<string, unknown>;
 }

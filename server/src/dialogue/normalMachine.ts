@@ -226,7 +226,9 @@ export class NormalMachine {
     this.clearSilence();
     this.question = null;
     this.stage = "advice";
-    const urgent = this.redFlags.size > 0 || this.unansweredRedFlag;
+    // Advice needs every warning question answered, however the conversation came to end.
+    const warningsLeft = this.plan.some((id) => QUESTIONS[id].redFlag);
+    const urgent = this.redFlags.size > 0 || this.unansweredRedFlag || warningsLeft;
     const card = !urgent && this.issue ? this.deps.cards.get(this.issue) : undefined;
     this.publish();
 

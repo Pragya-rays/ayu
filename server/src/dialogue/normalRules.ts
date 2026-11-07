@@ -12,6 +12,8 @@ const RED_FLAGS: [string, string[]][] = [
   ["confusion", ["confused", "bhramit", "भ्रमित", "होश नहीं"]],
   ["one_sided_weakness", ["ek taraf", "एक तरफ़", "एक तरफ", "lakwa", "laqwa", "लकवा", "muh tedha", "मुँह टेढ़ा", "मुंह टेढ़ा", "one side"]],
   ["blood", ["khoon", "खून", "blood"]],
+  ["vomit_colour", ["hari ulti", "हरी उल्टी", "green vomit", "kaali ulti", "काली उल्टी", "black vomit"]],
+  ["cannot_swallow", ["nigal nahi", "निगल नहीं", "can't swallow", "cannot swallow", "laar beh", "लार बह", "drooling"]],
 ];
 
 const NEGATION = /(nahi|nahin|नहीं|नही|\bno\b|\bnot\b)/;
@@ -32,12 +34,18 @@ export function findRedFlags(utterance: string): string[] {
   })).map(([name]) => name);
 }
 
+// Order matters: specific words first, so "potty nahi ho rahi" is not loose motions, and a bare
+// "pet mein" is only a last resort.
 const ISSUES: [IssueId, string[]][] = [
-  ["acidity", ["acidity", "एसिडिटी", "gas", "गैस", "jalan", "जलन", "khatti dakar", "खट्टी डकार", "pet mein", "पेट में"]],
+  ["constipation", ["kabz", "qabz", "कब्ज", "क़ब्ज़", "क़ब्ज", "constipat", "potty nahi", "पॉटी नहीं", "pet saaf nahi", "पेट साफ़ नहीं", "पेट साफ नहीं"]],
+  ["acidity", ["acidity", "एसिडिटी", "gas", "गैस", "jalan", "जलन", "khatti dakar", "खट्टी डकार"]],
   ["loose_motions", ["loose motion", "दस्त", "dast", "पतली", "potty"]],
+  ["vomiting", ["ulti", "उल्टी", "vomit", "ji michla", "जी मिचला", "nausea"]],
   ["heat_headache", ["sir dard", "sar dard", "सिर दर्द", "सिर में दर्द", "sir mein dard", "sar mein dard", "headache", "धूप", "dhoop", "garmi", "गर्मी"]],
   ["cold_cough", ["khansi", "खांसी", "खाँसी", "cough", "sardi", "सर्दी", "zukam", "जुकाम", "ज़ुकाम", "naak"]],
+  ["sore_throat", ["gale mein", "गले में", "gala", "गला", "kharash", "ख़राश", "खराश", "sore throat", "throat"]],
   ["mild_fever", ["bukhar", "बुखार", "fever", "ताप"]],
+  ["acidity", ["pet mein", "पेट में"]],
 ];
 
 export function findIssue(utterance: string): IssueId | null {

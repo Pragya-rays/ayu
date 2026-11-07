@@ -1,4 +1,4 @@
-# Ayu phone test
+Ayu phone test
 
 One sitting of about 20 minutes covers everything. Repeat on an Android phone if you can.
 
@@ -33,6 +33,11 @@ One sitting of about 20 minutes covers everything. Repeat on an Android phone if
 | 23 | Say "Haan" to the location, then wait 20 seconds | Ayu says one thing to do, such as asking someone to open the door. Words sound right | |
 | 24 | During the CPR steps, turn on Airplane Mode for 3 seconds, then off | The beat keeps going. Ayu repeats the step it was on and finishes the rest | |
 | 25 | Run one SOS by voice and listen closely. Then read "first instruction" on the dashboard | No word sounds cut off at the start or end. Write down the seconds | |
+| 26 | Start an SOS and say "galti se dab gaya" | Ayu explains the button, then asks its question again. The dashboard shows a false alarm note and the case stays open | |
+| 27 | Tap the new "Galti se hua" button | Ayu greets you by voice straight away, and the case closes on the dashboard | |
+| 28 | In a new chat say "ulti ho rahi hai", then stay silent until it ends | Ayu says to see a doctor and reads no advice | |
+| 29 | Open the menu (three lines, top right), go to Voice, tap the round red SOS at the bottom corner, then cancel | The countdown starts, Ayu's voice works as usual if you let it run, and cancel brings you back to Voice | |
+| 30 | Scroll Home up and down quickly on your slowest phone | It stays smooth, and all text is easy to read over the colours | |
 
 **Also note:** did SOS feel fast enough? Did any word sound wrong? Did the screen stay awake?
 

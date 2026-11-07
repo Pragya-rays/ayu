@@ -1,0 +1,54 @@
+{
+  "id": "vomiting",
+  "title": {
+    "en": "Vomiting",
+    "hi": "उल्टी",
+    "hinglish": "Ulti"
+  },
+  "status": "sourced",
+  "commonCauses": [],
+  "steps": [
+    {
+      "en": "Rest, and stay at home.",
+      "hi": "आराम कीजिए और घर पर रहिए।",
+      "hinglish": "Aaram kijiye aur ghar par rahiye."
+    },
+    {
+      "en": "Take small sips of water, often.",
+      "hi": "बार-बार पानी के छोटे घूँट लीजिए।",
+      "hinglish": "Baar baar paani ke chhote ghoont lijiye."
+    },
+    {
+      "en": "ORS mixed with water can help.",
+      "hi": "पानी में घुला ORS मदद कर सकता है।",
+      "hinglish": "Paani mein ghula ORS madad kar sakta hai."
+    },
+    {
+      "en": "Eat when you feel able. Avoid fatty or spicy food.",
+      "hi": "जब मन करे तब खाइए। तला या मसालेदार खाना मत खाइए।",
+      "hinglish": "Jab man kare tab khayiye. Tala ya masaledar khana mat khayiye."
+    }
+  ],
+  "seeDoctorIf": [
+    {
+      "en": "You keep vomiting and cannot keep fluids down.",
+      "hi": "उल्टी न रुके और पानी भी न टिके।",
+      "hinglish": "Ulti na ruke aur paani bhi na tike."
+    },
+    {
+      "en": "It lasts more than 2 days.",
+      "hi": "2 दिन से ज़्यादा रहे।",
+      "hinglish": "2 din se zyada rahe."
+    },
+    {
+      "en": "You pee much less than usual, or your pee is dark.",
+      "hi": "पेशाब बहुत कम आए या गहरे रंग का हो।",
+      "hinglish": "Peshab bahut kam aaye ya gehre rang ka ho."
+    }
+  ],
+  "sources": [
+    "NHS, diarrhoea and vomiting. https://www.nhs.uk/conditions/diarrhoea-and-vomiting/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

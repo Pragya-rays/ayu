@@ -1,0 +1,59 @@
+{
+  "id": "constipation",
+  "title": {
+    "en": "Constipation",
+    "hi": "क़ब्ज़",
+    "hinglish": "Kabz"
+  },
+  "status": "sourced",
+  "commonCauses": [],
+  "steps": [
+    {
+      "en": "Drink plenty of water.",
+      "hi": "ख़ूब पानी पीजिए।",
+      "hinglish": "Khoob paani peejiye."
+    },
+    {
+      "en": "Slowly add more fibre, like fruit and oats.",
+      "hi": "धीरे-धीरे फ़ाइबर बढ़ाइए, जैसे फल और ओट्स।",
+      "hinglish": "Dheere dheere fibre badhaiye, jaise phal aur oats."
+    },
+    {
+      "en": "Walk or stay active every day.",
+      "hi": "रोज़ टहलिए या सक्रिय रहिए।",
+      "hinglish": "Roz tahaliye ya active rahiye."
+    },
+    {
+      "en": "Do not delay when you feel the urge to go.",
+      "hi": "शौच की इच्छा हो तो देर मत कीजिए।",
+      "hinglish": "Potty ka mann ho to der mat kijiye."
+    }
+  ],
+  "seeDoctorIf": [
+    {
+      "en": "It does not get better with these steps.",
+      "hi": "इन उपायों से ठीक न हो।",
+      "hinglish": "In upayon se theek na ho."
+    },
+    {
+      "en": "There is blood in your stool.",
+      "hi": "मल में खून आए।",
+      "hinglish": "Potty mein khoon aaye."
+    },
+    {
+      "en": "You lose weight without trying.",
+      "hi": "बिना कोशिश के वज़न घटे।",
+      "hinglish": "Bina koshish ke wazan ghate."
+    },
+    {
+      "en": "You have stomach pain, or feel tired all the time.",
+      "hi": "पेट में दर्द हो, या हर समय थकान रहे।",
+      "hinglish": "Pet mein dard ho, ya har samay thakan rahe."
+    }
+  ],
+  "sources": [
+    "NHS, constipation. https://www.nhs.uk/conditions/constipation/"
+  ],
+  "reviewedBy": "",
+  "reviewedAt": ""
+}

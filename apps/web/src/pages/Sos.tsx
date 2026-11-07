@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lang, SosState } from "../../../../server/src/types/voice";
 import { startMetronome } from "../audio/metronome";
-import { fetchLocalLine, playLocalLine, requestMic } from "../audio/voiceClient";
+import { fetchLocalLine, playLocalLine, requestMic, unlockAudio } from "../audio/voiceClient";
 import { shareOrCopy } from "../audio/share";
 import { useVoice } from "../hooks/useVoice";
 import type { StringKey } from "../i18n/strings";
@@ -23,6 +23,8 @@ interface Props {
   audio: AudioContext;
   medicalId: MedicalId | null;
   onExit(): void;
+  /** `audio` must be unlocked in the tap, because iOS blocks sound started after a network wait. */
+  onTalk(audio: AudioContext): void;
 }
 
 async function post(path: string, body?: unknown) {
@@ -61,7 +63,7 @@ function useWakeLock(enabled: boolean) {
   }, [enabled]);
 }
 
-export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
+export function Sos({ lang, t, audio, medicalId, onExit, onTalk }: Props) {
   const voice = useVoice(lang);
   const [stage, setStage] = useState<Stage>("arming");
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS);
@@ -186,13 +188,14 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
     if (await shareOrCopy(text) === "copied") setCopied(true);
   };
 
-  const exit = async () => {
+  const exit = async (talkAudio?: AudioContext) => {
     exiting.current = true;
     if (caseId.current) await post(`/api/sos/${caseId.current}/cancel`).catch(() => undefined);
     stopVoice();
     void mic.current?.then((stream) => stream.getTracks().forEach((track) => track.stop())).catch(() => undefined);
     if (audio.state !== "closed") void audio.close().catch(() => undefined);
-    onExit();
+    if (talkAudio) onTalk(talkAudio);
+    else onExit();
   };
 
   if (stage === "arming") {
@@ -200,7 +203,7 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
       <main className="sos arming">
         <p className="sos-label">{t("sosArming")}</p>
         <p className="countdown" aria-live="assertive">{secondsLeft}</p>
-        <button className="button sos-cancel" onClick={exit}>{t("cancel")}</button>
+        <button className="button sos-cancel" onClick={() => exit()}>{t("cancel")}</button>
       </main>
     );
   }
@@ -266,10 +269,13 @@ export function Sos({ lang, t, audio, medicalId, onExit }: Props) {
           </div>
         )}
         <a className="button sos-call" href="tel:112">{t("call112")}</a>
+        {stage === "active" && sosState?.falseAlarm && (
+          <button className="button sos-answer" onClick={() => exit(unlockAudio())}>{t("sosFalseAlarm")}</button>
+        )}
         {gps === "ok" && !arrived && (
           <button className="button sos-cancel small" onClick={shareLocation}>{copied ? t("sosShareCopied") : t("sosShare")}</button>
         )}
-        <button className="button sos-cancel small" onClick={exit}>{arrived ? t("sosClose") : t("sosCancel")}</button>
+        <button className="button sos-cancel small" onClick={() => exit()}>{arrived ? t("sosClose") : t("sosCancel")}</button>
         <p className="sos-disclaimer">{t("disclaimer")}</p>
       </div>
     </main>

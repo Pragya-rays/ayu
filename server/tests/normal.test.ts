@@ -112,10 +112,34 @@ describe("safety behaviour", () => {
     await machine.onInput("abhi se");
     await machine.onInput("pata nahi kya bolun main aapko abhi");
     await machine.onInput("pata nahi kya bolun main aapko abhi");
-    await machine.onInput("nahi");
+    await machine.onInput("nahi"); // breath
+    await machine.onInput("nahi"); // sudden
     await machine.onInput("kuch khaya tha");
     await machine.onInput("nahi");
     expect(summaryOf(states)).toMatchObject({ urgent: true, steps: [] });
+  });
+
+  it("silence before the warning-sign questions are asked ends without advice", async () => {
+    const { machine, spoken, states } = setup();
+    await machine.begin();
+    await machine.onInput("pet mein jalan hai");
+    expect(spoken.at(-1)).toBe(QUESTIONS.onset.text[LANG]);
+    await vi.advanceTimersByTimeAsync(25000);
+    expect(summaryOf(states)).toMatchObject({ urgent: true, steps: [] });
+    expect(spoken).not.toContain(cards.get("acidity")!.steps[0]![LANG]);
+    expect(spoken).toContain(NORMAL_SEE_DOCTOR_NOW[LANG]);
+  });
+
+  it("silence after every warning question was answered may still reach the card", async () => {
+    const { machine, states } = setup();
+    await machine.begin();
+    await machine.onInput("sardi ho gayi hai, khansi hai");
+    await machine.onInput("kal se"); // onset
+    await machine.onInput("nahi"); // breath
+    await machine.onInput("nahi"); // chest
+    await vi.advanceTimersByTimeAsync(25000); // fever goes unanswered
+    expect(summaryOf(states)).toMatchObject({ urgent: false });
+    expect(summaryOf(states)?.steps.length).toBeGreaterThan(0);
   });
 
   it("silence on a warning-sign question ends without reassurance", async () => {
@@ -383,8 +407,47 @@ describe("rules", () => {
     ["बुखार है", "mild_fever"],
     ["दस्त हो रहे हैं", "loose_motions"],
     ["ghutna dukh raha hai", null],
+    ["पेट में दस्त हैं", "loose_motions"],
+    ["उल्टी हो रही है", "vomiting"],
+    ["ji michla raha hai", "vomiting"],
+    ["pet mein dard aur ulti", "vomiting"],
+    ["गले में ख़राश है", "sore_throat"],
+    ["sore throat hai", "sore_throat"],
+    ["khansi aur gale mein dard", "cold_cough"],
+    ["gale aur pet mein jalan", "acidity"],
+    ["kabz ho gaya hai", "constipation"],
+    ["do din se potty nahi ho rahi", "constipation"],
+    ["पेट साफ़ नहीं हो रहा", "constipation"],
+    ["पेट में दर्द है", "acidity"],
   ])("%s", (text, expected) => {
     expect(findIssue(text)).toBe(expected);
+  });
+
+  it.each([
+    ["हरी उल्टी हो रही है", ["vomit_colour"]],
+    ["kaali ulti aa rahi hai", ["vomit_colour"]],
+    ["कुछ निगल नहीं पा रहा", ["cannot_swallow"]],
+    ["laar beh rahi hai", ["cannot_swallow"]],
+    ["laar nahi beh rahi", []],
+    ["हरी उल्टी नहीं है", []],
+  ])("warning sign in %s", (text, expected) => {
+    expect(findRedFlags(text)).toEqual(expected);
+  });
+
+  it.each([
+    ["ulti ho rahi hai", "vomiting", "vomit_colour"],
+    ["gale mein kharash hai", "sore_throat", "swallow"],
+    ["kabz hai", "constipation", "stool_blood"],
+    ["pet mein bahut dard hai", "acidity", "sudden"],
+  ] as const)("asks about danger before advising on %s", async (text, issueId, warning) => {
+    const { machine, spoken, states } = setup({ issueId, redFlags: [], question: null, spoken: null });
+    await machine.begin();
+    await machine.onInput(text);
+    for (let turn = 0; turn < 6 && !spoken.includes(QUESTIONS[warning].text[LANG]); turn++) await machine.onInput("kal se");
+    expect(spoken).toContain(QUESTIONS[warning].text[LANG]);
+    await machine.onInput("haan");
+    expect(states.at(-1)?.offerSos).toBe(true);
+    expect(spoken).not.toContain(cards.get(issueId)!.steps[0]![LANG]);
   });
 });
 
@@ -409,7 +472,7 @@ describe("home-care library", () => {
   const acidity = JSON.parse(readFileSync(resolve(import.meta.dirname, "../src/homecare/acidity.json"), "utf8"));
 
   it("loads every card, and none is falsely marked reviewed", () => {
-    expect(cards.size).toBe(5);
+    expect(cards.size).toBe(8);
     for (const card of cards.values()) {
       if (card.status === "reviewed") expect(card.reviewedBy).not.toBe("TODO");
     }

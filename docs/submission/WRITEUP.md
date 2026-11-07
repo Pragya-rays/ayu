@@ -87,7 +87,7 @@ TODO: add results from more people trying it.
 - **Limited device testing.** The full flow was tested on one iPhone XR, with a shorter check on one Samsung phone in Chrome. Other phones and older Android versions are untested.
 - **One-at-a-time scale.** Free tiers allow 15 Gemini requests a minute and Render's free plan sleeps when idle. Cases live in memory, so a restart ends active calls. Ayu falls back to rules if Gemini is unavailable.
 - **Offline support is limited.** With no network the app opens and says to call 112, but cannot run triage.
-- **Coverage.** Adults only, three languages, five everyday problems, and no support for other conditions.
+- **Coverage.** Adults only, three languages, eight everyday problems, and no support for other conditions.
 
 ## Path to real deployment
 

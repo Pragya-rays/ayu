@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
 import type { Lang } from "../../../server/src/types/voice";
 import { unlockAudio } from "./audio/voiceClient";
+import { Backdrop } from "./components/Backdrop";
+import { LanguageToggle } from "./components/LanguageToggle";
 import { strings, type StringKey } from "./i18n/strings";
 import { Dashboard } from "./pages/Dashboard";
 import { Driver } from "./pages/Driver";
+import { Site, SITE_PATHS, type SitePath } from "./pages/Site";
 import { MedicalIdPage, type MedicalId } from "./pages/MedicalId";
 import { Normal } from "./pages/Normal";
 import { Sos } from "./pages/Sos";
 import { VoiceCheck } from "./pages/VoiceCheck";
-
-const LANGS: { id: Lang; label: string }[] = [
-  { id: "hi", label: "हिन्दी" },
-  { id: "hinglish", label: "Hinglish" },
-  { id: "en", label: "English" },
-];
 
 function readStored(key: string): string | null {
   try {
@@ -31,19 +28,13 @@ function writeStored(key: string, value: string) {
   }
 }
 
-function LanguageToggle({ lang, onChange, label }: { lang: Lang; onChange(lang: Lang): void; label: string }) {
-  return (
-    <div className="lang-toggle" role="group" aria-label={label}>
-      {LANGS.map((option) => (
-        <button key={option.id} aria-pressed={lang === option.id} onClick={() => onChange(option.id)}>
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+const sitePath = (): SitePath => {
+  const path = location.pathname.replace(/\/+$/, "") || "/";
+  return SITE_PATHS.includes(path) ? path : "/";
+};
 
 function PhoneApp() {
+  const [path, setPath] = useState<SitePath>(sitePath);
   const [lang, setLang] = useState<Lang>((readStored("ayu.lang") as Lang | null) ?? "hinglish");
   const [consented, setConsented] = useState(readStored("ayu.consent.v2") !== null);
   const [sosAudio, setSosAudio] = useState<AudioContext | null>(null);
@@ -63,6 +54,19 @@ function PhoneApp() {
     writeStored("ayu.lang", lang);
     document.documentElement.lang = lang === "hi" ? "hi" : "en";
   }, [lang]);
+
+  // Pages without a router: the address bar, back button and shared links all work.
+  useEffect(() => {
+    const onPop = () => setPath(sitePath());
+    addEventListener("popstate", onPop);
+    return () => removeEventListener("popstate", onPop);
+  }, []);
+
+  const navigate = (to: SitePath) => {
+    if (to !== location.pathname) history.pushState(null, "", to);
+    setPath(to);
+    scrollTo({ top: 0 });
+  };
 
   useEffect(() => {
     fetch("/api/health")
@@ -101,7 +105,21 @@ function PhoneApp() {
     );
   }
 
-  if (sosAudio) return <Sos lang={lang} t={t} audio={sosAudio} medicalId={medicalId} onExit={() => setSosAudio(null)} />;
+  if (sosAudio) {
+    return (
+      <Sos
+        lang={lang}
+        t={t}
+        audio={sosAudio}
+        medicalId={medicalId}
+        onExit={() => setSosAudio(null)}
+        onTalk={(audio) => {
+          setSosAudio(null);
+          setTalkAudio(audio);
+        }}
+      />
+    );
+  }
   if (medicalOpen) return <MedicalIdPage t={t} value={medicalId} onSave={saveMedicalId} onBack={() => setMedicalOpen(false)} />;
   if (talkAudio) {
     return (
@@ -120,29 +138,31 @@ function PhoneApp() {
   if (voiceLab && location.pathname === "/voice-check") return <VoiceCheck lang={lang} t={t} onBack={() => location.assign("/")} />;
 
   return (
-    <div className="paper">
-      <main className="screen">
-        <div className="topbar">
-          <span className="wordmark">{t("brand")}</span>
-          <LanguageToggle lang={lang} onChange={setLang} label={t("chooseLanguage")} />
-        </div>
-        <div className="hero">
-          <h1>{t("headline")}</h1>
-          <p>{t("subline")}</p>
-        </div>
-        <div className="actions">
-          <button className="button ink" onClick={() => setTalkAudio(unlockAudio())}>{t("talk")}</button>
-          <button className="button sos" onClick={() => setSosAudio(unlockAudio())}>{t("sos")}</button>
-          <button className="text-link" onClick={() => setMedicalOpen(true)}>{t(medicalId ? "medicalEdit" : "medicalAdd")}</button>
-          <p className="mono">{t("disclaimer")}</p>
-        </div>
-      </main>
-    </div>
+    <Site
+      path={path}
+      navigate={navigate}
+      lang={lang}
+      t={t}
+      hasMedicalId={Boolean(medicalId)}
+      onLang={setLang}
+      onTalk={() => setTalkAudio(unlockAudio())}
+      onSos={() => setSosAudio(unlockAudio())}
+      onMedical={() => setMedicalOpen(true)}
+    />
   );
 }
 
-export function App() {
+function Page() {
   if (location.pathname === "/dashboard") return <Dashboard />;
   if (location.pathname === "/driver") return <Driver />;
   return <PhoneApp />;
+}
+
+export function App() {
+  return (
+    <>
+      <Backdrop />
+      <Page />
+    </>
+  );
 }

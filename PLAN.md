@@ -11,10 +11,10 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | **Phases 10 and 11: built and tested in Chrome, not pushed, waiting for team review.** Phases 1-5 validated on iPhone XR in quiet conditions |
-| **Phase state** | Live version is `71408ff`, without Phases 10 and 11. They stay local until the team says push, then need a phone check (`docs/testing/PHONE_TEST.md`, steps 21-25) |
+| **Current phase** | **Phases 12 and 13 built, not pushed.** Phases 10 and 11 deployed 11-01, tested in Chrome, waiting for the team's phone check, which the team moved to later. Phases 1-5 validated on iPhone XR in quiet conditions |
+| **Phase state** | Live version is `4da7308`, without Phases 12 and 13. `/api/health` reports real voice and Gemini; no live SOS was run, to keep the team's dashboard clean. Phone check: `docs/testing/PHONE_TEST.md`, steps 21-30 |
 | **Real Gnani API tested?** | **Yes.** Real voice on iPhone XR and Samsung in quiet settings, and a stream scorecard on synthetic noisy calls. See sections 6 and 12 |
-| **Next action** | Team reviews Phases 10 and 11. On "push", deploy and hear the CPR beat, waiting steps and trimmed audio on a real phone |
+| **Next action** | Team reviews the redesign and approves the push, which carries a safety fix for the live site. Then one phone test covers Phases 10 to 13 and the first instruction time |
 | **Who does what** | **Team decision 11-01:** the assistant works on the product only. The team handles registration, posts, video, trials and submission, so the assistant does not raise them. Registration is not confirmed done |
 | **Medical status** | The team chose to ship published first aid without a doctor (I44). The labels in I44 stay |
 | **Blocked on** | Nothing in the build |
@@ -321,7 +321,7 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 | Public posts, live before submission | **Waiting on the team** |
 | Submit through the form | **Waiting on the team**; the assistant cannot submit |
 
-### Phase 10 — SOS finishing pass (Nov 1) · **BUILT, waiting for team review, not pushed**
+### Phase 10 — SOS finishing pass (Nov 1) · **DEPLOYED (`4da7308`), waiting for the team's phone check**
 **Goal:** finish what the Summary promised for the wait until help arrives, and close the ways an SOS could silently fail.
 
 | Item | Status |
@@ -338,10 +338,10 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 | App opens from the saved copy after 4 s on a hung network; a host's holding page can never replace it in the cache | Tested in Chrome: 4.3 s. Render's own wake page was not seen, so the holding page was simulated |
 
 **Exit criteria (team to complete):**
-- [ ] Approve the push
+- [x] Approve the push (deployed 11-01)
 - [ ] Phone test steps 21-24: hear the beat, the waiting steps, and a drop during CPR
 
-### Phase 11 — First instruction speed (Nov 1) · **BUILT, waiting for team review, not pushed**
+### Phase 11 — First instruction speed (Nov 1) · **DEPLOYED (`4da7308`), waiting for the team's phone check**
 **Goal:** cut R20 without touching triage safety.
 
 | Item | Status |
@@ -350,13 +350,53 @@ The team asked on 11-01 to build straight through, then returned to the usual pa
 | Step pauses raised from 2.0 to 2.3 s, so the pace the team approved by ear stays the same | Calculated from a mean 0.34 s trimmed per line, not re-heard |
 
 **Exit criteria (team to complete):**
-- [ ] Approve the push, together with Phase 10
+- [x] Approve the push, together with Phase 10 (deployed 11-01)
 - [ ] Phone test step 25: no clipped words. Read "first instruction" on the dashboard for one voice run
 
-### Possible next build work
-Not started. Each stays inside the agreed Summary.
-- **More home-care cards.** Summary Tier 1 says 6-8; there are 5.
-- **False alarm path.** Summary 7.5 offers Normal mode (I24 deferred it until Normal existed).
+### Phase 12 — Everyday cards and false alarm (Nov 2) · **BUILT, not pushed, waiting for team review**
+**Goal:** finish the last Summary items, which completes the planned build.
+
+| Item | Status |
+|---|---|
+| Home-care cards for vomiting, sore throat and constipation, from NHS pages, no medicines. 8 cards, the top of the Summary's 6-8 | Tested live with typed input and Gemini. **Not heard on a phone** |
+| Two new warning questions from the NHS emergency lists: green, black or bloody vomit, and being unable to swallow or drooling | Tested |
+| Sudden severe pain added to the acidity questions, because a bare "pet mein dard" reaches that card | Tested |
+| Issue matching reordered. **Bug:** "पेट में दस्त" got acidity, and "potty nahi ho rahi" would have got loose motions | Fixed, tests |
+| **Safety bug, live since Phase 5:** going quiet on an everyday question ended in advice, with warning questions never asked. Now any ending with a warning question left gives "see a doctor" and no advice | Failing test first, then fixed. Tested live. **The live site still has this until the next push** |
+| False alarm (Summary 7.5). Saying "galti se dab gaya" offers a button to cancel and talk to Ayu. Help and the questions carry on until that tap, and voice alone cancels nothing. Not offered on a RED case. Taken back if answers turn RED. The dashboard timeline shows it | Tested live: real speech through Prisma, offer, dashboard note, tap reaches Normal mode. **Not tried on a phone**, where the new audio must start from the tap |
+
+**Exit criteria (team to complete):**
+- [ ] Approve the push
+- [ ] Phone test steps 26-28
+
+### Phase 13 — Website redesign (Nov 2) · **BUILT, not pushed, waiting for team review**
+**Goal:** team feedback: the site looked empty on PC, cards were plain white, and Home was one screen.
+
+| Item | Status |
+|---|---|
+| Abstract shapes behind every page: colour fields, rings, pulse lines, dot grids. Line art shows on wide screens only | Tested in Chrome |
+| Translucent glass on every card, with a firmer fallback where a browser has no blur | Chrome only. **Safari, and smoothness on a low-end Android, not tried.** Blur can be heavy on old phones |
+| Rounded glass navbar pill that stays on screen, with Home, Why it matters, How it works and About | Tested in Chrome |
+| Home is now four sections: hero, India facts, how Ayu works, about. On PC an example conversation fills the right side, labelled as an example | Tested at 7 sizes in 3 languages |
+| India facts with a source link on each, and a line saying they describe the problem and are not Ayu's results | Each read at its source; see section 12 |
+| Navbar SOS appears once the main SOS scrolls away, so SOS is never a scroll from the caller | Tested: starts the countdown |
+| Primary button font changed to the headline serif, in all three languages | Team to judge |
+| Same look on consent, chat, Medical ID, dashboard and driver. **SOS screen stays dark and plain on purpose**: faint shapes at the sides of wide screens only, none on a phone | Tested |
+
+**Phase 14 polish (Nov 3), same review:**
+
+| Item | Status |
+|---|---|
+| Text contrast measured against the real pixels behind each line, glass and shapes included: 62 lines failed WCAG AA. Grey text, language buttons, the Medical ID link and the 112 link darkened; the active language is now dark | Now 0 failures, Home in 3 languages on PC and phone, plus dashboard login. A control with pale text was flagged (53 failures), so the check can fail |
+| Keyboard focus ring on every control, light and dark | Built |
+| Link preview for LinkedIn, X and WhatsApp: title, description and a 1200x630 image (`apps/web/public/og.png`) that keeps "simulated" and "not a medical device" | Served locally. **How LinkedIn shows it is untested until pushed** |
+
+| Home split into real pages (I57): Home, Why it matters, How it works, About. The current page is marked in the navbar, the back button and shared links work, and an unknown address shows Home | Tested in Chrome, 19/19: each page by navbar, cards and direct address, back button, navbar SOS on each page, cancel returns to the same page, phone in Hindi and Hinglish with no overflow. Contrast 0 failures on all four pages, 3 languages, PC and phone |
+
+**Exit criteria (team to complete):**
+- [ ] Review the look on a real PC and phone
+- [ ] Phone test steps 29-30
+- [ ] Hindi and Hinglish wording of the new sections is unreviewed. `docs/testing/WORDING_REVIEW.md` is refreshed
 
 **Cut order if late:** Tier 3, emergency contact, Medical ID, interrupt polish, extra protocols. Keep CPR, chest pain, stroke/collapse.
 
@@ -383,6 +423,7 @@ Checks: `npm run typecheck`, `npm test`. Live checks that **spend credits**: `np
 | `server/src/dialogue/` | `sosMachine.ts` (SOS conversation), `triageRules.ts` (severity and protocol), `ruleExtract.ts` (Hindi/Hinglish rules), `lines.ts` |
 | `server/src/protocols/` | One JSON per protocol; `index.ts` validates at startup. `waiting/steps.json` holds the waiting steps and which protocols each fits. `server/scripts/make-protocols.mjs` wrote the placeholders and never overwrites |
 | `apps/web/src/audio/metronome.ts` | The CPR beat: one looped click, no timers |
+| `apps/web/src/pages/Home.tsx`, `components/Backdrop.tsx`, `components/LanguageToggle.tsx` | Home sections with their sources, the shapes behind every page, the language switch |
 | `server/src/adapters/llm.ts`, `prompts/extraction.ts` | Gemini extraction and the validator |
 | `server/scripts/` | Also `triage-scenarios.ts` (`npm run eval:triage -w server`, add `-- --rules` for rules only) and `gemini-check.ts` (compare models) |
 | `server/src/dialogue/normal*.ts`, `server/src/homecare/`, `routes/normal.ts`, `apps/web/src/pages/Normal.tsx` | Normal mode. `normalContent.ts` holds the question list; `normalRules.ts` the warning signs; `server/scripts/make-home-care.mjs` wrote the placeholders and never overwrites. Voice Check moved to `/voice-check` (lab only) |
@@ -443,6 +484,13 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | I47 | 11-01 | CPR beat at 110 per minute, a looped click on the phone, starting at a new step after "push fast". It keeps running under speech and questions | 100-120 is the target, and Hwang 2020 used 110 for dispatcher-assisted CPR. Live Prisma test: 12 s of clicks produced no speech or text, and answers over clicks were transcribed correctly with no added delay, at worst case with no echo cancellation. So the planned mic filter was dropped |
 | I48 | 11-01 | Encouragement during CPR repeats after the waiting list runs out | Hwang 2020: metronome plus encouragement held the rate near 110 better than metronome alone. Ayu says it about every 45 s, not the study's 30 s |
 | I49 | 11-01 | SOS keeps its audio open after the connection ends for good. Only leaving the screen closes it | Otherwise the beat and the spoken 112 line die exactly when they matter |
+| I54 | 11-02 | Team redesign overrides parts of Dev Guide 12: shapes and glass on all pages except SOS, and the headline serif on primary buttons, which the guide kept to Home. SOS keeps Inter, dark, no glass | The guide's reason still holds for SOS alone: clarity beats style in a panic |
+| I55 | 11-02 | Facts on Home use only figures read at a source, name it, and say when they come from one hospital. Hindi uses the census, cited through Wikipedia's table because the census file could not be opened. Dropped: ambulance response times, because the figures found ranged from 10 to 134 minutes across small studies and no national number exists | Public health site, and the rules ban misleading demos. A search summary was wrong once already (Phase 10) |
+| I56 | 11-02 | **Replaced by I57.** Home sections as one scrolling page with anchors | The team asked for real pages |
+| I58 | 11-04 | **Team chose a new look from a reference site (ayu1.vercel.app):** dark navy, violet-to-pink gradient headings, heavy Inter type, a phone mockup, icon tiles, outline shapes. Seven pages: Home, Emergency `/sos`, Everyday care `/care`, Hospital `/hospital`, Voice `/voice`, Why India `/why`, About `/about`. Replaces I54's light glass and serif, and I57's four pages. Only the reference's look was used: its product claims (Sarvam, Neo4j, diagnosis) are not Ayu's and appear nowhere | Team request. Script and topic names are read from the protocol and home-care files at build time, so the pages cannot drift from them. Phones get a menu and a floating SOS; Home keeps its own SOS on the first screen at every size |
+| I57 | 11-03 | Real pages at `/`, `/why`, `/how` and `/about`, using the browser's history with no router package. Home keeps the hero and links to the others with three cards. Every page except Home keeps SOS in the navbar | Team asked for separate pages. Audio is still unlocked inside the SOS tap itself, so moving between pages costs nothing. The server already serves the app at any address |
+| I52 | 11-02 | False alarm is handled by an offer and a tap, never by voice. Replaces I24 | A caller can be wrong about a patient, and "sab theek hai" can be misheard or said under pressure. A wrong reading costs one spoken line. Keeps the Summary's rule of keeping dispatch until the user cancels. Severity stays as the rules set it: no GREEN state was added |
+| I53 | 11-02 | The warning check sits in `finish()`, the one place every Normal conversation ends, not in the silence timer | A rule at each exit is how the silent-advice bug happened |
 | I50 | 11-01 | Stored audio is trimmed when it loads, so the repo's audio files stay as generated. `gen-audio` trims the phone's own copies | Saves about 0.9 s with no change to words or triage, and opens the mic sooner after Ayu stops |
 | I51 | 11-01 | **Rejected:** ending the caller's turn early with `commit` after a short answer, which could save about 1 s. Lowering `PRISMA_MIN_SILENCE_MS` was rejected for the same reason. Dropping "Kya woh" from the questions was also rejected | A panicked "haan... nahi nahi" cut after "haan" would mark an unresponsive person as responsive. Synthetic speech cannot show this risk, so it needs real callers first. A shorter question that gets misheard costs far more than the half second saved |
 | I40 | 11-01 | ER brief is built from case fields in code, with no LLM step, and shows "unknown" for anything not stated. Stricter than the guide, which let the LLM fill slots | The hospital reads it under pressure, so it can never contain words the caller did not say |
@@ -518,6 +566,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 | R17 | Hindi and English pass end to end in Chrome with buttons and typing (11-01, 10/10). A Samsung Android phone passed a short check in Hinglish (11-01): voice, interrupting and layout. Hindi or English by voice on a real phone is untested | Low-Medium | User trials |
 | R23 | **Gemini free tier allows 15 requests per minute** (measured 11-01), shared by all users. Each thing a caller says is one request. Over the limit it returns 429 in about 0.4 s and Ayu uses rules and fixed questions, so calls stay safe but lose Gemini's help. Several judges at once could hit this. Daily limit not measured | Medium | Accept for one user at a time; consider a paid tier for demo week |
 | R18 | **First aid and home care are live without any clinical review** (team decision 11-01, I44). Steps were condensed from published guidance with AI help, translations are unchecked, and triage rules and warning signs are unreviewed. Waiting steps and the CPR beat (Phase 10) are also unreviewed. A real person could rely on them | **High** | App and write-up say so plainly. A qualified reviewer can still approve it through the sheet |
+| R25 | Glass blur on many panes may stutter on low-end Android phones, Ayu's main users. It also has not been seen in Safari | Medium | Phone test step 30. Lowering `--glass-blur` in `app.css`, or removing blur on phones, is one line |
 | R24 | CPR beat untested on a real phone: it may be too quiet on speaker, or too loud under Ayu, and echo on a real speaker differs from the Prisma test, which fed clicks in directly | Medium | Phone test steps 21-22. `VOLUME` is in `metronome.ts` |
 | R19 | Barge-in works on iPhone XR on speaker, in a quiet setting, with no self-interruption (10-31). Android and noise are untested; the threshold (`BARGE_RMS` in `voiceClient.ts`) may need tuning there. The opening line and protocol steps cannot be interrupted | Low-Medium | Check on Android and in the noisy tests |
 | R20 | First instruction took 11-16 s by voice on a real phone (10-31), against about 3 s with buttons. Not re-measured since. Ayu's speech before it went from 7.1 s to 4.5 s (shorter lines) to 3.6 s (trimmed, not deployed). Calculated, not traced: silence detection 1.6 s, Prisma about 1 s, and the rest is the caller responding. Interrupting Ayu already shortens it | **High** | Measure on a phone after the push. Further cuts trade against safety (I51); judges will see this number |
@@ -642,10 +691,43 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 - The offline script's two failures were stale checks (old cache name, the removed word "Prototype"), corrected in the script.
 - **Not tested:** how trimmed lines sound to a person, first instruction time on a phone.
 
+**2026-11-02, Phase 12 (local production build, real Gnani and Gemini)**
+- `npm run typecheck`: pass. `npm test`: 298 of 298 (server 282, web 16). E1-E5 rules only 5/5. 42 new lines generated, about 5.5 MB.
+- Spoken "गलती से दब गया, सब ठीक है" through live Prisma, 8/8: offer spoken, question repeated, nothing cancelled by voice, dashboard note, case open, tap reaches Normal mode with Ayu speaking, case closes. The clip was Timbre speech through Chrome's fake mic, not a person.
+- New cards, typed, live Gemini, 9/9: each asks its warning question before advice, then reaches its card with the tag. A yes to the vomit warning offers SOS with no advice. Silence reaches no advice.
+- **The first run of the card test passed 3/3 falsely:** it never answered a question, yet cards appeared. That exposed the silent-advice bug. The test now answers each question and counts them.
+- Regression: Normal 9/9, offline 5/5, failure run 15/15.
+- **Three-screen failures explained.** They appeared intermittently, as "2/3" with a click timeout. Cause: a test race. After the last answer, Yes/No stay on screen for a moment; the test could catch "Haan" there, and it does not return until the CPR steps end, past Playwright's 30 s. Forcing that timing reproduced the same failure 2/2, with the app correctly playing CPR steps. Waiting for the location question instead passes 11/11 under the same forced timing. A real tap in that moment is ignored by the server. The single 10/11 on 11-01 had no captured detail and may be a different cause.
+- **Correction:** a run of "32 clean repeats" was false. A patch had broken the test script and the loop only searched for "FAIL", so crashes counted as passes. Discarded; repeats now require a real 11/11.
+- **Not tested:** the new voice lines heard by a person, the audio starting from the tap on a real iPhone, Gemini-on triage scenarios.
+
+**2026-11-02, Phase 13 (local production build, Chrome)**
+- `npm test`: 298 of 298. Layout and safety run 9/9: no sideways overflow and SOS on the first screen at 7 sizes from 320x568 to 1920x1080, in all 3 languages; one SOS at the top; nav link lands clear of the navbar; navbar SOS starts the countdown; cancel returns home; SOS on a phone has no shapes and no glass.
+- Regression on this build: Normal 9/9, three-screen 11/11, offline 5/5, Medical ID and share 7/7, failure run 15/15, slow network 4/4, false alarm by voice 8/8, new cards 9/9. The older card check that never answers now correctly ends in "see a doctor", so its 3 card lines fail by design; the 9/9 run replaces it.
+- Facts read at source 11-02: 28.1% and 9.8% in the study abstracts through Europe PMC; "no formal cardiac arrest registry or a centralized emergency medical system" in Bhat 2021, as of 2021, also stated by a 2023 review; 20 deaths an hour and 1.72 lakh from PTI's report of the ministry's figures; 43.63% from Wikipedia's Census 2011 table; 112 from the Ministry of Home Affairs page. The ministry and census originals could not be opened.
+- **Not tested:** Safari, real phones, smoothness on low-end Android.
+
+**2026-11-07, seven-page dark redesign, I58 (local production build, Chrome)**
+- `npm test` 298 of 298. Seven-page run 23/23: each page from the navbar and marked current, SOS in reach on every page (navbar on PC, floating on phones), phone menu, 7 scripts and 8 topics read from the files, no sideways overflow on any page at 6 sizes in 3 languages, Home SOS on the first screen at every size (failed at 320x568 and 1024x768 in Hindi until the intro moved below the buttons on short screens).
+- Regression: chat 9/9, three-screen 11/11, offline 5/5, Medical ID and share 7/7, failure run 15/15.
+- Contrast, English, all 7 pages, PC and phone: 2 failures fixed (faint step numbers; the floating SOS covering the last line). Gradient headings checked by colour: weakest 4.46:1, used only on large text. Hindi and Hinglish not re-measured on the dark pages.
+- A first run reported 70 failures and several broken flows. Causes: the checker read gradient text as transparent, two test runs shared one port, and Home now has two Talk buttons. All three were test faults, fixed before re-measuring.
+- Staging failed with "Permission denied" while OneDrive was syncing `.git`; a retry seconds later succeeded.
+
+**2026-11-03, Phase 14 (local production build, Chrome)**
+- Contrast 0 below AA after fixes (was 62). Two first-run readings of 1.09 were the script's fault: text half off screen or under the sticky navbar. Fixed in the script before re-measuring.
+- `npm test` 298 of 298. Layout 9/9, Normal 9/9, offline 5/5, Medical ID and share 7/7, three-screen 11/11. `/og.png` served as `image/png`.
+- A first regression pass showed design 8/9 and Medical ID 0/1. Cause: a test server the assistant left running on the same port, with a different dashboard password. Stopped; both passed on rerun.
+
 ---
 
 ## 13. Changelog
 
+- **2026-11-07** Seven-page dark redesign after the team's reference site, then pushed with Phases 12 to 14.
+- **2026-11-03** Split Home into four real pages at the team's request.
+- **2026-11-03** Phase 14: fixed text contrast on the new design, added keyboard focus and a link preview card.
+- **2026-11-02** Built Phase 13: site-wide redesign with shapes, glass and a navbar pill, and a four-section Home with sourced India facts.
+- **2026-11-02** Built Phase 12: three home-care cards, two warning questions, better issue matching and the false-alarm offer. Found and fixed advice being given after silence. All planned build work is done.
 - **2026-11-01** Built Phase 11: trimmed silence from stored audio, about 0.9 s faster to the first instruction.
 - **2026-11-01** Team asked the assistant to work on the product only. Built Phase 10: waiting steps, CPR beat and encouragement, and fixes for four ways an SOS could silently fail. Cleared stale doctor-review and placeholder wording from this file.
 - **2026-10-31** Created PLAN.md. Read live Gnani docs and challenge page; recorded differences. Built Phase 1 foundation on mocks. Copied source docs to `docs/`.

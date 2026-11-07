@@ -15,7 +15,8 @@ Output ONLY valid JSON, no prose, no markdown:
 Rules:
 - issueId is the closest match, or null if none fits. Never guess.
 - redFlags lists any warning signs stated: chest, arm or jaw pain or pressure, sweating with pain,
-  breathlessness, fainting, sudden severe headache, confusion, one-sided weakness, blood loss.
+  breathlessness, fainting, sudden severe headache, confusion, one-sided weakness, blood loss,
+  green or black vomit, drooling or being unable to swallow.
 - Do not list a sign the person says they do not have.
 - question is ONE short follow-up question in ${SCRIPT[lang]}, at most 15 words, that fits what the
   person just said and is not already answered. Ask about the details of their situation.
