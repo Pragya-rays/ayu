@@ -48,7 +48,7 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 38 | Is there blood in the vomit, or is it green or black? | क्या उल्टी में खून है, या वह हरी या काली है? | Kya ulti mein khoon hai, ya woh hari ya kaali hai? | |
 | 39 | Is it hard to swallow even water, or are you drooling? | क्या पानी निगलना भी मुश्किल है, या लार बह रही है? | Kya paani nigalna bhi mushkil hai, ya laar beh rahi hai? | |
 
-## Text on screen (121)
+## Text on screen (126)
 
 | # | English meaning | Hindi | Hinglish | Your change |
 |---|---|---|---|---|
@@ -112,66 +112,71 @@ First-aid and home-care text is not here, because it needs medical review first.
 | 58 | published first aid guidance · not doctor-reviewed | प्रकाशित प्राथमिक उपचार मार्गदर्शन · डॉक्टर द्वारा जाँचा नहीं गया | published first aid guidance · doctor review nahi hua | |
 | 59 | Push with the beat | ताल के साथ दबाइए | Taal ke saath dabaiye | |
 | 60 | It was a mistake: cancel and talk to Ayu | गलती से हुआ: रद्द करें और आयु से बात करें | Galti se hua: cancel karein aur Ayu se baat karein | |
-| 61 | Page sections | पेज के हिस्से | Page ke hisse | |
-| 62 | Home | होम | Home | |
-| 63 | Why it matters | क्यों ज़रूरी | Kyun zaroori | |
-| 64 | How it works | कैसे काम करे | Kaise kaam kare | |
-| 65 | About | परिचय | About | |
-| 66 | An example conversation | बातचीत का एक उदाहरण | Baatcheet ka ek example | |
-| 67 | example only | केवल उदाहरण | sirf example | |
-| 68 | My father fell and isn't answering. | मेरे पापा गिर गए हैं, जवाब नहीं दे रहे। | Mere papa gir gaye hain, jawab nahi de rahe. | |
-| 69 | Are they breathing normally? | क्या वो सामान्य सांस ले रहे हैं? | Kya woh normal saans le rahe hain? | |
-| 70 | No. | नहीं। | Nahi. | |
-| 71 | Lay them flat on their back on a hard floor. | उन्हें सख़्त ज़मीन पर पीठ के बल सीधा लिटाइए। | Unhe sakht zameen par peeth ke bal seedha litayein. | |
-| 72 | Why India needs this | भारत को इसकी ज़रूरत क्यों है | India ko iski zaroorat kyun hai | |
-| 73 | India has no formal cardiac arrest registry or centralised emergency medical system. Until help arrives, it comes down to whoever is nearby. | भारत में कार्डियक अरेस्ट की कोई औपचारिक रजिस्ट्री या केंद्रीकृत आपातकालीन चिकित्सा व्यवस्था नहीं है। मदद पहुँचने तक सब कुछ पास मौजूद व्यक्ति पर निर्भर करता है। | India mein cardiac arrest ki koi formal registry ya central emergency medical system nahi hai. Madad pahunchne tak sab kuch paas maujood insaan par hota hai. | |
-| 74 | people die on India's roads every hour | लोग हर घंटे भारत की सड़कों पर जान गँवाते हैं | log har ghante India ki sadkon par jaan ganwate hain | |
-| 75 | 1.72 lakh deaths in 2023 | 2023 में 1.72 लाख मौतें | 2023 mein 1.72 lakh maut | |
-| 76 | of deaths in India in 2016 were from heart and blood vessel disease | मौतें 2016 में भारत में हृदय और रक्त वाहिकाओं की बीमारियों से हुईं | maut 2016 mein India mein dil aur khoon ki naliyon ki bimari se hui | |
-| 77 | of cardiac arrest patients in one Indian hospital study got CPR from someone nearby | कार्डियक अरेस्ट मरीज़ों को, भारत के एक अस्पताल के अध्ययन में, पास के किसी व्यक्ति से CPR मिला | cardiac arrest mareezon ko, India ke ek hospital ki study mein, paas ke kisi insaan se CPR mila | |
-| 78 | of Indians gave Hindi as their mother tongue in the 2011 census | भारतीयों ने 2011 की जनगणना में हिंदी को अपनी मातृभाषा बताया | Indians ne 2011 census mein Hindi ko apni matribhasha bataya | |
-| 79 | These figures describe the problem. They are not results from Ayu. | ये आँकड़े समस्या बताते हैं। ये आयु के नतीजे नहीं हैं। | Yeh numbers problem batate hain. Yeh Ayu ke results nahi hain. | |
-| 80 | How Ayu works | आयु कैसे काम करता है | Ayu kaise kaam karta hai | |
-| 81 | In an emergency | आपात स्थिति में | Emergency mein | |
-| 82 | One tap shares your location and raises a simulated ambulance request. | एक टैप से आपकी लोकेशन साझा होती है और सिम्युलेटेड एम्बुलेंस अनुरोध जाता है। | Ek tap se aapki location share hoti hai aur simulated ambulance request jaati hai. | |
-| 83 | Ayu asks if they are responding and breathing, then gives fixed first aid steps. | आयु पूछता है कि वो जवाब दे रहे हैं और सांस ले रहे हैं या नहीं, फिर तय प्राथमिक उपचार बताता है। | Ayu poochta hai ki woh jawab de rahe hain aur saans le rahe hain ya nahi, phir fixed first aid batata hai. | |
-| 84 | It stays with you until help arrives, with a CPR beat when needed. | मदद पहुँचने तक आयु आपके साथ रहता है, ज़रूरत हो तो CPR की ताल के साथ। | Madad pahunchne tak Ayu aapke saath rehta hai, zaroorat ho to CPR ki taal ke saath. | |
-| 85 | For everyday problems | रोज़ की तकलीफ़ों के लिए | Roz ki takleef ke liye | |
-| 86 | Tell Ayu what is wrong, in your own words. | अपने शब्दों में बताइए कि क्या तकलीफ़ है। | Apne shabdon mein batayein kya takleef hai. | |
-| 87 | It asks about warning signs before giving any advice. | सलाह देने से पहले आयु ख़तरे के संकेतों के बारे में पूछता है। | Salah dene se pehle Ayu warning signs ke baare mein poochta hai. | |
-| 88 | You get simple home care steps, and when to see a doctor. | आपको घर पर देखभाल के आसान कदम मिलते हैं, और यह भी कि डॉक्टर को कब दिखाएँ। | Aapko home care ke aasan steps milte hain, aur yeh bhi ki doctor ko kab dikhayein. | |
-| 89 | For the hospital | अस्पताल के लिए | Hospital ke liye | |
-| 90 | Cases appear on a live dashboard. | मामले लाइव डैशबोर्ड पर दिखते हैं। | Cases live dashboard par dikhte hain. | |
-| 91 | Staff see the transcript and a one-line brief before arrival. | स्टाफ़ को बातचीत और पहुँचने से पहले एक लाइन का सारांश दिखता है। | Staff ko transcript aur pahunchne se pehle ek line ka brief dikhta hai. | |
-| 92 | The driver sees the confirmed place and landmark. | ड्राइवर को पुष्टि की गई जगह और पहचान दिखती है। | Driver ko confirm ki gayi jagah aur landmark dikhta hai. | |
-| 93 | About Ayu | आयु के बारे में | Ayu ke baare mein | |
-| 94 | Ayu is a voice health assistant for the moment you are panicking and no doctor is reachable. It understands Hindi, Hinglish and English. | आयु एक आवाज़ वाला स्वास्थ्य सहायक है, उस पल के लिए जब आप घबराए हों और कोई डॉक्टर न मिले। यह हिंदी, हिंग्लिश और अंग्रेज़ी समझता है। | Ayu ek voice health assistant hai, us pal ke liye jab aap ghabraye hon aur koi doctor na mile. Yeh Hindi, Hinglish aur English samajhta hai. | |
-| 95 | It is built on Gnani.ai's Prisma, which listens, and Timbre, which speaks. Made by Pragya and Aryan Pandey of SRMCE, Lucknow, for the Great Indian AI Internship Challenge. | यह Gnani.ai के Prisma पर बना है, जो सुनता है, और Timbre पर, जो बोलता है। इसे SRMCE, लखनऊ के प्रज्ञा और आर्यन पांडे ने Great Indian AI Internship Challenge के लिए बनाया है। | Yeh Gnani.ai ke Prisma par bana hai, jo sunta hai, aur Timbre par, jo bolta hai. Ise SRMCE, Lucknow ke Pragya aur Aryan Pandey ne Great Indian AI Internship Challenge ke liye banaya hai. | |
-| 96 | What you should know | आपको क्या जानना चाहिए | Aapko kya jaanna chahiye | |
-| 97 | Ambulance dispatch, the hospital and the driver are simulated. No real ambulance is contacted. | एम्बुलेंस भेजना, अस्पताल और ड्राइवर सिम्युलेटेड हैं। किसी असली एम्बुलेंस से संपर्क नहीं होता। | Ambulance dispatch, hospital aur driver simulated hain. Kisi asli ambulance se contact nahi hota. | |
-| 98 | In a real emergency, call 112, India's single emergency number. | असली आपात स्थिति में 112 पर कॉल करें, जो भारत का एकल आपातकालीन नंबर है। | Asli emergency mein 112 par call karein, jo India ka single emergency number hai. | |
-| 99 | First aid and home care come from published guidance and have not been reviewed by a doctor. | प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। | First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. | |
-| 100 | Ayu is not a medical device. | आयु चिकित्सा उपकरण नहीं है। | Ayu medical device nahi hai. | |
-| 101 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
-| 102 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. First aid and home care come from published guidance and have not been reviewed by a doctor. Ayu is not a medical device and does not replace emergency services. Ambulance dispatch is simulated. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai. | |
-| 103 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
-| 104 | Language | भाषा | Bhasha | |
-| 105 | Back | वापस | Wapas | |
-| 106 | Voice check | आवाज़ जाँच | Voice check | |
-| 107 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
-| 108 | Stop | रोकें | Rokein | |
-| 109 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
-| 110 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
-| 111 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
-| 112 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
-| 113 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
-| 114 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
-| 115 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
-| 116 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
-| 117 | Speak | बोलें | Bolein | |
-| 118 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
-| 119 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
-| 120 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
-| 121 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
+| 61 | Read more | और पढ़ें | Aage padhein | |
+| 62 | 20 people die on India's roads every hour. The facts behind Ayu, with their sources. | भारत की सड़कों पर हर घंटे 20 लोग जान गँवाते हैं। आयु के पीछे के तथ्य, स्रोतों के साथ। | India ki sadkon par har ghante 20 log jaan ganwate hain. Ayu ke peeche ke facts, sources ke saath. | |
+| 63 | One tap for SOS, a voice chat for everyday problems, and a live dashboard for the hospital. | SOS के लिए एक टैप, रोज़ की तकलीफ़ों के लिए आवाज़ से बातचीत, और अस्पताल के लिए लाइव डैशबोर्ड। | SOS ke liye ek tap, roz ki takleef ke liye voice chat, aur hospital ke liye live dashboard. | |
+| 64 | Who made Ayu, what it is built on, and what it is not. | आयु किसने बनाया, यह किस पर बना है, और यह क्या नहीं है। | Ayu kisne banaya, yeh kis par bana hai, aur yeh kya nahi hai. | |
+| 65 | Three parts work together: the caller's phone, the voice, and the hospital side. | तीन हिस्से साथ काम करते हैं: कॉल करने वाले का फ़ोन, आवाज़, और अस्पताल। | Teen hisse saath kaam karte hain: caller ka phone, awaaz, aur hospital. | |
+| 66 | Page sections | पेज के हिस्से | Page ke hisse | |
+| 67 | Home | होम | Home | |
+| 68 | Why it matters | क्यों ज़रूरी | Kyun zaroori | |
+| 69 | How it works | कैसे काम करे | Kaise kaam kare | |
+| 70 | About | परिचय | About | |
+| 71 | An example conversation | बातचीत का एक उदाहरण | Baatcheet ka ek example | |
+| 72 | example only | केवल उदाहरण | sirf example | |
+| 73 | My father fell and isn't answering. | मेरे पापा गिर गए हैं, जवाब नहीं दे रहे। | Mere papa gir gaye hain, jawab nahi de rahe. | |
+| 74 | Are they breathing normally? | क्या वो सामान्य सांस ले रहे हैं? | Kya woh normal saans le rahe hain? | |
+| 75 | No. | नहीं। | Nahi. | |
+| 76 | Lay them flat on their back on a hard floor. | उन्हें सख़्त ज़मीन पर पीठ के बल सीधा लिटाइए। | Unhe sakht zameen par peeth ke bal seedha litayein. | |
+| 77 | Why India needs this | भारत को इसकी ज़रूरत क्यों है | India ko iski zaroorat kyun hai | |
+| 78 | India has no formal cardiac arrest registry or centralised emergency medical system. Until help arrives, it comes down to whoever is nearby. | भारत में कार्डियक अरेस्ट की कोई औपचारिक रजिस्ट्री या केंद्रीकृत आपातकालीन चिकित्सा व्यवस्था नहीं है। मदद पहुँचने तक सब कुछ पास मौजूद व्यक्ति पर निर्भर करता है। | India mein cardiac arrest ki koi formal registry ya central emergency medical system nahi hai. Madad pahunchne tak sab kuch paas maujood insaan par hota hai. | |
+| 79 | people die on India's roads every hour | लोग हर घंटे भारत की सड़कों पर जान गँवाते हैं | log har ghante India ki sadkon par jaan ganwate hain | |
+| 80 | 1.72 lakh deaths in 2023 | 2023 में 1.72 लाख मौतें | 2023 mein 1.72 lakh maut | |
+| 81 | of deaths in India in 2016 were from heart and blood vessel disease | मौतें 2016 में भारत में हृदय और रक्त वाहिकाओं की बीमारियों से हुईं | maut 2016 mein India mein dil aur khoon ki naliyon ki bimari se hui | |
+| 82 | of cardiac arrest patients in one Indian hospital study got CPR from someone nearby | कार्डियक अरेस्ट मरीज़ों को, भारत के एक अस्पताल के अध्ययन में, पास के किसी व्यक्ति से CPR मिला | cardiac arrest mareezon ko, India ke ek hospital ki study mein, paas ke kisi insaan se CPR mila | |
+| 83 | of Indians gave Hindi as their mother tongue in the 2011 census | भारतीयों ने 2011 की जनगणना में हिंदी को अपनी मातृभाषा बताया | Indians ne 2011 census mein Hindi ko apni matribhasha bataya | |
+| 84 | These figures describe the problem. They are not results from Ayu. | ये आँकड़े समस्या बताते हैं। ये आयु के नतीजे नहीं हैं। | Yeh numbers problem batate hain. Yeh Ayu ke results nahi hain. | |
+| 85 | How Ayu works | आयु कैसे काम करता है | Ayu kaise kaam karta hai | |
+| 86 | In an emergency | आपात स्थिति में | Emergency mein | |
+| 87 | One tap shares your location and raises a simulated ambulance request. | एक टैप से आपकी लोकेशन साझा होती है और सिम्युलेटेड एम्बुलेंस अनुरोध जाता है। | Ek tap se aapki location share hoti hai aur simulated ambulance request jaati hai. | |
+| 88 | Ayu asks if they are responding and breathing, then gives fixed first aid steps. | आयु पूछता है कि वो जवाब दे रहे हैं और सांस ले रहे हैं या नहीं, फिर तय प्राथमिक उपचार बताता है। | Ayu poochta hai ki woh jawab de rahe hain aur saans le rahe hain ya nahi, phir fixed first aid batata hai. | |
+| 89 | It stays with you until help arrives, with a CPR beat when needed. | मदद पहुँचने तक आयु आपके साथ रहता है, ज़रूरत हो तो CPR की ताल के साथ। | Madad pahunchne tak Ayu aapke saath rehta hai, zaroorat ho to CPR ki taal ke saath. | |
+| 90 | For everyday problems | रोज़ की तकलीफ़ों के लिए | Roz ki takleef ke liye | |
+| 91 | Tell Ayu what is wrong, in your own words. | अपने शब्दों में बताइए कि क्या तकलीफ़ है। | Apne shabdon mein batayein kya takleef hai. | |
+| 92 | It asks about warning signs before giving any advice. | सलाह देने से पहले आयु ख़तरे के संकेतों के बारे में पूछता है। | Salah dene se pehle Ayu warning signs ke baare mein poochta hai. | |
+| 93 | You get simple home care steps, and when to see a doctor. | आपको घर पर देखभाल के आसान कदम मिलते हैं, और यह भी कि डॉक्टर को कब दिखाएँ। | Aapko home care ke aasan steps milte hain, aur yeh bhi ki doctor ko kab dikhayein. | |
+| 94 | For the hospital | अस्पताल के लिए | Hospital ke liye | |
+| 95 | Cases appear on a live dashboard. | मामले लाइव डैशबोर्ड पर दिखते हैं। | Cases live dashboard par dikhte hain. | |
+| 96 | Staff see the transcript and a one-line brief before arrival. | स्टाफ़ को बातचीत और पहुँचने से पहले एक लाइन का सारांश दिखता है। | Staff ko transcript aur pahunchne se pehle ek line ka brief dikhta hai. | |
+| 97 | The driver sees the confirmed place and landmark. | ड्राइवर को पुष्टि की गई जगह और पहचान दिखती है। | Driver ko confirm ki gayi jagah aur landmark dikhta hai. | |
+| 98 | About Ayu | आयु के बारे में | Ayu ke baare mein | |
+| 99 | Ayu is a voice health assistant for the moment you are panicking and no doctor is reachable. It understands Hindi, Hinglish and English. | आयु एक आवाज़ वाला स्वास्थ्य सहायक है, उस पल के लिए जब आप घबराए हों और कोई डॉक्टर न मिले। यह हिंदी, हिंग्लिश और अंग्रेज़ी समझता है। | Ayu ek voice health assistant hai, us pal ke liye jab aap ghabraye hon aur koi doctor na mile. Yeh Hindi, Hinglish aur English samajhta hai. | |
+| 100 | It is built on Gnani.ai's Prisma, which listens, and Timbre, which speaks. Made by Pragya and Aryan Pandey of SRMCEM, Lucknow, for the Great Indian AI Internship Challenge. | यह Gnani.ai के Prisma पर बना है, जो सुनता है, और Timbre पर, जो बोलता है। इसे SRMCEM, लखनऊ के प्रज्ञा और आर्यन पांडे ने Great Indian AI Internship Challenge के लिए बनाया है। | Yeh Gnani.ai ke Prisma par bana hai, jo sunta hai, aur Timbre par, jo bolta hai. Ise SRMCEM, Lucknow ke Pragya aur Aryan Pandey ne Great Indian AI Internship Challenge ke liye banaya hai. | |
+| 101 | What you should know | आपको क्या जानना चाहिए | Aapko kya jaanna chahiye | |
+| 102 | Ambulance dispatch, the hospital and the driver are simulated. No real ambulance is contacted. | एम्बुलेंस भेजना, अस्पताल और ड्राइवर सिम्युलेटेड हैं। किसी असली एम्बुलेंस से संपर्क नहीं होता। | Ambulance dispatch, hospital aur driver simulated hain. Kisi asli ambulance se contact nahi hota. | |
+| 103 | In a real emergency, call 112, India's single emergency number. | असली आपात स्थिति में 112 पर कॉल करें, जो भारत का एकल आपातकालीन नंबर है। | Asli emergency mein 112 par call karein, jo India ka single emergency number hai. | |
+| 104 | First aid and home care come from published guidance and have not been reviewed by a doctor. | प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। | First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. | |
+| 105 | Ayu is not a medical device. | आयु चिकित्सा उपकरण नहीं है। | Ayu medical device nahi hai. | |
+| 106 | Before we begin | शुरू करने से पहले | Shuru karne se pehle | |
+| 107 | Ayu sends your voice to speech services to understand you. Location is used only for SOS. Demo recordings are deleted after judging. First aid and home care come from published guidance and have not been reviewed by a doctor. Ayu is not a medical device and does not replace emergency services. Ambulance dispatch is simulated. | आयु आपकी बात समझने के लिए आपकी आवाज़ स्पीच सेवाओं को भेजता है। लोकेशन का उपयोग केवल SOS के लिए होता है। डेमो रिकॉर्डिंग जजिंग के बाद हटा दी जाती हैं। प्राथमिक उपचार और घरेलू देखभाल की जानकारी प्रकाशित मार्गदर्शन से ली गई है, और डॉक्टर ने इसकी जाँच नहीं की है। आयु चिकित्सा उपकरण नहीं है और आपातकालीन सेवाओं की जगह नहीं लेता। एम्बुलेंस भेजना सिम्युलेटेड है। | Ayu aapki baat samajhne ke liye aapki awaaz speech services ko bhejta hai. Location sirf SOS ke liye use hoti hai. Demo recordings judging ke baad delete ho jaati hain. First aid aur home care published guidance se li gayi hai, aur doctor ne iski jaanch nahi ki hai. Ayu medical device nahi hai aur emergency services ki jagah nahi leta. Ambulance dispatch simulated hai. | |
+| 108 | I understand, continue | मैं समझ गया/गई, आगे बढ़ें | Samajh gaya/gayi, aage badhein | |
+| 109 | Language | भाषा | Bhasha | |
+| 110 | Back | वापस | Wapas | |
+| 111 | Voice check | आवाज़ जाँच | Voice check | |
+| 112 | Start listening | सुनना शुरू करें | Sunna shuru karein | |
+| 113 | Stop | रोकें | Rokein | |
+| 114 | Tap start and speak | शुरू दबाएँ और बोलें | Start dabayein aur boliye | |
+| 115 | Connecting… | जुड़ रहा है… | Connect ho raha hai… | |
+| 116 | Listening… | सुन रहा हूँ… | Sun raha hoon… | |
+| 117 | Hearing you… | आपको सुन रहा हूँ… | Aapko sun raha hoon… | |
+| 118 | Understanding… | समझ रहा हूँ… | Samajh raha hoon… | |
+| 119 | Ayu is speaking… | आयु बोल रहा है… | Ayu bol raha hai… | |
+| 120 | What you say will appear here when you pause. | रुकने पर आपकी बात यहाँ दिखेगी। | Rukne par aapki baat yahan dikhegi. | |
+| 121 | Type something for Ayu to say | आयु से बुलवाने के लिए लिखें | Ayu se bulwane ke liye likhein | |
+| 122 | Speak | बोलें | Bolein | |
+| 123 | Ayu repeats what it hears | आयु जो सुने उसे दोहराए | Ayu jo sune use dohraye | |
+| 124 | Let me interrupt (use headphones) | मुझे बीच में बोलने दें (हेडफ़ोन लगाएँ) | Mujhe beech mein bolne dein (headphones lagayein) | |
+| 125 | MOCK VOICE · no Gnani key set | मॉक आवाज़ · Gnani key नहीं है | MOCK awaaz · Gnani key nahi hai | |
+| 126 | Microphone permission is needed. Please allow it and try again. | माइक्रोफ़ोन की अनुमति चाहिए। कृपया अनुमति देकर फिर कोशिश करें। | Microphone ki permission chahiye. Allow karke phir try karein. | |
 
 Reviewed by: ____________________   Date: __________

@@ -1,7 +1,7 @@
 # Ayu: a Hindi and Hinglish voice assistant for health emergencies
 
 **Live app:** https://ayu-4801.onrender.com · **Code:** https://github.com/Pragya-rays/ayu
-**Team of two:** Pragya and Aryan Pandey, SRMCE, Lucknow · **Gnani models used:** Prisma v3.0 (speech to text), Timbre v2.5 (text to speech)
+**Team of two:** Pragya and Aryan Pandey, SRMCEM, Lucknow · **Gnani models used:** Prisma v3.0 (speech to text), Timbre v2.5 (text to speech)
 
 > Not a medical device. It does not replace emergency services. Ambulance dispatch is simulated. First aid and home care come from published guidance and have not been reviewed by a doctor.
 

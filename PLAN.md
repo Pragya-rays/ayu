@@ -11,10 +11,10 @@ Scope and product decisions live in [docs/AYU_PROJECT_SUMMARY.md](docs/AYU_PROJE
 
 | | |
 |---|---|
-| **Current phase** | **Phases 12 and 13 built, not pushed.** Phases 10 and 11 deployed 11-01, tested in Chrome, waiting for the team's phone check, which the team moved to later. Phases 1-5 validated on iPhone XR in quiet conditions |
-| **Phase state** | Live version is `4da7308`, without Phases 12 and 13. `/api/health` reports real voice and Gemini; no live SOS was run, to keep the team's dashboard clean. Phone check: `docs/testing/PHONE_TEST.md`, steps 21-30 |
+| **Current phase** | **All build work deployed 11-07.** Phases 10 to 14 and the seven-page redesign (I58) are live, tested in Chrome, and waiting for the team's phone check. Phases 1-5 validated on iPhone XR in quiet conditions |
+| **Phase state** | Live version is `fb15139`. `/api/health` reports real voice and Gemini, and all seven pages and `/og.png` answer. No live SOS was run, to keep the team's dashboard clean. Phone check: `docs/testing/PHONE_TEST.md`, steps 21-30 |
 | **Real Gnani API tested?** | **Yes.** Real voice on iPhone XR and Samsung in quiet settings, and a stream scorecard on synthetic noisy calls. See sections 6 and 12 |
-| **Next action** | Team reviews the redesign and approves the push, which carries a safety fix for the live site. Then one phone test covers Phases 10 to 13 and the first instruction time |
+| **Next action** | Team runs phone test steps 21-30 on the live site and reports the first instruction time. The assistant fixes what it finds |
 | **Who does what** | **Team decision 11-01:** the assistant works on the product only. The team handles registration, posts, video, trials and submission, so the assistant does not raise them. Registration is not confirmed done |
 | **Medical status** | The team chose to ship published first aid without a doctor (I44). The labels in I44 stay |
 | **Blocked on** | Nothing in the build |
@@ -528,7 +528,7 @@ Needs a **persistent** Node host with HTTPS, because of the Prisma and browser W
 |---|---|---|---|
 | D1 | Team and key | Team of two at SRMCEM, Lucknow. Aryan Pandey did the UI, Pragya the backend. Key held in `.env`. **Corrected 11-01: the team has NOT registered yet** and plans to after building. Must register before submitting | Now |
 | D2 | Which HTTPS host? | **Decided 10-31: Render.** Confirm plan limits (idle sleep, persistent disk) at setup; these affect demos and D6 | Set up in Phase 2 |
-| D3 | Target award. **Decided 11-01, team deferred to the recommendation:** Real Deal first; Two-Person Army and Mixed Vibes also fit. The page does not say entrants choose, and does not define Tier 2 or 3 towns, so Small Town, Big Build is unconfirmed for SRMCE, Lucknow | Done |
+| D3 | Target award. **Decided 11-01, team deferred to the recommendation:** Real Deal first; Two-Person Army and Mixed Vibes also fit. The page does not say entrants choose, and does not define Tier 2 or 3 towns, so Small Town, Big Build is unconfirmed for SRMCEM, Lucknow | Done |
 | D4 | **Post early, not on Nov 9.** Shortlisting depends on verified engagement, and the plan leaves almost no time for it | Build-in-public post around Phase 2-3, final post Nov 8-9. Authentic reach only | By Nov 3 |
 | D5 | Add Playwright as a dev dependency for repeatable browser tests? | Optional. Worth it if the UI gets complex | Phase 2 |
 | D6 | DB for the case store | **Decided 10-31:** in memory (I10). Revisit only if demo history must survive restarts | Done |
