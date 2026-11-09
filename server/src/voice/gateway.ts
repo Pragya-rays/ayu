@@ -3,6 +3,7 @@ import type { WebSocket } from "ws";
 import type { LLMAdapter, NormalClassifier } from "../adapters/llm.js";
 import type { STTAdapter, SttSession, TTSAdapter, TtsHandle } from "../adapters/types.js";
 import type { AddressLookup } from "../cases/addresses.js";
+import { AUDIO_HEADER_BYTES, decode as decodeMulaw, encode as encodeMulaw } from "../codec/mulaw.js";
 import type { CaseStore } from "../cases/store.js";
 import type { IssueId } from "../dialogue/normalContent.js";
 import { NormalMachine } from "../dialogue/normalMachine.js";
@@ -84,6 +85,9 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
     let ttsCounter = 0;
     let lang: Lang = sosCase?.lang ?? "hinglish";
     let echo = false;
+    // Raw 16-bit PCM by default. Phones that ask get Ayu's voice as µ-law, for weak networks.
+    let mulaw = false;
+    let mulawMic = false;
     let normal: NormalMachine | null = null;
     let finishLine: (() => void) | null = null;
     let lineTimer: NodeJS.Timeout | undefined;
@@ -114,11 +118,24 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       const finished = new Promise<void>((resolve) => {
         finishLine = resolve;
       });
+      let carry: Buffer | null = null; // a chunk can end halfway through a sample
+      const sendAudio = (data: string) => {
+        if (!mulaw) return send({ type: "tts.audio", ttsId, data });
+        const bytes: Buffer = carry ? Buffer.concat([carry, Buffer.from(data, "base64")]) : Buffer.from(data, "base64");
+        const whole = bytes.length & ~1;
+        carry = whole < bytes.length ? bytes.subarray(whole) : null;
+        const samples = new Int16Array(whole / 2);
+        for (let i = 0; i < samples.length; i++) samples[i] = bytes.readInt16LE(i * 2);
+        const frame = Buffer.alloc(AUDIO_HEADER_BYTES + samples.length);
+        frame.writeUInt32LE(ttsId, 0);
+        frame.set(encodeMulaw(samples), AUDIO_HEADER_BYTES);
+        if (socket.readyState === socket.OPEN) socket.send(frame, { binary: true });
+      };
       const handle = deps.tts.synthesize({ text, lang: speakLang, cacheable: options.cacheable, spoken: options.spoken }, {
         onAudio(data) {
           firstAudioMs ??= Math.round(performance.now() - startedAt);
           audioBytes += Buffer.byteLength(data, "base64");
-          send({ type: "tts.audio", ttsId, data });
+          sendAudio(data);
         },
         onEnd() {
           if (tts === handle) tts = null;
@@ -208,6 +225,8 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
       switch (message.type) {
         case "start":
           if (stt) return;
+          mulaw = message.codec === "mulaw";
+          mulawMic = message.micCodec === "mulaw";
           if (!sosCase) {
             lang = message.lang;
             echo = Boolean(message.echo);
@@ -255,7 +274,9 @@ export function registerVoiceGateway(app: FastifyInstance, deps: VoiceGatewayDep
 
     socket.on("message", (data, isBinary) => {
       if (isBinary) {
-        stt?.sendAudio(data as Buffer);
+        const audio = data as Buffer;
+        if (!mulawMic) stt?.sendAudio(audio);
+        else stt?.sendAudio(Buffer.from(decodeMulaw(new Uint8Array(audio.buffer, audio.byteOffset, audio.byteLength)).buffer));
         return;
       }
       try {

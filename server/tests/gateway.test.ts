@@ -7,6 +7,7 @@ import { MockPrisma, MockTimbre } from "../src/adapters/mocks.js";
 import { buildApp, type AppDeps } from "../src/app.js";
 import { AddressLookup } from "../src/cases/addresses.js";
 import { CaseStore } from "../src/cases/store.js";
+import { encode } from "../src/codec/mulaw.js";
 import { ASK_BREATHING, SOS_OPENING } from "../src/dialogue/lines.js";
 import { NORMAL_GREETING } from "../src/dialogue/normalContent.js";
 import { DispatchSimulator } from "../src/dispatch/simulator.js";
@@ -46,11 +47,16 @@ async function connect(overrides: Partial<AppDeps> = {}, sessionId = "test") {
 function client(url: string) {
   const socket = new WebSocket(url);
   const messages: ServerMessage[] = [];
-  socket.on("message", (data) => messages.push(JSON.parse(data.toString())));
+  const binary: Buffer[] = [];
+  socket.on("message", (data, isBinary) => {
+    if (isBinary) binary.push(data as Buffer);
+    else messages.push(JSON.parse(data.toString()));
+  });
   const has = (type: ServerMessage["type"]) => messages.some((message) => message.type === type);
   return {
     socket,
     messages,
+    binary,
     has,
     send: (message: ClientMessage) => socket.send(JSON.stringify(message)),
     until: (type: ServerMessage["type"]) => waitFor(() => has(type)),
@@ -91,6 +97,46 @@ describe("voice gateway", () => {
     const end = voice.messages.find((message) => message.type === "tts.end");
     expect(end).toMatchObject({ type: "tts.end" });
     expect((end as { firstAudioMs: number }).firstAudioMs).toBeGreaterThan(0);
+  });
+
+  it("speaks µ-law both ways when the phone asks for both", async () => {
+    const voice = await connect();
+    await voice.until("session.ready");
+    voice.send({ type: "start", lang: "hinglish", echo: true, codec: "mulaw", micCodec: "mulaw" });
+    await voice.until("stt.ready");
+
+    const pcm = speech();
+    const samples = Int16Array.from({ length: 512 }, (_, i) => pcm.readInt16LE(i * 2));
+    voice.socket.send(Buffer.from(encode(samples)));
+    await voice.until("speech.start");
+    voice.send({ type: "commit" });
+    await voice.until("transcript.final");
+    await voice.until("tts.end");
+
+    expect(voice.messages.some((message) => message.type === "tts.audio")).toBe(false);
+    expect(voice.binary.length).toBeGreaterThan(0);
+    const start = voice.messages.find((message) => message.type === "tts.start") as { ttsId: number };
+    expect(voice.binary.every((frame) => frame.readUInt32LE(0) === start.ttsId)).toBe(true);
+  });
+
+  it("takes raw mic audio while sending µ-law voice, as the app does", async () => {
+    const voice = await connect();
+    await voice.until("session.ready");
+    voice.send({ type: "start", lang: "hinglish", echo: true, codec: "mulaw" });
+    await voice.until("stt.ready");
+    voice.socket.send(speech());
+    await voice.until("speech.start");
+    voice.send({ type: "commit" });
+    await voice.until("tts.end");
+    expect(voice.binary.length).toBeGreaterThan(0);
+  });
+
+  it("keeps the old format for phones that do not ask for µ-law", async () => {
+    const voice = await connect();
+    await voice.until("session.ready");
+    voice.send({ type: "say", text: "namaste", lang: "en" });
+    await voice.until("tts.audio");
+    expect(voice.binary).toHaveLength(0);
   });
 
   it("stops audio on stop_speaking and caps text length", async () => {

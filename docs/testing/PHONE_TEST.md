@@ -38,6 +38,7 @@ One sitting of about 20 minutes covers everything. Repeat on an Android phone if
 | 28 | In a new chat say "ulti ho rahi hai", then stay silent until it ends | Ayu says to see a doctor and reads no advice | |
 | 29 | Open the menu (three lines, top right), go to Voice, tap the round red SOS at the bottom corner, then cancel | The countdown starts, Ayu's voice works as usual if you let it run, and cancel brings you back to Voice | |
 | 30 | Scroll Home up and down quickly on your slowest phone | It stays smooth, and all text is easy to read over the colours | |
+| 31 | Listen to Ayu for a minute on speaker, in SOS and in a chat | The voice sounds as clear as before, with no crackle or hiss | |
 
 **Also note:** did SOS feel fast enough? Did any word sound wrong? Did the screen stay awake?
 

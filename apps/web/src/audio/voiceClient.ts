@@ -1,3 +1,4 @@
+import { AUDIO_HEADER_BYTES, decode as decodeMulaw } from "../../../../server/src/codec/mulaw";
 import type { TriageAnswer } from "../../../../server/src/types/triage";
 import type { ClientMessage, Lang, ServerMessage } from "../../../../server/src/types/voice";
 import { BargeGate, Downsampler, floatToInt16, FrameBuffer, PcmDecoder } from "./pcm";
@@ -26,7 +27,10 @@ class PcmPlayer {
   }
 
   enqueue(base64: string, sampleRate: number) {
-    const samples = this.decoder.decode(base64);
+    this.enqueueSamples(this.decoder.decode(base64), sampleRate);
+  }
+
+  enqueueSamples(samples: Float32Array<ArrayBuffer>, sampleRate: number) {
     if (!samples.length) return;
     const buffer = this.context.createBuffer(1, samples.length, sampleRate);
     buffer.copyToChannel(samples, 0);
@@ -128,6 +132,7 @@ export class VoiceClient {
 
   private connect(session?: VoiceSession) {
     const socket = new WebSocket(this.socketUrl(session?.caseId ?? crypto.randomUUID()));
+    socket.binaryType = "arraybuffer";
     this.socket = socket;
 
     socket.onopen = async () => {
@@ -138,10 +143,14 @@ export class VoiceClient {
         this.send({ type: "first_audio", ms: opening.startedAfterMs });
         await opening.finished;
       }
-      this.send({ type: "start", lang: this.options.lang, echo: this.options.echo, openingPlayed: Boolean(opening) });
+      // Ayu's voice comes as µ-law, about a third of the data. The mic stays raw: µ-law cost recognition in heavy noise.
+      this.send({ type: "start", lang: this.options.lang, echo: this.options.echo, openingPlayed: Boolean(opening), codec: "mulaw" });
       if (session) session.localOpening = undefined;
     };
-    socket.onmessage = (event) => this.handleMessage(JSON.parse(event.data) as ServerMessage);
+    socket.onmessage = (event) => {
+      if (event.data instanceof ArrayBuffer) this.handleAudio(event.data);
+      else this.handleMessage(JSON.parse(event.data) as ServerMessage);
+    };
     socket.onclose = (event) => {
       const final = event.code === CLOSE_POLICY || event.code === CLOSE_CASE_ENDED;
       if (this.closing || final || !session || session.reconnect === false || this.reconnects >= MAX_RECONNECTS) {
@@ -220,13 +229,25 @@ export class VoiceClient {
       case "tts.audio":
         if (message.ttsId !== this.activeTtsId) return;
         this.player.enqueue(message.data, this.ttsRate);
-        if (this.activatedAt !== null) {
-          this.send({ type: "first_audio", ms: performance.now() - this.activatedAt });
-          this.activatedAt = null;
-        }
+        this.noteFirstAudio();
         return;
     }
     this.options.onMessage(message);
+  }
+
+  /** Binary µ-law speech: a 4-byte line id, then one byte per sample. */
+  private handleAudio(data: ArrayBuffer) {
+    if (data.byteLength <= AUDIO_HEADER_BYTES) return;
+    if (new DataView(data).getUint32(0, true) !== this.activeTtsId) return;
+    const samples = decodeMulaw(new Uint8Array(data, AUDIO_HEADER_BYTES));
+    this.player.enqueueSamples(Float32Array.from(samples, (sample) => sample / 0x8000), this.ttsRate);
+    this.noteFirstAudio();
+  }
+
+  private noteFirstAudio() {
+    if (this.activatedAt === null) return;
+    this.send({ type: "first_audio", ms: performance.now() - this.activatedAt });
+    this.activatedAt = null;
   }
 
   private send(message: ClientMessage) {

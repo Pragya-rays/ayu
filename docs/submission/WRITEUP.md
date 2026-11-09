@@ -19,18 +19,21 @@ Small hospitals often have no 24x7 call centre, so one front-desk person has to 
 
 ## What Ayu does
 
-**SOS.** One tap starts a 3-second countdown, then Ayu shares the location and raises a simulated ambulance request straight away, before asking anything. It asks two questions, whether the person is responding and breathing normally, and fixed rules choose severity and a script. Ayu reads the area back so the caller can correct it, reports ambulance status, re-checks breathing every 45 seconds, and tells the caller to call 112 in every red case and whenever no one accepts within 60 seconds. An optional Medical ID, stored only on the phone, reaches responders only when an SOS starts, and the caller can share their location with family through their own phone.
+**SOS.** One tap starts a 3-second countdown, then Ayu shares the location and raises a simulated ambulance request straight away, before asking anything. It asks two questions, whether the person is responding and breathing normally, and fixed rules choose one of seven first-aid scripts. During CPR the phone plays a 110-per-minute beat, which keeps going even if the network drops, and Ayu encourages the rescuer. While everyone waits, Ayu gives one useful step at a time, such as sending someone to the gate, and re-checks breathing every 45 seconds. It reads the area back so the caller can correct it, reports ambulance status, and tells the caller to call 112 in every red case and whenever no one accepts within 60 seconds. If the caller says it was a mistake, Ayu offers a button to cancel; voice alone never cancels an SOS. An optional Medical ID, stored only on the phone, reaches responders only when an SOS starts, and the caller can share their location through their own phone.
 
-**Normal mode.** A short voice conversation for everyday problems. Gemini writes fitted follow-up questions, while warning-sign questions stay fixed. Chest or jaw pain, breathlessness and similar signs bring up "Switch to SOS?" It never diagnoses or names medicines.
+**Normal mode.** A short voice or typed conversation for eight everyday problems, such as acidity, fever, vomiting or a sore throat. Gemini writes fitted follow-up questions, while warning-sign questions stay fixed. Chest or jaw pain, breathlessness, green or bloody vomit and similar signs bring up "Switch to SOS?" If someone goes quiet before the warning questions are answered, Ayu says to see a doctor instead of giving advice. It never diagnoses or names medicines.
 
 **Hospital side.** A live dashboard with severity, location and accuracy, transcript, timeline, and a one-line pre-arrival brief. A driver view handles Accept, On the way and Arrived.
+
+**The website.** Seven pages in Hindi, Hinglish and English explain each part, with sourced facts about emergencies in India. SOS stays one tap away on every page.
 
 ## How Gnani is used
 
 Voice is the product here, not an add-on.
 
 - **Prisma v3.0** runs in real time on the phone's microphone stream. `codemix` output keeps English words in Latin inside Hindi sentences, and keyterms help with landmarks. Its server-side voice detection decides when a caller has finished, and the app shows when it is hearing them.
-- **Timbre v2.5** speaks every line in Hindi, Hinglish and English. Fixed lines are generated once and stored, so they start instantly and use no credits per call. Hinglish speech is sent in Devanagari, which sounded clearer in our listening test, while the screen keeps Latin text.
+- **Timbre v2.5** speaks every line in Hindi, Hinglish and English. Fixed lines are generated once and stored, so they start instantly and use no credits per call. Silence Timbre leaves at the start and end of each line is trimmed, which saves about 0.9 s before the first instruction. Hinglish speech is sent in Devanagari, which sounded clearer in our listening test, while the screen keeps Latin text.
+- **Built for weak networks.** Audio travels as µ-law, the scale phone networks use, in both directions: about 2.6 times less data. On a link limited to 100 kbps, Ayu's first sound arrived in 0.7 s instead of 1.4 s. A request to Timbre that goes silent is dropped after 8 seconds, so one stalled line cannot freeze an emergency.
 
 ## Architecture
 
@@ -42,7 +45,8 @@ Phone (PWA) to a Node server over WebSocket. The server proxies Prisma and Timbr
 - **Unknown never reads as good news.** An unclear or silent reply to a warning-sign question withholds home care and says to see a doctor.
 - **The ER brief comes from confirmed fields only**, and shows "unknown" for anything not stated.
 - **Ayu never says "dispatched" before someone accepts.**
-- **If the connection drops,** the phone reconnects and resumes the same conversation. If it cannot, it says to call 112, and it never claims help was sent when nothing could be sent.
+- **If the connection drops,** the phone reconnects and Ayu repeats the step it was on, then finishes the rest. If it cannot reconnect, it says to call 112, and it never claims help was sent when nothing could be sent.
+- **Only a tap ends an SOS.** Someone can be wrong about a patient, so "it was a mistake" only offers a cancel button, and help stays on its way until it is pressed.
 
 ## What is real and what is simulated
 
@@ -82,7 +86,9 @@ TODO: add results from more people trying it.
 ## Honest limitations
 
 - **No clinical review.** First-aid steps and home care were condensed from published guidance (Indian COLS guideline, St John Ambulance, WHO, AHA, NHS) with AI help. No doctor has reviewed them, or the triage rules and warning signs. A clinician must approve all of it before anyone relies on it. Ayu gives no medicine advice, including aspirin.
-- **Time to first instruction** was 11-16 seconds by voice on a real phone before we shortened the lines, mostly because of speech and the caller's own response. It is still not fast enough for a real cardiac arrest.
+- **Time to first instruction** was 11-16 seconds by voice on a real phone before we shortened the lines and trimmed their silence, mostly because of speech and the caller's own response. Ayu now speaks for 3.6 s before the first instruction instead of 7.1 s, but the full time has not been re-measured on a phone. It is still not fast enough for a real cardiac arrest.
+- **Very weak networks.** Below about 200 kbps Ayu's voice still arrives slower than it plays, so it can stutter on poor 2G.
+- **Three languages only.** Gnani's models cover more Indian languages, but every first-aid step would need writing and checking in each one first.
 - **Noise testing above is synthetic.** Real panicked callers will do worse.
 - **Limited device testing.** The full flow was tested on one iPhone XR, with a shorter check on one Samsung phone in Chrome. Other phones and older Android versions are untested.
 - **One-at-a-time scale.** Free tiers allow 15 Gemini requests a minute and Render's free plan sleeps when idle. Cases live in memory, so a restart ends active calls. Ayu falls back to rules if Gemini is unavailable.
@@ -93,9 +99,11 @@ TODO: add results from more people trying it.
 
 1. Clinical sign-off for every script, rule and card, and legal review of medical-device rules
 2. Integration with 112 or a hospital ambulance desk instead of the simulator
-3. Testing with real callers and a hospital, with their permission
-4. A paid or self-hosted geocoder, a real database and paid service tiers
-5. DPDP compliance: stated purpose, consent, retention limits and deletion
+3. A phone number Ayu answers, through an Indian telephony provider such as Exotel, which streams call audio at 8 or 16 kHz that Prisma and Timbre already handle. This needs business KYC for the number
+4. Automatic language detection from the caller's first words, then Tamil, Bengali and other languages Gnani supports, each with checked first aid
+5. Testing with real callers and a hospital, with their permission
+6. A paid or self-hosted geocoder, a real database and paid service tiers
+7. DPDP compliance: stated purpose, consent, retention limits and deletion
 
 ## Data and consent
 

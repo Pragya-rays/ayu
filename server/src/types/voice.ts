@@ -29,7 +29,11 @@ export type ClientMessage =
   | { type: "normal_yes_no"; answer: "yes" | "no" }
   | { type: "normal_decline_sos" }
   | { type: "triage_answer"; answer: TriageAnswer }
-  | { type: "start"; lang: Lang; echo?: boolean; openingPlayed?: boolean }
+  /**
+   * `codec: "mulaw"` sends Ayu's speech as binary µ-law frames, about a third of the data. Older phones omit it.
+   * `micCodec: "mulaw"` would halve mic data, but cost recognition in heavy noise (scorecard-stream-mulaw), so the app sends raw PCM.
+   */
+  | { type: "start"; lang: Lang; echo?: boolean; openingPlayed?: boolean; codec?: "mulaw"; micCodec?: "mulaw" }
   | { type: "commit" }
   | { type: "say"; text: string; lang?: Lang }
   | { type: "stop_speaking" }

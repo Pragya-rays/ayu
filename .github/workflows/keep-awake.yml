@@ -1,0 +1,17 @@
+# Render's free plan sleeps after 15 idle minutes and takes about a minute to wake.
+# Visiting the health check every 10 minutes keeps Ayu ready for judges and testers.
+# One always-on free service uses about 720 of Render's 750 free hours a month.
+name: Keep the live site awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Visit the health check
+        run: curl --fail --silent --show-error --max-time 150 https://ayu-4801.onrender.com/api/health
